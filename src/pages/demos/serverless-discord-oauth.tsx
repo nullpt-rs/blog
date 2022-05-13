@@ -1,4 +1,4 @@
-import {APIUser} from 'discord-api-types/v8';
+import {APIUser} from 'discord-api-types/v10';
 import {verify} from 'jsonwebtoken';
 import {GetServerSideProps, PageConfig} from 'next';
 import Link from 'next/link';

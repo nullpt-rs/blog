@@ -1,5 +1,5 @@
 import type {NextApiHandler} from 'next';
-import type {RESTGetAPIUserResult} from 'discord-api-types/v8';
+import type {RESTGetAPIUserResult} from 'discord-api-types/v10';
 import {serialize} from 'cookie';
 import {sign} from 'jsonwebtoken';
 import dayjs from 'dayjs';
@@ -61,7 +61,7 @@ function getCookieHeader(token: string) {
 	});
 }
 
-const handler: NextApiHandler = async (req, res) => {
+const handler: NextApiHandler<never> = async (req, res) => {
 	// Find our callback code from req.query
 	const {code = null} = req.query as {code?: string};
 

@@ -32,7 +32,7 @@ export default function Home() {
 				</a>
 			</h2>
 
-			<ul className="space-y-1 list-disc">
+			<ul className="space-y-1 list-disc list-inside">
 				{posts
 					.filter(post => !post.hidden)
 					.map(post => (

@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import dark from 'react-syntax-highlighter/dist/cjs/styles/hljs/darcula';
 import light from 'react-syntax-highlighter/dist/cjs/styles/hljs/lightfair';
+
+type Style = Record<`hljs-${string}`, string>;
 
 export function Highlighter({
 	children,
@@ -14,13 +14,13 @@ export function Highlighter({
 	return (
 		<div className="no-pre-margin">
 			<div className="hidden dark:block">
-				<SyntaxHighlighter language={language} style={dark}>
+				<SyntaxHighlighter language={language} style={dark as Style}>
 					{children}
 				</SyntaxHighlighter>
 			</div>
 
 			<div className="dark:hidden">
-				<SyntaxHighlighter language={language} style={light}>
+				<SyntaxHighlighter language={language} style={light as Style}>
 					{children}
 				</SyntaxHighlighter>
 			</div>

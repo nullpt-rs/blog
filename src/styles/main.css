@@ -5,3 +5,7 @@ body {
 .no-pre-margin pre {
 	margin: 0;
 }
+
+.prose video {
+	@apply rounded-md w-full;
+}

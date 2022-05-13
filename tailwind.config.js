@@ -6,7 +6,7 @@ module.exports = {
 	darkMode: 'media',
 	theme: {
 		fontFamily: {
-			mono: ['DM Mono', 'monospace'],
+			mono: ['"DM Mono"', 'monospace'],
 		},
 		fontWeight: {
 			light: 300,
