@@ -10,7 +10,7 @@
 # next.js
 /.next/
 /build
-
+/out
 # misc
 .DS_Store
 *.pem
