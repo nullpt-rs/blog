@@ -4,10 +4,10 @@
  * @type {import('next').NextConfig}
  **/
 const config = {
+  distDir: 'build',
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-
 	async redirects() {
 		return [
       {
