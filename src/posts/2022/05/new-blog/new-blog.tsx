@@ -185,6 +185,7 @@ setTransformedCode(generate(ast).code);`)}
 		</p>
 	</>
     );
+
 const ContentWrapper = () => {
   const [tldrMode, setTldrMode] = useState<boolean>(false);
 

@@ -147,6 +147,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cloudflare/workers-types@npm:^3.10.0":
+  version: 3.10.0
+  resolution: "@cloudflare/workers-types@npm:3.10.0"
+  checksum: 0d59f0cfc8058c48083dec883e10c06972541abab7248a2da780ff04c3f472b101f7aafe05528fffe75a0223c31ab905927705afc95635efc9b851ba41ef085d
+  languageName: node
+  linkType: hard
+
 "@eslint/eslintrc@npm:^1.2.1":
   version: 1.2.1
   resolution: "@eslint/eslintrc@npm:1.2.1"
@@ -974,6 +981,7 @@ __metadata:
     "@babel/parser": ^7.17.10
     "@babel/traverse": ^7.17.10
     "@babel/types": ^7.17.10
+    "@cloudflare/workers-types": ^3.10.0
     "@tailwindcss/typography": ^0.5.2
     "@types/babel__generator": ^7
     "@types/babel__traverse": ^7
