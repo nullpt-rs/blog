@@ -9,6 +9,10 @@
 		"lint": "eslint ."
 	},
 	"dependencies": {
+		"@babel/generator": "^7.17.10",
+		"@babel/parser": "^7.17.10",
+		"@babel/traverse": "^7.17.10",
+		"@babel/types": "^7.17.10",
 		"axios": "^0.26.1",
 		"common-tags": "^1.8.2",
 		"cookie": "^0.4.2",
@@ -23,6 +27,8 @@
 	},
 	"devDependencies": {
 		"@tailwindcss/typography": "^0.5.2",
+		"@types/babel__generator": "^7",
+		"@types/babel__traverse": "^7",
 		"@types/common-tags": "^1.8.1",
 		"@types/cookie": "^0.4.1",
 		"@types/jsonwebtoken": "^8.5.8",

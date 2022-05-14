@@ -1,7 +1,8 @@
-import { GetStaticPaths, GetStaticProps, PageConfig } from 'next';
+import {GetStaticPaths, GetStaticProps, PageConfig} from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { posts } from '../posts';
+import {posts} from '../posts';
+import blogBanner from './blog_banner.png';
 
 export const config: PageConfig = {
 	unstable_runtimeJS: false,
@@ -11,7 +12,7 @@ interface Props {
 	slug: string;
 }
 
-export default function PostPage({ slug }: Props) {
+export default function PostPage({slug}: Props) {
 	const post = posts.find(post => post.slug === slug)!;
 
 	return (
@@ -21,7 +22,11 @@ export default function PostPage({ slug }: Props) {
 				<meta name="description" content={post.excerpt} />
 				<meta name="keywords" content={post.keywords.join(', ')} />
 				<meta name="theme-color" content={post.hidden ? '#ebb305' : '#171717'} />
-			</Head>
+				<meta property="og:type" content="article" />
+				<meta property="og:title" content={post.name} />
+				<meta property="og:description" content={post.excerpt} />
+				<meta property="og:image" content={post.image ? post.image : blogBanner.src} />
+      </Head>
 
 			{post.hidden && (
 				<div className="bg-yellow-500 text-yellow-900 rounded-md py-2 px-4">
@@ -40,14 +45,19 @@ export default function PostPage({ slug }: Props) {
 			<p>
 				<time dateTime={post.date.toISOString()}>{post.date.toDateString()}</time>
 			</p>
-			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert">
+			<small>authored by {post.author}</small>
+			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
+				<h1>{post.name}</h1>
 				{post.render()}
 			</main>
+			<footer className="my-8 text-center">
+				<span><span className="text-neutral-500">Content on this site is licensed</span> <Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link></span>
+			</footer>
 		</div>
 	);
 }
 
-export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<Props> = async ({params}) => {
 	const slug = params!.slug as string;
 
 	const post = posts.find(post => post.slug === slug);
@@ -66,6 +76,6 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => ({
-	paths: posts.map(post => ({ params: { slug: post.slug } })),
+	paths: posts.map(post => ({params: {slug: post.slug}})),
 	fallback: 'blocking',
 });
