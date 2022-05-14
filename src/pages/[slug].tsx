@@ -1,12 +1,8 @@
-import {GetStaticPaths, GetStaticProps, PageConfig} from 'next';
+import {GetStaticPaths, GetStaticProps} from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import {posts} from '../posts';
 import blogBanner from './blog_banner.png';
-
-export const config: PageConfig = {
-	unstable_runtimeJS: false,
-};
 
 interface Props {
 	slug: string;

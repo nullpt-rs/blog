@@ -4,7 +4,6 @@
 import {parse} from '@babel/parser';
 import generate from '@babel/generator';
 import traverse from '@babel/traverse';
-import Image from 'next/image';
 import {Post} from '../../../Post';
 import firstBlogPost from './first-blog-post.webp';
 import secondGuide from './second-guide.webp';
@@ -51,7 +50,7 @@ const DetailedBody = () => (
 			All from the comfort of my shared living room computer.
 		</p>
 		<figure className="text-center w-2/4 mx-auto">
-			<Image src={firstBlogPost.src} alt="My first blog post" width={550} height={389} />
+			<img src={firstBlogPost.src} alt="My first blog post" width={550} height={389} />
 			<figcaption>My first ever blog post</figcaption>
 		</figure>
 		<p>
@@ -60,7 +59,7 @@ const DetailedBody = () => (
 			with guitars equipped would be shown strumming their guitar when playing the dancing animation)
 		</p>
 		<figure className="text-center w-1/4 mx-auto">
-			<Image src={guitarAnimation.src} alt="Club Penguin avatar strumming a red electric guitar." width={128} height={128} />
+			<img src={guitarAnimation.src} alt="Club Penguin avatar strumming a red electric guitar." width={128} height={128} />
 			<figcaption>Club Penguin avatar strumming a red electric guitar.</figcaption>
 		</figure>
 		<p>
@@ -80,7 +79,7 @@ const DetailedBody = () => (
 		</p>
 		<blockquote>First open ur player card the put only ur guitar.After Close the player card.AfterWards open u player card again then take of the guitar and put the drum sticks on (DONT CLOSE UR PLAYER CARD) now dance note:THIS WORKS WITH ANY ANIMATION ITEM</blockquote>
 		<figure className="text-center w-1/2 mx-auto">
-			<Image src={secondGuide.src} alt="My second guide on my blog" width={535} height={424} />
+			<img src={secondGuide.src} alt="My second guide on my blog" width={535} height={424} />
 			<figcaption>My second guide on my blog</figcaption>
 		</figure>
 		<p>
@@ -93,7 +92,7 @@ const DetailedBody = () => (
 			On the bright side i joined a production owned by Mr artic 1 and is called bpp productions here are the updates on clubpenguin.
 		</blockquote>
 		<figure className="text-center w-1/2 mx-auto">
-			<Image src={lastPost.src} alt="My final blog post on this site" width={540} height={1185} />
+			<img src={lastPost.src} alt="My final blog post on this site" width={540} height={1185} />
 			<figcaption>My final blog post on this site</figcaption>
 		</figure>
 		<p>The blog comes full circle with an apology reminiscient of my first ever post.
@@ -162,7 +161,7 @@ setTransformedCode(generate(ast).code);`)}
 			this new format as I'd like to reimagine them instead of copy-paste. You can still read them <a href="https://old.nullpt.rs/">here</a>.
 		</p>
 		<figure className="text-center mx-auto w-1/2">
-			<Image src={youngVeritas.src} alt="A very young veritas seated at the family computer. Likely writing for his Club Penguin blog." width={2159} height={2159} />
+			<img src={youngVeritas.src} alt="A very young veritas seated at the family computer. Likely writing for his Club Penguin blog." width={2159} height={2159} />
 			<figcaption>A very young veritas seated at the family computer. Likely writing for his Club Penguin blog.</figcaption>
 		</figure>
 	</>
