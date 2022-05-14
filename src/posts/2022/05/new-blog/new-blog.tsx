@@ -9,17 +9,18 @@ import firstBlogPost from './first-blog-post.webp';
 import secondGuide from './second-guide.webp';
 import youngVeritas from './young-veritas.webp';
 import lastPost from './last-post.webp';
-import guitarAnimation from './guitar-animation.webp';
+import guitarAnimation from './guitar-animation.gif';
 import {useEffect, useState} from 'react';
 import {stripIndent} from 'common-tags';
 import {Highlighter} from '../../../../client/components/highlighter';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export class NewBlog extends Post {
-	public name = 'The Story of nullpt.rs and How We Got Here';
+	public name = 'The Story of nullpt.rs';
   public image = undefined;
   public author = 'veritas';
-	public slug = 'the-new-blog';
+	public slug = 'the-story-of-nullptrs';
 	public date = new Date('12 May 2022');
 	public hidden = false;
 	public excerpt = 'New and improved simplified blog';
@@ -50,7 +51,7 @@ const DetailedBody = () => (
 			All from the comfort of my shared living room computer.
 		</p>
 		<figure className="text-center w-2/4 mx-auto">
-			<img src={firstBlogPost.src} alt="My first blog post" />
+			<Image src={firstBlogPost.src} alt="My first blog post" width={550} height={389} />
 			<figcaption>My first ever blog post</figcaption>
 		</figure>
 		<p>
@@ -59,7 +60,7 @@ const DetailedBody = () => (
 			with guitars equipped would be shown strumming their guitar when playing the dancing animation)
 		</p>
 		<figure className="text-center w-1/4 mx-auto">
-			<img src={guitarAnimation.src} alt="Club Penguin avatar strumming a red electric guitar." />
+			<Image src={guitarAnimation.src} alt="Club Penguin avatar strumming a red electric guitar." width={128} height={128} />
 			<figcaption>Club Penguin avatar strumming a red electric guitar.</figcaption>
 		</figure>
 		<p>
@@ -79,8 +80,8 @@ const DetailedBody = () => (
 		</p>
 		<blockquote>First open ur player card the put only ur guitar.After Close the player card.AfterWards open u player card again then take of the guitar and put the drum sticks on (DONT CLOSE UR PLAYER CARD) now dance note:THIS WORKS WITH ANY ANIMATION ITEM</blockquote>
 		<figure className="text-center w-1/2 mx-auto">
-			<img src={secondGuide.src} alt="My second guide on my blog." />
-			<figcaption>My second guide on my blog.</figcaption>
+			<Image src={secondGuide.src} alt="My second guide on my blog" width={535} height={424} />
+			<figcaption>My second guide on my blog</figcaption>
 		</figure>
 		<p>
 			Crossed out text indicated that this method was now patched. This post was
@@ -92,7 +93,7 @@ const DetailedBody = () => (
 			On the bright side i joined a production owned by Mr artic 1 and is called bpp productions here are the updates on clubpenguin.
 		</blockquote>
 		<figure className="text-center w-1/2 mx-auto">
-			<img src={lastPost.src} alt="My final blog post on this site" />
+			<Image src={lastPost.src} alt="My final blog post on this site" width={540} height={1185} />
 			<figcaption>My final blog post on this site</figcaption>
 		</figure>
 		<p>The blog comes full circle with an apology reminiscient of my first ever post.
@@ -161,7 +162,7 @@ setTransformedCode(generate(ast).code);`)}
 			this new format as I'd like to reimagine them instead of copy-paste. You can still read them <a href="https://old.nullpt.rs/">here</a>.
 		</p>
 		<figure className="text-center mx-auto w-1/2">
-			<img src={youngVeritas.src} alt="A very young veritas seated at the family computer. Likely writing for his Club Penguin blog." />
+			<Image src={youngVeritas.src} alt="A very young veritas seated at the family computer. Likely writing for his Club Penguin blog." width={2159} height={2159} />
 			<figcaption>A very young veritas seated at the family computer. Likely writing for his Club Penguin blog.</figcaption>
 		</figure>
 	</>
@@ -180,7 +181,7 @@ setTransformedCode(generate(ast).code);`)}
 		</p>
 		<ASTEditor />
 		<p>
-			It will take me some time to migrate all old posts to fit this new format as I'd like to reimagine them instead of copy-paste.
+			It will take me some time to migrate all old posts to fit this new format as I'd like to reimagine them instead of copy-paste them.
 			You can still read them <a href="https://old.nullpt.rs/">here</a>.
 		</p>
 	</>

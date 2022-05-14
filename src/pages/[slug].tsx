@@ -26,7 +26,7 @@ export default function PostPage({slug}: Props) {
 				<meta property="og:title" content={post.name} />
 				<meta property="og:description" content={post.excerpt} />
 				<meta property="og:image" content={post.image ? post.image : blogBanner.src} />
-      </Head>
+			</Head>
 
 			{post.hidden && (
 				<div className="bg-yellow-500 text-yellow-900 rounded-md py-2 px-4">
