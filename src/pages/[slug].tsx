@@ -2,7 +2,6 @@ import {GetStaticPaths, GetStaticProps} from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import {posts} from '../posts';
-import blogBanner from './blog_banner.png';
 
 interface Props {
 	slug: string;
@@ -18,10 +17,6 @@ export default function PostPage({slug}: Props) {
 				<meta name="description" content={post.excerpt} />
 				<meta name="keywords" content={post.keywords.join(', ')} />
 				<meta name="theme-color" content={post.hidden ? '#ebb305' : '#171717'} />
-				<meta property="og:type" content="article" />
-				<meta property="og:title" content={post.name} />
-				<meta property="og:description" content={post.excerpt} />
-				<meta property="og:image" content={post.image ? post.image : blogBanner.src} />
 			</Head>
 
 			{post.hidden && (

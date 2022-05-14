@@ -13,7 +13,6 @@ import guitarAnimation from './guitar-animation.gif';
 import {useEffect, useState} from 'react';
 import {stripIndent} from 'common-tags';
 import {Highlighter} from '../../../../client/components/highlighter';
-import Head from 'next/head';
 
 export class NewBlog extends Post {
 	public name = 'The Story of nullpt.rs';
@@ -27,12 +26,7 @@ export class NewBlog extends Post {
 
 	public render() {
 		return (
-			<>
-				<Head>
-					<meta key="title" property="og:title" content={this.name} />
-				</Head>
-				<ContentWrapper />
-			</>
+			<ContentWrapper />
 		);
 	}
 }
@@ -110,7 +104,7 @@ const DetailedBody = () => (
 			I had over ten club penguin blogs that I've created over the years. Each iteration better than the last.
 			Everything from the name, theme, content, images, and free .tk domains. Blogging was in my DNA. But as I grew older, my interest in the world of Club Penguin waned, and as a result, my blogging days came to a halt.
 		</p>
-		<h1><span className="bg-red-700 p-2">Supreme</span> Enters the Ring</h1>
+		<h1><span className="bg-red-700 p-2 text-white">Supreme</span> Enters the Ring</h1>
 		<p>Supreme. A New York-based skate company turned billion-dollar clothing and lifestyle brand
 			most known by their iconic bright red rectangle stamped in Futura Heavy Oblique.
 			Some of their products are known to sell out in a matter of *seconds*. As a result, automation
@@ -144,7 +138,7 @@ const DetailedBody = () => (
 		<p>Now, readers can interact with custom components created to help demonstrate the purpose of the reading.
 		</p>
 		<p>Let's see it in action.</p>
-		<p>Below is a snippet of code that uses Babel on user input and reverses any StringLiteral present inside the code. The transformed output is updated on the right.</p>
+		<p>Below is a snippet of code that uses Babel on user input and reverses any StringLiteral present inside the code. The transformed output is updated underneath.</p>
 		<Highlighter language="javascript">
 			{stripIndent(`const ast = parse(code);
 traverse(ast, {
@@ -222,11 +216,11 @@ const ASTEditor = () => {
   }, [code]);
 
   return (
-	<div className="flex">
+	<div className="flex flex-col">
 		<div className="flex-1 mx-4">
 			<span>Your code</span>
 			<input
-				className="bg-neutral-900 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-neutral-800 dark:border-blue-400 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+				className="bg-neutral-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-neutral-800 dark:border-blue-400 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 				type="text" name="" id=""
 				value={code} onChange={e => {
  setCode(e.target.value);
