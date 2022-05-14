@@ -2,7 +2,7 @@
   "compilerOptions": {
     "types": ["@cloudflare/workers-types"],
     "module": "commonjs",
-    "target": "es5",
+    "target": "ES2017",
     "sourceMap": true,
     "strict": true,
     "lib": [
