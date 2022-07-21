@@ -19,11 +19,19 @@ export default function Home() {
 					<span>nullpt.rs</span>{' '}
 					<a
 						target="_blank"
+						href="https://forum.nullpt.rs/"
+						className="text-neutral-500 hover:text-blue-500"
+						rel="noreferrer"
+					>
+						– forum
+					</a>
+					<a
+						target="_blank"
 						href="https://github.com/nullpt-rs"
 						className="text-neutral-500 hover:text-blue-500"
 						rel="noreferrer"
 					>
-						– github
+						{" "} – github
 					</a>
 					<a
 						target="_blank"
@@ -55,9 +63,9 @@ export default function Home() {
 function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
 	return (
 		<li className="flex">
-			<p className="w-24 text-right pr-2 text-neutral-400">{props.date.toLocaleDateString()}</p>
+			<p className="w-24 text-right text-neutral-400">{props.date.toLocaleDateString()}</p>
 			<Link passHref href={props.href}>
-				<a className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+				<a className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
 					{props.children}
 				</a>
 			</Link>
