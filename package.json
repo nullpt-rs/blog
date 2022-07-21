@@ -24,6 +24,7 @@
 		"react": "18.0.0",
 		"react-dom": "18.0.0",
 		"react-syntax-highlighter": "^15.5.0",
+		"sharp": "^0.30.7",
 		"urlcat": "^2.0.4"
 	},
 	"devDependencies": {
@@ -36,6 +37,7 @@
 		"@types/jsonwebtoken": "^8.5.8",
 		"@types/react": "^17.0.43",
 		"@types/react-syntax-highlighter": "^13.5.2",
+		"@types/sharp": "^0",
 		"@types/tailwindcss": "^3.0.10",
 		"@typescript-eslint/eslint-plugin": "^5.17.0",
 		"@typescript-eslint/parser": "^5.17.0",
