@@ -64,10 +64,8 @@ function BlogLink(props: {href: string; date: Date; author: string; children: Re
 	return (
 		<li className="flex">
 			<p className="w-24 text-right text-neutral-400">{props.date.toLocaleDateString()}</p>
-			<Link passHref href={props.href}>
-				<a className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
-					{props.children}
-				</a>
+			<Link passHref href={props.href} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+				{props.children}
 			</Link>
 			<p className="pl-2 text-neutral-400">- {props.author}</p>
 		</li>
