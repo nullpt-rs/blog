@@ -62,12 +62,13 @@ const WebGLFingerprint = () => {
     return (
 	<>
 		<canvas ref={canvas} width="0" height="0" />
-		{vendor && renderer && <> <p>And here's an example of that in action:</p>
-			<Highlighter>
-				{`Vendor: ${vendor}
+		{vendor && renderer && (
+			<><p>And here's an example of that in action:</p>
+				<Highlighter>
+					{`Vendor: ${vendor}
 Renderer: ${renderer}`}
-			</Highlighter>
-		</>
+				</Highlighter>
+			</>)
     }
 	</>
       );
