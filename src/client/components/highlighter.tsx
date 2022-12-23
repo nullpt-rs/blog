@@ -1,6 +1,6 @@
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import dark from 'react-syntax-highlighter/dist/cjs/styles/hljs/darcula';
-import light from 'react-syntax-highlighter/dist/cjs/styles/hljs/lightfair';
+import light from 'react-syntax-highlighter/dist/cjs/styles/hljs/atelier-dune-light';
 
 type Style = Record<`hljs-${string}`, string>;
 
