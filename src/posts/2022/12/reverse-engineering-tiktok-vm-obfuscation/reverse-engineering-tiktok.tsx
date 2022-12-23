@@ -63,7 +63,7 @@ const WebGLFingerprint = () => {
 	<>
 		<canvas ref={canvas} width="0" height="0" />
 		{vendor && renderer && (
-			<><p>And here's an example of that in action:</p>
+			<><p>And here's a demo of that in action (This is using JavaScript to pull your GPU information):</p>
 				<Highlighter>
 					{`Vendor: ${vendor}
 Renderer: ${renderer}`}
@@ -168,6 +168,7 @@ export class ReverseEngineeringTikTok extends Post {
   [0x9 * 0x41c + 0x7f * 0x2f + -0x1e25 * 0x2, _0x10ee06 += parseInt(_0x455c68['slice'](_0x1d9108 + (-0x*-0x1 + -0xa98 + -0x16), _0x1d9108 + (-0x1e13 * -0x1 + 0x19d3 + 0x4a8 * -0xc)), -0x13 * 0x93 + -0x793 + -0-0x946)]);
 }`}
 		</Highlighter>
+		<p>View the fully obfuscated script over at <a href="https://sf16-website-login.neutral.ttwstatic.com/obj/tiktok_web_login_static/webmssdk/1.0.0.1/webmssdk.js">https://sf16-website-login.neutral.ttwstatic.com/obj/tiktok_web_login_static/webmssdk/1.0.0.1/webmssdk.js</a></p>
 		<p>By utilizing the <a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md">Babel suite</a>, we are able to parse the source code and manipulate its Abstract Syntax Tree (AST). With this, we can create a simple transformation that reduces complex binary expressions to a single constant. The transformation code appears as follows:</p>
 		<Highlighter>
 			{`import { ParseResult } from "@babel/parser";
