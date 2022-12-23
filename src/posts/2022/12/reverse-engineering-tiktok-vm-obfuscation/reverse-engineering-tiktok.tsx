@@ -81,7 +81,7 @@ export class ReverseEngineeringTikTok extends Post {
 	public slug = 'reverse-engineering-tiktok-vm-1';
 	public date = new Date('22 Dec 2022');
 	public hidden = false;
-  public excerpt = "";
+  public excerpt = "TikTok has a reputation for its aggressive data collection. The platform has implemented various methods to make it difficult for reverse-engineers to understand exactly what data is being collected and how it is being used.";
   public keywords = ['tiktok', 'douyin', 'webmssdk', 'obfuscation', 'virtual machine'];
 
   public render() {
