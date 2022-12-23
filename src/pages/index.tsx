@@ -6,25 +6,8 @@ export default function Home() {
 	return (
 		<>
 			<main className="space-y-8">
-				<div>
-					<a
-						className="text-sm text-yellow-700 dark:text-yellow-500"
-						href="https://old.nullpt.rs"
-					>
-						⚠️ Old posts are pending migration to new site. Click here for the old blog.
-					</a>
-				</div>
-
 				<h2>
 					<span>nullpt.rs</span>{' '}
-					<a
-						target="_blank"
-						href="https://forum.nullpt.rs/"
-						className="text-neutral-500 hover:text-blue-500"
-						rel="noreferrer"
-					>
-						– forum
-					</a>
 					<a
 						target="_blank"
 						href="https://github.com/nullpt-rs"
