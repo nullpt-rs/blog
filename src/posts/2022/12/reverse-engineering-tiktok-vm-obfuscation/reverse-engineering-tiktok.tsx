@@ -748,7 +748,7 @@ run(bytecode);`}
 		<p>This article does not delve into the specifics of how these strings are utilized or how TikTok interprets the rest of the bytecode through its custom virtual machine and various opcodes. If that is something you are interested in, keep an eye out for the second part of this series :)</p>
 		<p>If you're interested in a full strings dump check out <a href="https://gist.github.com/voidstar0/d4d409321ca0a32e2ffd295b59a9a1df">strings.txt</a></p>
 
-		<a href="https://infosec.exchange/@voidstar">Mastodon</a> <br />
+		<a href="https://infosec.exchange/@voidstar">Mastodon (@voidstar@infosec.exchange)</a> <br />
 		<a href="https://twitter.com/blastbots">Twitter</a>
 		<br />
 		<span>Discord: veritas#0001</span>
