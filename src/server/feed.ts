@@ -1,4 +1,4 @@
-import {Feed} from 'feed';
+import {Feed} from '@nullptrs/feed';
 
 import metadata1 from '../posts/2018/9/anatomy-of-a-supreme-bot-1/metadata.json'
 import metadata2 from '../posts/2018/9/anatomy-of-a-supreme-bot-2/metadata.json'
@@ -32,7 +32,6 @@ posts
 			link: `${process.env.SITE_URL ?? ''}/${post.slug}`,
 			content: post.excerpt,
 			date: new Date(post.date),
-			// image: post.image,
 			author: [
 				{
 					name: post.author,
