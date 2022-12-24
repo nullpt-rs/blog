@@ -13,6 +13,21 @@ const config = {
 	async redirects() {
 		return [
       {
+        source: '/feed.json',
+        destination: 'https://nullpt.rs/api/feed.json',
+        permanent: true,
+      },
+      {
+        source: '/feed.atom',
+        destination: 'https://nullpt.rs/api/feed.atom',
+        permanent: true,
+      },
+      {
+        source: '/feed.rss',
+        destination: 'https://nullpt.rs/api/feed.rss',
+        permanent: true,
+      },
+      {
         source: '/reverse-engineering-malicious-bots',
         destination: 'https://old.nullpt.rs/reverse-engineering-malicious-bots',
         permanent: false,
