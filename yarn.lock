@@ -1053,7 +1053,7 @@ __metadata:
     eslint-config-xo: ^0.40.0
     eslint-config-xo-react: ^0.27.0
     eslint-config-xo-typescript: ^0.50.0
-    feed: /Users/fredi/feed
+    feed: "git@github.com:voidstar0/feed.git"
     jsonwebtoken: ^8.5.1
     next: ^13.0.2
     postcss: ^8.4.12
@@ -2126,12 +2126,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"feed@file:/Users/fredi/feed::locator=blog%40workspace%3A.":
+"feed@git@github.com:voidstar0/feed.git":
   version: 4.2.2
-  resolution: "feed@file:/Users/fredi/feed#/Users/fredi/feed::hash=5d3f1e&locator=blog%40workspace%3A."
+  resolution: "feed@git@github.com:voidstar0/feed.git#commit=abcb364861c1f9b4505ee949f2f94cef91e8ff3c"
   dependencies:
     fast-xml-parser: ^4.0.12
-  checksum: 3a1c771290fcedba2f3ae5d147d2bb08819a406a2493061b09d64aa3946215f6e7f35f42b044d54081bfc7e13679d981a5ea8b6e8357a0cace451b7d8680b1ab
+  checksum: dfc9b2ae493f9cab61998ba90cfb39b04f768d08e997c2cbecf8c017153aedc2b2820bcfb61e9bd2977135cedc206aa1c66cd5e3b42bd2a6a4af76b4cc36ebae
   languageName: node
   linkType: hard
 

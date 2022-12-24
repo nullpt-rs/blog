@@ -19,7 +19,7 @@
 		"cookie": "^0.4.2",
 		"dayjs": "^1.11.0",
 		"envsafe": "^2.0.3",
-		"feed": "/Users/fredi/feed",
+		"feed": "git@github.com:voidstar0/feed.git",
 		"jsonwebtoken": "^8.5.1",
 		"next": "^13.0.2",
 		"react": "^18.2.0",
