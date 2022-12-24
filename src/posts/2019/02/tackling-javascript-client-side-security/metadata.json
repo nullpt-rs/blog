@@ -1,0 +1,13 @@
+{
+    "name": "Tackling JavaScript Client-side Security (Part 1)",
+    "author": "veritas",
+    "slug": "tackling-javascript-client-side-security-pt-1",
+    "date": "2019-02-18T05:00:00.000Z",
+    "hidden": false,
+    "excerpt": "The ultimate goal of a bot is to make it to checkout. Let’s get started on that!",
+    "keywords": [
+        "JScrambler",
+        "Reverse Engineering",
+        "Obfuscation"
+    ]
+}

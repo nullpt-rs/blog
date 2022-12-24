@@ -1,5 +1,13 @@
 import {Feed} from 'feed';
-import {posts} from '../posts';
+
+import metadata1 from '../posts/2018/9/anatomy-of-a-supreme-bot-1/metadata.json'
+import metadata2 from '../posts/2018/9/anatomy-of-a-supreme-bot-2/metadata.json'
+import metadata3 from '../posts/2018/10/anatomy-of-a-supreme-bot-3/metadata.json'
+import metadata4 from '../posts/2019/02/tackling-javascript-client-side-security/metadata.json'
+import metadata5 from '../posts/2022/12/reverse-engineering-tiktok-vm-obfuscation/metadata.json'
+import metadata6 from '../posts/2022/05/new-blog/metadata.json'
+
+const posts = [metadata1, metadata2, metadata3, metadata4, metadata5, metadata6];
 
 export const feed = new Feed({
 	title: 'nullpt.rs • blog',
@@ -23,8 +31,8 @@ posts
 			id: post.slug,
 			link: `${process.env.SITE_URL ?? ''}/${post.slug}`,
 			content: post.excerpt,
-			date: post.date,
-			image: post.image,
+			date: new Date(post.date),
+			// image: post.image,
 			author: [
 				{
 					name: post.author,
