@@ -14,17 +14,17 @@ const config = {
 		return [
       {
         source: '/feed.json',
-        destination: 'https://nullpt.rs/api/feed.json',
+        destination: '/api/feed.json',
         permanent: true,
       },
       {
         source: '/feed.atom',
-        destination: 'https://nullpt.rs/api/feed.atom',
+        destination: '/api/feed.atom',
         permanent: true,
       },
       {
         source: '/feed.rss',
-        destination: 'https://nullpt.rs/api/feed.rss',
+        destination: '/api/feed.rss',
         permanent: true,
       },
       {
