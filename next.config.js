@@ -7,6 +7,9 @@ const config = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
+	env: {
+		SITE_URL: 'https://nullpt.rs',
+	},
 	async redirects() {
 		return [
       {
