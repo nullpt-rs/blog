@@ -9,7 +9,7 @@ export default async function handler(req: NextRequest) {
 	return new Response(feed.rss2(), {
 		status: 200,
 		headers: {
-			'content-type': 'application/json',
+			'content-type': 'text/xml',
 		},
 	});
 }
