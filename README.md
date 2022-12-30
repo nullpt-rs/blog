@@ -1,4 +1,4 @@
-[alistair.blog](https://alistair.blog)
+<!--[alistair.blog](https://alistair.blog)
 
 # alistair.blog
 
@@ -11,3 +11,4 @@ I'm honoured! Feel free to fork the repo and then edit out places that have my n
 #### Creating a new post
 
 Creating a post is fairly simple, you just need to create a new class that extends the abstract class `Post` and implement the members. These are a name, date, a few other properties and cruically, a `render()` method that returns the content of this post.
+-->
