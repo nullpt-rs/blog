@@ -1,0 +1,15 @@
+{
+    "name": "New Beginnings",
+    "author": "parker",
+    "slug": "new-beginnings",
+    "date": "2022-12-29T05:00:00.000Z",
+    "hidden": false,
+    "excerpt": "Aspiring to enter the cybersecurity field, with much thanks to alii, I decided to start a blog to document my journey.",
+    "keywords": [
+        "cybersecurity",
+        "ctf",
+        "hack",
+        "security",
+        "virtual machine"
+    ]
+}
