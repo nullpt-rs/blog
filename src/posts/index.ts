@@ -8,7 +8,7 @@ import {AnatomyOfASupremeBot3} from './2018/10/anatomy-of-a-supreme-bot-3/anatom
 import {TacklingJavaScriptClientSideSecurity} from './2019/02/tackling-javascript-client-side-security/tackling-javascript-client-side-security-1';
 import {ReverseEngineeringTikTok} from './2022/12/reverse-engineering-tiktok-vm-obfuscation/reverse-engineering-tiktok';
 import {TheModernizationOfTheLatrine} from './2021/03/the-modernization-of-the-latrine/the-modernization-of-the-latrine';
-import {DevirtualizingNike} from "./2022/12/devirtualizing-nike.com's-bot-protection/devirtualizing-nike";
+import {DevirtualizingNike} from "./2023/01/devirtualizing-nike-bot-protection/devirtualizing-nike";
 
 const ensurePosts = ensure<readonly Post[] | Post[]>();
 

@@ -1,9 +1,0 @@
-{
-	"name": "Devirtualizing Nike.com's Bot Protection (Part 1)",
-	"author": "umasi",
-	"slug": "devirtualizing-nike-kasada-vm-1",
-	"date": "2023-1-02T05:00:00.000Z",
-	"hidden": false,
-	"excerpt": "In this blog post, we'll examine the virtualization obfuscation used by Nike contractor Kasada to protect Nike’s web assets.",
-	"keywords": ["nike", "kasada", "virtualization", "obfuscation", "virtual machine"]
-}

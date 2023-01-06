@@ -1,20 +1,17 @@
-import {useEffect, useRef, useState} from 'react';
+import React from 'react';
 import {Highlighter} from '../../../../client/components/highlighter';
 import {Post} from '../../../Post';
-import scriptStructure from './img/structure.webp';
 import breakpoint from './img/breakpoint.webp';
-import array from './img/array.webp';
 import met from './img/met.webp';
 
 export class DevirtualizingNike extends Post {
 	public name = "Devirtualizing Nike.com's Bot Protection (Part 1)";
 	public image = undefined;
 	public author = 'umasi';
-	public slug = 'devirtualizing-nike-kasada-vm-1';
+	public slug = 'devirtualizing-nike-vm-1';
 	public date = new Date('06 Jan 2023');
 	public hidden = false;
-	public excerpt =
-		"In this blog post, we'll examine the virtualization obfuscation used by Nike contractor Kasada to protect Nike’s web assets.";
+	public excerpt = "Web-based attacks—such as account brute forcing and botting—pose a significant threat to companies that rely on digital systems to store and process sensitive information.";
 	public keywords = [
 		'nike',
 		'kasada',

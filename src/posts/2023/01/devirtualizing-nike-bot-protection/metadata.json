@@ -1,0 +1,9 @@
+{
+	"name": "Devirtualizing Nike.com's Bot Protection (Part 1)",
+	"author": "umasi",
+	"slug": "devirtualizing-nike-vm-1",
+	"date": "2023-1-06T05:00:00.000Z",
+	"hidden": false,
+	"excerpt": "Web-based attacks—such as account brute forcing and botting—pose a significant threat to companies that rely on digital systems to store and process sensitive information.",
+	"keywords": ["nike", "kasada", "virtualization", "obfuscation", "virtual machine"]
+}
