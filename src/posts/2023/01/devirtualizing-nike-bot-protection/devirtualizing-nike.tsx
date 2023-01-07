@@ -11,7 +11,8 @@ export class DevirtualizingNike extends Post {
 	public slug = 'devirtualizing-nike-vm-1';
 	public date = new Date('06 Jan 2023');
 	public hidden = false;
-	public excerpt = "Web-based attacks—such as account brute forcing and botting—pose a significant threat to companies that rely on digital systems to store and process sensitive information.";
+	public excerpt =
+		'Web-based attacks—such as account brute forcing and botting—pose a significant threat to companies that rely on digital systems to store and process sensitive information.';
 	public keywords = [
 		'nike',
 		'kasada',
@@ -88,19 +89,18 @@ export class DevirtualizingNike extends Post {
 					<a href="https://developer.mozilla.org/en-US/docs/Glossary/IIFE">
 						Immediately Invoked Function Expression
 					</a>{' '}
-					(IIFE), and the only explicit function calls in this scope is to the property{' '}
+					(IIFE), and the only explicit function call in this scope is to the property{' '}
 					<code>eEA</code>.
 				</p>
 				<p>
 					It is unclear what <code>eEA</code> represents, so we direct our attention to its parent.
-					A cursory glance at the code is hardly illuminating.
 				</p>
 				<p>
 					A starting point for analyzing this function is not immediately clear. While we could
 					simply begin at the top of the function and analyze its flow, the nested definition of{' '}
-					<code>eEA</code> presents a more logical starting point. This function is then bound to
-					the input object <code>t</code>, and seems to be accessible from outside of <code>n</code>
-					. This suggests that <code>eEA</code> is the main function and start of execution.
+					<code>eEA</code> presents a more logical start. This function is then bound to the input
+					object <code>t</code>, and seems to be accessible from outside of <code>n</code>. This
+					suggests that <code>eEA</code> is the main function and start of execution.
 				</p>
 				<Highlighter>
 					{`function eEA(t, a, n) {
@@ -198,10 +198,10 @@ function e(n) {
 				</p>
 				<h1>VM Structure</h1>
 				<p>
-					Trying to understand the logic of <code>eEA</code> from a strictly static analysis
-					perspective is no easy task. (If any of you can evaluate bitwise logic and complex loops
-					in your head, please contact me). However, by following our bytecode through the
-					interpreter we can reveal its purpose.
+					Trying to understand the logic of <code>eEA</code> strictly through static analysis is no
+					easy task. (If any of you can evaluate bitwise logic and complex loops in your head,
+					please contact me). However, by following our bytecode through the interpreter we can
+					reveal its purpose.
 				</p>
 				<Highlighter>
 					{`for (var r = "string" == typeof n ? A.default.u(n) : n, i = r.length, v = "", o = {
@@ -279,7 +279,7 @@ t.P = {
 				</p>
 				<p>
 					While our analysis thus far has not been particularly helpful, the final call to{' '}
-					<code>r</code> reveal the true nature of this script.
+					<code>r</code> reveals the true nature of this script.
 				</p>
 				<Highlighter>
 					{`function y(n) {
@@ -337,8 +337,8 @@ g.push(function (n) {
 // ...`}
 				</Highlighter>
 				<p>
-					Examining <code>S(t)</code> &mdash; called on <code>f</code> as previously defined &mdash;
-					we notice some interesting characteristics. <code>S(t)</code> runs a{' '}
+					Examining <code>S(t)</code>—called on <code>f</code> as previously defined—we notice some
+					interesting characteristics. <code>S(t)</code> runs a{' '}
 					<a href="https://developer.mozilla.org/en-US/docs/Glossary/State_machine">
 						state machine
 					</a>
