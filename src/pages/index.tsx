@@ -45,12 +45,23 @@ export default function Home() {
 
 function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
 	return (
-		<li className="flex">
-			<p className="w-24 text-right text-neutral-400">{props.date.toLocaleDateString()}</p>
-			<Link passHref href={props.href} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
-				{props.children}
-			</Link>
-			<p className="pl-2 text-neutral-400">- {props.author}</p>
-		</li>
+		<div>
+			<li className="hidden sm:flex">
+				<p className="w-24 text-right text-neutral-400">{props.date.toLocaleDateString()}</p>
+				<Link passHref href={props.href} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+					{props.children}
+				</Link>
+				<p className="pl-2 text-neutral-400">- {props.author}</p>
+			</li>
+			<div className="flex flex-col sm:hidden">
+				<Link passHref href={props.href} className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+					{props.children}
+				</Link>
+				<div className="flex">
+					<p className="text-neutral-400">{props.date.toLocaleDateString()}</p>
+					<p className="pl-1 text-neutral-400">by {props.author}</p>
+				</div>
+			</div>
+		</div>
 	);
 }
