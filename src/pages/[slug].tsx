@@ -31,9 +31,9 @@ export default function PostPage({slug}: Props) {
 				</Link>
 			</div>
 
-			<p>
-				<time dateTime={post.date.toISOString()}>{post.date.toDateString()}</time>
-			</p>
+			<time style={{
+				display: 'block',
+			}} dateTime={post.date.toISOString()}>{post.date.toDateString()}</time>
 			<small>authored by {post.author}</small>
 			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
 				<h1>{post.name}</h1>
