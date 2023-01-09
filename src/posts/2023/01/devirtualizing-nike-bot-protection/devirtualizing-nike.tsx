@@ -220,7 +220,7 @@ function e(n) {
 					As the definition of <code>A.default.u</code> is not immediately apparent, I used
 					breakpoints to find the function definition, as demonstrated below:
 				</p>
-				<figure className="text-center w-2/4 mx-auto">
+				<figure className="text-center w-full mx-auto">
 					<img src={breakpoint.src} alt="Script breakpoint" width={500} height={500} />
 					<figcaption>
 						Figure 2: The breakpoint I used to find the definition of <code>u(n)</code>.
@@ -604,7 +604,7 @@ console.log(strings)`}
 						me cultivate my love for reverse engineering back in the day.
 					</li>
 				</ul>
-				<figure className="text-center w-2/4 mx-auto">
+				<figure className="text-center w-full mx-auto">
 					<img src={met.src} alt="met" width={300} height={100} />
 					<figcaption>pic related</figcaption>
 				</figure>
