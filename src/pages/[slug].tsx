@@ -26,7 +26,7 @@ export default function PostPage({slug}: Props) {
 			)}
 
 			<div>
-				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600">
+				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono">
 					../
 				</Link>
 			</div>
@@ -35,6 +35,7 @@ export default function PostPage({slug}: Props) {
 				display: 'block',
 			}} dateTime={post.date.toISOString()}>{post.date.toDateString()}</time>
 			<small>authored by {post.author}</small>
+			
 			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
 				<h1>{post.name}</h1>
 				{post.render()}
