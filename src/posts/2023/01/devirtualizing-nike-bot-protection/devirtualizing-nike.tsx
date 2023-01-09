@@ -53,7 +53,7 @@ export class DevirtualizingNike extends Post {
 					engineering protections.
 				</p>
 				<p>
-					If you are curious, a production script can be found here{' '}
+					If you are curious, a production script can be found
 					<a href="https://accounts.nike.com/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/ips.js">
 						here
 					</a>
