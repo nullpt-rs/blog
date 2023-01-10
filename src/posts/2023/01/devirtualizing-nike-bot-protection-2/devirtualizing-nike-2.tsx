@@ -270,9 +270,9 @@ function w(n, t) {
 					has never actually been called! In order to fully understand bytecode function calls, it's
 					important to figure out where/how <code>u()</code> is actually called. However,
 					breakpointing and stepping through every call manually would be a lengthy process,
-					unlikely to impart much useful information. Luckily, experienced debugger and Chrome Dev
-					Tools engineer <a href="https://www.paulirish.com/">Paul Irish</a> got in touch with me.
-					You should check out his blog/Mastodon if you haven't already.
+					unlikely to impart much useful information. Luckily, debugging wizard and Chrome Dev Tools
+					engineer <a href="https://www.paulirish.com/">Paul Irish</a> got in touch with me. You
+					should check out his blog/Mastodon if you haven't already.
 				</p>
 				<p>
 					After Paul gave me some Dev Tools tips, such as the use of <code>debug()</code> and{' '}
@@ -302,7 +302,7 @@ r.unshift(void 0),
 					at the prototype and constructor properties of <code>t</code> reveals some strange
 					behavior. Namely, in both cases the constructor of <code>t</code> has been overwritten to
 					call <code>u()</code>, and is sometimes nested within an entirely different prototype.
-					Once again, thanks to Paul Irish for helping me isolate and analyze this behavior!
+					Once again, thanks to Paul Irish for helping me isolate and analyze this behavior.
 				</p>
 				<figure className="text-center w-full mx-auto">
 					<img src={prototype.src} alt="prototype" width={300} height={100} />
@@ -345,9 +345,9 @@ r.unshift(void 0),
 					<a href="https://www.ibm.com/support/pages/what-does-it-mean-inline-function-and-how-does-it-affect-program">
 						here
 					</a>
-					. Much credit in solving this problem is also due to my friend Nic Perez, whose knowledge
-					of computer architecture and conventional compilers was invaluable in solving this
-					problem.
+					. Thanks to Musicbot for pointing this out for me. Much credit in solving this problem is
+					also due to my friend Nic Perez, whose knowledge of computer architecture and conventional
+					compilers was invaluable in understanding it in the first place.
 				</p>
 				<h1>Recursive Traversal</h1>
 				<p>
@@ -373,7 +373,7 @@ r.unshift(void 0),
 					created in the disassembly, I began to encounter the issue of exceeding the Node.JS max
 					callstack. Replacing recursion with loops solved this issue, but made it rather difficult
 					to recover that aspect of control flow. This will be discussed in the next post, along
-					with other aspects of interpreting the disassembly.
+					with other aspects of cleaning the disassembly.
 				</p>
 				<Highlighter>{`0x27: {
     // M(n) ? M(n) : n.g[0] = M(n)
@@ -410,7 +410,7 @@ r.unshift(void 0),
 					been discovered in branches, and vice versa.
 				</p>
 				<h1>The Part Where I Actually Write Some Code</h1>
-				<p>I implemented my disassembler class as shown below.</p>
+				<p>Putting it all together, I implemented my disassembler class as shown below.</p>
 				<Highlighter>{`module.exports = class Disassembler {
     constructor(bytecodeArr, decodedString) {...
     }
@@ -532,8 +532,7 @@ scanPointers() {
 					This class, combined with our implementations of each opcode and our work in the last
 					post, allow us to perform both a linear sweep and a recursive traversal of the bytecode
 					array. To run my disassembler yourself, and to see the rest of the code, check my{' '}
-					<a href="https://github.com/umasii">GitHub</a>. To put it all together, my main file looks
-					like
+					<a href="https://github.com/umasii">GitHub</a>. Finally, my main file looks like
 				</p>
 				<Highlighter>{`const fs = require("fs");
 const decoder = require('./bytecode.js');
@@ -585,8 +584,117 @@ for (let i = 1; i < decodedBytecode.length; i++) {
 let intervals = findIntervals(unscanned);
 fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));
 `}</Highlighter>
+				<h1>Interpreting Disassembly</h1>
+				<p>
+					Running our disassembler gives us outputs of the following form, where the first number is
+					the instruction pointer, followed by my representation of the opcode:
+				</p>
+				<Highlighter>{`"5980 EMPTY OBJECT      -> reg4",
+"5982 GET WINDOW PROP     KPSDK -> reg5",
+"5987 GET        reg5[start] -> reg6",
+"5993 PUT        reg4[jln] = reg6",
+"5999 GET WINDOW PROP     KPSDK -> reg5",
+"6004 GET        reg5[scriptStart] -> reg6",
+"6010 PUT        reg4[uwx] = reg6",
+"6016 GET WINDOW PROP     KPSDK -> reg6",
+"6021 GET        reg6[now] -> reg7",
+"6027 EMPTY ARRAY       -> reg8",
+"6029 CALL FUNCTION      OBJ: reg6 FUNC: reg7 ARGS: reg8",
+"6033 SET        reg2 -> reg5",
+"6036 PUT        reg4[rbp] = reg5",
+"6042 SET MEMORY ELEMENT IF INIT        274 = reg4",
+"6045 SET MEMORY ELEMENT IF INIT        275 = false",
+"6048 SET MEMORY ELEMENT IF INIT        276 = ",
+"6053 GET WINDOW PROP     window -> reg4",
+"6058 SET MEMORY ELEMENT IF INIT        277 = reg4",
+"6061 GET WINDOW PROP     window -> reg4",
+"6066 GET        reg4[document] -> reg5",
+"6072 GET        reg5[documentMode] -> reg4",
+"6078 NOT        reg4 -> reg5",
+"6081 NOT        reg5 -> reg4",
+"6084 SET MEMORY ELEMENT IF INIT        278 = reg4",
+"6087 PUSH MEMORY ELEMENT IF INIT      278 -> reg4",
+"6090 NOT        reg4 -> reg5",`}</Highlighter>
+				<p>
+					This is much easier to read and understand than simply stepping through the VM
+					dynamically. It also makes it possible for us to evaluate conditional jumps, such as
+					below.
+				</p>
+				<Highlighter>{`"5927 STRICT EQUAL       t === t -> reg4",
+"5935 SET MEMORY ELEMENT IF INIT        272 = reg4",
+"5938 STRICT EQUAL       t === t -> reg4",
+"5946 SET MEMORY ELEMENT IF INIT        273 = reg4",
+"5949 EMPTY OBJECT      -> reg4",
+"5951 SET MEMORY ELEMENT IF INIT        274 = reg4",
+"5954 PUSH MEMORY ELEMENT IF INIT      272 -> reg4",
+"5957 JUMP IF FALSE      reg4 TO: 5977 | 5960"`}</Highlighter>
+				<p>
+					It's easy to see that the value in register 4 is true, and hence a jump does not occur and
+					we should continue from the branch at instruction pointer value 5960. While this isn't how
+					conventional two to three operand architecture is implemented, I formatted it like this
+					for readability. In the future, when parsing the disassembler's output it may be helpful
+					to standardize the format.
+				</p>
+				<p>A few last notes on interpreting our disassembly, for those interested.</p>
+				<p>
+					There are a few loop structures that are immediately apparent. Look for branches that
+					conditionally jump back to the beginning of the branch. See what other kinds of syntax
+					patterns you notice, and what they might look like pre-compiler.
+				</p>
+				<p>
+					When reading through the disassembler's output, and especially when attempting to
+					reconstruct control flow, it is important to keep edge cases in mind, such as those
+					discussed above. For example, both opcodes 10 and 24 are capable of calling subroutines,
+					which might not be immediately obvious from the disassembled bytecode. Additionally, there
+					are a few other opcodes that are capable of performing dynamic jumps that the static
+					disassembler cannot follow. For opcodes such as these, like opcode 48, or 47, it is
+					important to read the surrounding calls to understand their effect.
+				</p>
+				<p>
+					Lastly, it's important to keep the concept of scope in mind. For instance, when
+					interpreting a function's bytecode, or reading through a branch, it's important to
+					remember which registers or memory values are accessible from within that scope.
+					Otherwise, you may become confused with all of the reading and writing that occurs.
+				</p>
 				<h1>Future Work</h1>
+				<p>
+					Although we have completed an early version of our disassembler, much work remains to be
+					done. Control flow issues still remain. As branches are separated from where they were
+					created, the disassembly can be difficult to interpret as is. Instead of simply
+					reformatting the JSON files, it may be useful to implement an IDA graph view inspired
+					frontend to the disassembler. I may push this in the next week or so, but anyone who is so
+					inclined is free to make a pull request.
+				</p>
+				<p>
+					Additionally, now that the VM can be analyzed statically, it would be useful to make
+					dynamic analysis more practical. While the JavaScript itself is easy to debug, actually
+					debugging the bytecode is very difficult. To this end, it would be cool to implement a GDB
+					style debugger, capable of stepping through the bytecode in disassembled format and
+					inspecting registers and memory. This would be a rather simple undertaking, but would be a
+					great way to learn more about the VM.
+				</p>
+				<p>
+					Lastly, there remains the problem of decompilation. A cursory decompilation would not be
+					difficult to produce. However, decompiling our output into JavaScript that resembles
+					human-written code is a difficult task, and requires a lot of pattern recognition and
+					compiler theory. Namely, we will have to analyze recurring syntax patterns in the
+					disassembly, and think deeply about how variable definitions, function calls, and loops
+					are implemented both pre and post compilation. But this is a problem for another day, and
+					may be examined in a future post.
+				</p>
+				<p>
+					Finally, if you think I got something wrong, please feel free to reach out to me. Much of
+					this work was done in the last week, so it is more than likely I made an error or too. I'm
+					always happy to hear from other reverse engineers/those interested in my work, even if I
+					don't get back to you immediately.
+				</p>
+				<p>
+					I may not post about this topic again, depending on how long it continues to hold my
+					interest. Either way, I will be posting about other topics in the future, so stay tuned!
+					If you would like to connect, my socials are linked below.
+				</p>
 				<h1>Special Thanks</h1>
+				<p>Once again, a few thanks are in order.</p>
 				<ul>
 					<li>
 						Paul Irish: It's not every day that I get to work with a Google engineer, much less
