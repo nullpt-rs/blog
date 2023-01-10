@@ -30,7 +30,7 @@ export class DevirtualizingNike2 extends Post {
 					<em>
 						This is a continuation of a series. If you haven't read the previous post, click{' '}
 						<a href="./devirtualizing-nike-vm-1">here</a> to be taken up to speed. I'll assume
-						you've read the previous post going forward.
+						you've read it going forward.
 					</em>
 				</p>
 				<p>
@@ -75,7 +75,7 @@ export class DevirtualizingNike2 extends Post {
 					manner. This means that we will not be actually executing the bytecode, storing any
 					values, or evaling the outcome of any operations. My reasoning for this is two-fold.
 				</p>
-				<p>
+				<ul>
 					<li>
 						If operations are evaled, or written into registers, what is the difference between our
 						disassembly and simply inserting some log statements? Once that line is crossed,
@@ -84,21 +84,20 @@ export class DevirtualizingNike2 extends Post {
 					<li>
 						Dumping every operation's internal calculations, as well as where and how certain things
 						are being stored offers a level of transparency that can be easily missed otherwise.
-						This is the different between logging
+						This is the different between the following two logs.
 						<Highlighter>{`INIT MEMORY 55\nADD 3 + 2 -> reg2\nSET MEMORY reg2 -> 55\n`}</Highlighter>
-						and
 						<Highlighter>{`INIT MEMORY 55\nADD 3 + 2 -> reg2\nSET MEMORY 5 -> 55\n`}</Highlighter>
 						As you can see, it's extremely useful for us to know <em>exactly</em> where a value is
 						coming from, often moreso than the value itself. While the latter does make certain
 						calculations/conditionals easier for us to evaluate, and we can store the value without
 						logging it/simply log both, circle back to the previous point.
 					</li>
-				</p>
+				</ul>
 				<p>
 					That's great and all, but don't we need an initial value to begin interpreting from?
 					Indeed we do. Luckily, we can tell from reading the script that the VM execution starts
-					from the "first" (read: second) value in the bytecode array. This is apparent from the
-					value of the instruction pointer in a newly initialized state.
+					from the first index's (read: second) value in the bytecode array. This is apparent from
+					the value of the instruction pointer in a newly initialized state.
 				</p>
 				<Highlighter>
 					{`var n = [1, {
@@ -291,18 +290,18 @@ locs.set(calleeloc, ++sum);`}</Highlighter>
 					makes immediate sense, the <code>else if</code> case in the call opcode, the other two are
 					more confusing and give rise to some of the stranger aspects of this script.
 				</p>
-				<p>The first case is in, opcode 24.</p>
+				<p>The first case is opcode 24.</p>
 				<Highlighter>{`var t = M(n)
     , r = M(n).slice();
 r.unshift(void 0),
     m(n, new (Function.bind.apply(t, r)))`}</Highlighter>
 				<p>
-					Debugging this opcode, we find something strange. <code>u()</code> is ran here both when{' '}
-					<code> t == u()</code>, but how could <code>new</code> possibly be executing it? Looking
-					at the prototype and constructor properties of <code>t</code> reveals some strange
-					behavior. Namely, in both cases the constructor of <code>t</code> has been overwritten to
-					call <code>u()</code>, and is sometimes nested within an entirely different prototype.
-					Once again, thanks to Paul Irish for helping me isolate and analyze this behavior.
+					Debugging this opcode, we find something strange. <code>u()</code> is ran here as the
+					value <code>t</code>, but how could <code>new</code> possibly be executing it? Looking at
+					the prototype and constructor properties of <code>t</code> reveals some strange behavior.
+					Namely, in both cases the constructor of <code>t</code> has been overwritten to call{' '}
+					<code>u()</code>, and is sometimes nested within an entirely different prototype. Once
+					again, thanks to Paul Irish for helping me isolate and analyze this behavior.
 				</p>
 				<figure className="text-center w-full mx-auto">
 					<img src={prototype.src} alt="prototype" width={300} height={100} />
@@ -345,9 +344,9 @@ r.unshift(void 0),
 					<a href="https://www.ibm.com/support/pages/what-does-it-mean-inline-function-and-how-does-it-affect-program">
 						here
 					</a>
-					. Thanks to Musicbot for pointing this out for me. Much credit in solving this problem is
-					also due to my friend Nic Perez, whose knowledge of computer architecture and conventional
-					compilers was invaluable in understanding it in the first place.
+					. Thanks to Musicbot for telling me this obscure compiler fact. Much credit in solving
+					this problem is also due to my friend Nic Perez, whose knowledge of computer architecture
+					and conventional compilers was invaluable in understanding it in the first place.
 				</p>
 				<h1>Recursive Traversal</h1>
 				<p>
@@ -372,8 +371,8 @@ r.unshift(void 0),
 					implemented this recursively, allowing me to place branches directly where they were
 					created in the disassembly, I began to encounter the issue of exceeding the Node.JS max
 					callstack. Replacing recursion with loops solved this issue, but made it rather difficult
-					to recover that aspect of control flow. This will be discussed in the next post, along
-					with other aspects of cleaning the disassembly.
+					to recover that aspect of control flow. This will be discussed later on, along with other
+					aspects of cleaning the disassembly.
 				</p>
 				<Highlighter>{`0x27: {
     // M(n) ? M(n) : n.g[0] = M(n)
@@ -660,10 +659,11 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));
 				<p>
 					Although we have completed an early version of our disassembler, much work remains to be
 					done. Control flow issues still remain. As branches are separated from where they were
-					created, the disassembly can be difficult to interpret as is. Instead of simply
-					reformatting the JSON files, it may be useful to implement an IDA graph view inspired
-					frontend to the disassembler. I may push this in the next week or so, but anyone who is so
-					inclined is free to make a pull request.
+					created, the disassembly can be difficult to understand from a higher level. Instead of
+					simply reformatting the JSON files, it may be useful to implement an IDA graph view
+					inspired frontend to the disassembler. I may push this in the next week or so, but anyone
+					who is so inclined is free to make a pull request. Either way, I do not feel that this
+					affects the readability of specific blocks/functions very much.
 				</p>
 				<p>
 					Additionally, now that the VM can be analyzed statically, it would be useful to make
@@ -671,7 +671,8 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));
 					debugging the bytecode is very difficult. To this end, it would be cool to implement a GDB
 					style debugger, capable of stepping through the bytecode in disassembled format and
 					inspecting registers and memory. This would be a rather simple undertaking, but would be a
-					great way to learn more about the VM.
+					great way to learn more about the VM. If you plan on working on this, feel free to reach
+					out. I would recommend the webdriver <a href="https://playwright.dev/">Playwright</a>.
 				</p>
 				<p>
 					Lastly, there remains the problem of decompilation. A cursory decompilation would not be
@@ -690,8 +691,8 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));
 				</p>
 				<p>
 					I may not post about this topic again, depending on how long it continues to hold my
-					interest. Either way, I will be posting about other topics in the future, so stay tuned!
-					If you would like to connect, my socials are linked below.
+					interest and how hard my classes get. Either way, I will be posting about other topics in
+					the future, so stay tuned! If you would like to connect, my socials are linked below.
 				</p>
 				<h1>Special Thanks</h1>
 				<p>Once again, a few thanks are in order.</p>
@@ -709,7 +710,8 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));
 						a central tenant of my reversing process has been finding conventional computer
 						architecture analogues to the more confusing opcodes, and testing to see if they worked
 						as expected. His knowledge in both theoretical and practical computer science proved to
-						be invaluable. You can find his stuff here.
+						be invaluable. You can find his stuff{' '}
+						<a href="https://www.linkedin.com/in/nic-perez-4a9217227/">here</a>.
 					</li>
 					<li>
 						Once again, both Veritas and Musicbot. I wouldn't have stuck through any of this without
