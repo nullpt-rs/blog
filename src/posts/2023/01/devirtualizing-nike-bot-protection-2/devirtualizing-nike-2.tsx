@@ -74,17 +74,23 @@ export class DevirtualizingNike2 extends Post {
 				</p>
 				<p>
 					In the interest of staying true to what a disassembler <em>should be</em>, and making
-					things a little bit more fun, we will perform our transformations in an entirely static
-					manner. This means that we will not be actually executing the bytecode, storing any
-					values, or evaluating the outcome of any operations. My reasoning for this is two-fold.
+					things a little bit more fun, we will perform our transformations without actually running
+					the VM. Why attack this problem statically? Well, for fun of course. But more importantly,
+					analyzing the script in our browser's debugger only lets us see the code ran in our
+					specific browser. Certain cases could trigger differently in a different environment.
+					Either way, my goal is full source code retrieval. This requires solving the system in the
+					most complete manner possible. Further, we will not be storing any values, or evaluating
+					the outcome of any operations. Any functionality that resembles "running" the bytecode
+					will not be allowed. My reasoning for this is two-fold.
 				</p>
 				<ul>
 					<li>
 						If operations are evaluated, or written into registers, what is the difference between
 						our disassembly and simply inserting some log statements? Once that line is crossed,
-						anything we are doing can be performed more efficiently and easily dynamically.
-						Additionally, even though calculating and storing values can help evaluate conditionals,
-						as we seek to retrieve all source code, we should branch regardless.
+						anything we are doing can be performed more efficiently and easily in a fully dynamic
+						manner. In fact, attempting to evaluate operations will necessitate a browser or
+						webdriver due to the high frequency of browser property calls. As mentioned previously,
+						this would only allow us to analyze the code triggered in that environment.
 					</li>
 					<li>
 						Dumping every operation's internal calculations, as well as where and how certain things
@@ -95,8 +101,8 @@ export class DevirtualizingNike2 extends Post {
 						<Highlighter>{`INIT MEMORY 55\nADD 3 + 2 -> reg2\nSET MEMORY 5 -> 55\n`}</Highlighter>
 						As you can see, it's extremely useful for us to know <em>exactly</em> where a value is
 						coming from, often moreso than the value itself. While we could simply log both the
-						initial values and ensuing result, it adds very little to our analysis. This is
-						especially true in cases where operations can not be evaluated without a browser.
+						initial values and ensuing result, it adds very little to our analysis and webdrivers
+						require costly overhead.
 					</li>
 				</ul>
 				<p>
@@ -131,7 +137,7 @@ export class DevirtualizingNike2 extends Post {
 				</p>
 				<Highlighter>{`m(n, M(n) + M(n))`}</Highlighter>
 				<p>
-					Other can be much more complex. For the purpose of this article, I will only go over some
+					Others can be much more complex. For the purpose of this article, I will only go over some
 					of the more complicated opcodes. For a full list of opcodes, see my{' '}
 					<a href="https://github.com/umasii">GitHub</a>.
 				</p>
@@ -352,8 +358,8 @@ r.unshift(void 0),
 					However, if you're anything like me you might be wondering: "Why even have two ways to
 					call functions?" The answer to this question comes from conventional compilers, and lies
 					in the difference between inlining a function and calling it normally. In this case, a
-					call to <code>u()</code> represents an inline call, whereas the first kind of function
-					call we covered is a normal call. More on the difference{' '}
+					call to <code>u()</code> represents a regular function call, whereas the first kind of
+					function call we covered is an inline call. More on the difference{' '}
 					<a href="https://www.ibm.com/support/pages/what-does-it-mean-inline-function-and-how-does-it-affect-program">
 						here
 					</a>
@@ -433,7 +439,18 @@ r.unshift(void 0),
 
     // creates a conditional branch given instruction pointer value to jump to, and adds it to the branches array for later disassembly.
     branch(ptr) {
+        if (this.scannedBranches.has(ptr)) {
+            return;
+        }
         this.branches.add(ptr);
+    }
+
+	// creates a function given instruction pointer value to jump to, and adds it to the functionPointers array for later disassembly.
+    function(ptr) {
+        if (this.scannedFunctions.has(ptr)) {
+            return;
+        }
+        this.functionPointers.add(ptr);
     }
 
     // Traverses the bytecode by following the instruction pointer, either linearly or recursively depending on this.mode
@@ -491,18 +508,13 @@ r.unshift(void 0),
 // Originally wrote this recursively, but it exceeded the maximum call stack size
 // May make improvements to the branching logic later to reduce repeated non starting pointer instructions in branch traces
 scanPointers() {
-	this.scannedBranches = []
-	this.scannedFunctions = []
+
 	while (this.functionPointers.size > 0 || this.branches.size > 0) {
 		while (this.functionPointers.size > 0) {
 
 			let ptr = this.functionPointers.values().next().value;
 			this.functionPointers.delete(ptr);
-			if (this.scannedFunctions.includes(ptr)) {
-				continue;
-			}
-
-			this.scannedFunctions.push(ptr);
+			this.scannedFunctions.add(ptr);
 
 			let trace = this.step("step", ptr);
 			trace.Name = String(ptr);
@@ -513,11 +525,7 @@ scanPointers() {
 
 			let ptr = this.branches.values().next().value;
 			this.branches.delete(ptr);
-			if (this.scannedBranches.includes(ptr)) {
-				continue;
-			}
-
-			this.scannedBranches.push(ptr);
+			this.scannedBranches.add(ptr);
 
 			let trace = this.step("step", ptr);
 			trace.Name = String(ptr);
