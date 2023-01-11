@@ -83,8 +83,8 @@ export class DevirtualizingNike2 extends Post {
 						If operations are evaluated, or written into registers, what is the difference between
 						our disassembly and simply inserting some log statements? Once that line is crossed,
 						anything we are doing can be performed more efficiently and easily dynamically.
-						Additionally, even though calculating and storing values can help as evaluate
-						conditionals, as we seek to retrieve all source code, we should branch regardless.
+						Additionally, even though calculating and storing values can help evaluate conditionals,
+						as we seek to retrieve all source code, we should branch regardless.
 					</li>
 					<li>
 						Dumping every operation's internal calculations, as well as where and how certain things
