@@ -125,7 +125,7 @@ export class DevirtualizingNike2 extends Post {
     O: function () { }
 }, void 0];`}
 				</Highlighter>
-				<h1>Opcodes Identification</h1>
+				<h1>Opcode Identification</h1>
 				<p>
 					Now that we know that the byte at <code>[1]</code> is definitely an opcode, we can begin
 					reading from there. However, we still need to know what the opcode means to figure out
