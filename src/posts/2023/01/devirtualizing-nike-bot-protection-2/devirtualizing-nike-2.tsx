@@ -4,6 +4,7 @@ import {Post} from '../../../Post';
 import prototype from './img/prototype.webp';
 import getter from './img/getter.webp';
 import run from './img/run.webp';
+import graph from './img/graph.webp';
 
 export class DevirtualizingNike2 extends Post {
 	public name = "Devirtualizing Nike.com's Bot Protection (Part 2)";
@@ -143,8 +144,8 @@ export class DevirtualizingNike2 extends Post {
 				<Highlighter>{`m(n, M(n) + M(n))`}</Highlighter>
 				<p>
 					Others can be much more complex. For the purpose of this article, I will only go over some
-					of the more complicated opcodes. For a full list of opcodes, see my{' '}
-					<a href="https://github.com/umasii">GitHub</a>.
+					of the more complicated opcodes. For a full list of opcodes, see my repository{' '}
+					<a href="https://github.com/umasii/ips-disassembler/blob/main/src/opcodes.js">here</a>.
 				</p>
 				<p>
 					However, we only need part of the information from each opcode. If we aren't evaluating
@@ -389,12 +390,10 @@ r.unshift(void 0),
 }`}</Highlighter>
 				<p>
 					But how can we handle conditional jumps without knowing which case is true? As discussed
-					before, we must follow both branches. This will produce two "branches" at each jump.
-					Although I initially implemented this recursively, allowing me to place branches directly
-					where they were created in the disassembly, I began to encounter the issue of exceeding
-					the Node.JS max callstack. Replacing recursion with loops solved this issue, but made it
-					rather difficult to recover that aspect of control flow. This will be discussed later on,
-					along with other aspects of cleaning the disassembly.
+					before, we must follow both branches. This will produce two "branches" at each jump. Then
+					after the main disassembly has finished, we can begin to recursively disassemble the next
+					branch in the queue. Restoring these branches to where they are spawned will be discussed
+					later on, along with other aspects of cleaning the disassembly.
 				</p>
 				<Highlighter>{`0x27: {
     // M(n) ? M(n) : n.g[0] = M(n)
@@ -448,7 +447,7 @@ r.unshift(void 0),
         this.branches.add(ptr);
     }
 
-	// creates a function given instruction pointer value to jump to, and adds it to the functionPointers array for later disassembly.
+    // creates a function given instruction pointer value to jump to, and adds it to the functionPointers array for later disassembly.
     function(ptr) {
         if (this.scannedFunctions.has(ptr)) {
             return;
@@ -486,11 +485,7 @@ r.unshift(void 0),
             this.state.trace[this.state.trace.length - 1] = newOp;
         }
 
-        let trace = {
-            main: this.state.trace,
-        }
-
-        return trace
+        return this.state.trace
     }
 }`}</Highlighter>
 				<p>
@@ -508,41 +503,38 @@ r.unshift(void 0),
 					<code>scanPointers()</code> method.
 				</p>
 				<Highlighter>{`// Calls step() on all functions and branches defined in the main trace, until no new functions or branches have been discovered
-// Originally wrote this recursively, but it exceeded the maximum call stack size
 // May make improvements to the branching logic later to reduce repeated non starting pointer instructions in branch traces
 scanPointers() {
+	if (this.functionPointers.size > 0) {
+		let fptr = this.functionPointers.values().next().value;
+		this.functionPointers.delete(fptr);
+		this.scannedFunctions.add(fptr);
 
-	while (this.functionPointers.size > 0 || this.branches.size > 0) {
-		while (this.functionPointers.size > 0) {
+		let ftrace = this.step("step", fptr);
 
-			let ptr = this.functionPointers.values().next().value;
-			this.functionPointers.delete(ptr);
-			this.scannedFunctions.add(ptr);
+		this.functionTraces[fptr] = ftrace;
+		this.scanPointers();
+	} else if (this.branches.size > 0) {
 
-			let trace = this.step("step", ptr);
-			trace.Name = String(ptr);
+		let bptr = this.branches.values().next().value;
+		this.branches.delete(bptr);
+		this.scannedBranches.add(bptr);
 
-			this.functionTraces.push(trace);
-		}
-		while (this.branches.size > 0) {
+		let btrace = this.step("step", bptr);
 
-			let ptr = this.branches.values().next().value;
-			this.branches.delete(ptr);
-			this.scannedBranches.add(ptr);
+		this.branchTraces[bptr] = btrace;
 
-			let trace = this.step("step", ptr);
-			trace.Name = String(ptr);
-
-			this.branchTraces.push(trace);
-		}
+		this.scanPointers();
 	}
-	return { funcTraces: this.functionTraces, branchTraces: this.branchTraces }
+	if (this.functionPointers.size === 0 && this.branches.size === 0) {
+		return { funcTraces: this.functionTraces, branchTraces: this.branchTraces }
+	}
 }`}</Highlighter>
 				<p>
 					This class, combined with our implementations of each opcode and our research in the last
 					post, complete our disassembler. To run my disassembler yourself, and to see the rest of
-					the code, check my <a href="https://github.com/umasii">GitHub</a>. Finally, my main file
-					looks like
+					the code, click <a href="https://github.com/umasii/ips-disassembler">here</a>. Finally, my
+					main file looks like
 				</p>
 				<Highlighter>{`const fs = require("fs");
 const decoder = require('./bytecode.js');
@@ -595,23 +587,23 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));`}</
 					Running our disassembler gives us outputs of the following form, where the first number is
 					the instruction pointer, followed by my representation of the opcode:
 				</p>
-				<Highlighter>{`"5980 EMPTY OBJECT      -> reg4",
-"5982 GET WINDOW PROP     KPSDK -> reg5",
+				<Highlighter>{`"5980 EMPTY OBJECT        -> reg4",
+"5982 GET WINDOW PROP        KPSDK -> reg5",
 "5987 GET        reg5[start] -> reg6",
 "5993 PUT        reg4[jln] = reg6",
-"5999 GET WINDOW PROP     KPSDK -> reg5",
+"5999 GET WINDOW PROP        KPSDK -> reg5",
 "6004 GET        reg5[scriptStart] -> reg6",
 "6010 PUT        reg4[uwx] = reg6",
-"6016 GET WINDOW PROP     KPSDK -> reg6",
+"6016 GET WINDOW PROP        KPSDK -> reg6",
 "6021 GET        reg6[now] -> reg7",
-"6027 EMPTY ARRAY       -> reg8",
-"6029 CALL FUNCTION      OBJ: reg6 FUNC: reg7 ARGS: reg8",
+"6027 EMPTY ARRAY        -> reg8",
+"6029 CALL FUNCTION        OBJ: reg6 FUNC: reg7 ARGS: reg8",
 "6033 SET        reg2 -> reg5",
 "6036 PUT        reg4[rbp] = reg5",
 "6042 SET MEMORY ELEMENT IF INIT        274 = reg4",
 "6045 SET MEMORY ELEMENT IF INIT        275 = false",
 "6048 SET MEMORY ELEMENT IF INIT        276 = ",
-"6053 GET WINDOW PROP     window -> reg4",
+"6053 GET WINDOW PROP        window -> reg4",
 "6058 SET MEMORY ELEMENT IF INIT        277 = reg4",
 "6061 GET WINDOW PROP     window -> reg4",
 "6066 GET        reg4[document] -> reg5",
@@ -619,21 +611,21 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));`}</
 "6078 NOT        reg4 -> reg5",
 "6081 NOT        reg5 -> reg4",
 "6084 SET MEMORY ELEMENT IF INIT        278 = reg4",
-"6087 PUSH MEMORY ELEMENT IF INIT      278 -> reg4",
+"6087 PUSH MEMORY ELEMENT IF INIT        278 -> reg4",
 "6090 NOT        reg4 -> reg5",`}</Highlighter>
 				<p>
 					This is much easier to read and understand than simply stepping through the VM
 					dynamically. It also makes it possible for us to evaluate conditional jumps, such as in
 					the example below.
 				</p>
-				<Highlighter>{`"5927 STRICT EQUAL       t === t -> reg4",
+				<Highlighter>{`"5927 STRICT EQUAL        t === t -> reg4",
 "5935 SET MEMORY ELEMENT IF INIT        272 = reg4",
-"5938 STRICT EQUAL       t === t -> reg4",
+"5938 STRICT EQUAL        t === t -> reg4",
 "5946 SET MEMORY ELEMENT IF INIT        273 = reg4",
-"5949 EMPTY OBJECT      -> reg4",
+"5949 EMPTY OBJECT        -> reg4",
 "5951 SET MEMORY ELEMENT IF INIT        274 = reg4",
-"5954 PUSH MEMORY ELEMENT IF INIT      272 -> reg4",
-"5957 JUMP IF FALSE      reg4 TO: 5977 | 5960"`}</Highlighter>
+"5954 PUSH MEMORY ELEMENT IF INIT        272 -> reg4",
+"5957 JUMP IF FALSE        reg4 TO: 5977 | 5960"`}</Highlighter>
 				<p>
 					It's easy to see that the value in register 4 is true, and hence a jump does not occur and
 					we should continue from the branch at instruction pointer value 5960. While this isn't how
@@ -664,42 +656,48 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));`}</
 					become confused with all of the reading and writing that occurs.
 				</p>
 				<p>
-					As a last note, you may have noticed that the disassembler does not read all the
-					instructions in either scan. In a linear sweep, this is due to the execution beginning at
-					the second element of the bytecode array, and the program terminating before the final
-					value of the instruction pointer. In the case of recursive traversal, this is due to a
-					certain amount of the bytecode being unreachable bloat. It's easy to verify that none of
-					the values not covered by recursive traversal are ever actually reached in browser.
+					You may have noticed that the disassembler does not read all the instructions in either
+					scan. In a linear sweep, this is due to the execution beginning at the second element of
+					the bytecode array, and the program terminating before the final value of the instruction
+					pointer. In the case of recursive traversal, this is due to a certain amount of the
+					bytecode being unreachable bloat. It's easy to verify that none of the values not covered
+					by recursive traversal are ever actually reached in browser.
 				</p>
+				<p>
+					As a last note, you might find the branch output of the disassembler difficult to
+					understand, as branches are not disassembled where they are created but instead
+					disassembled in a recursive descent algorithm. To solve this problem, I have included a
+					graph view repository, which although quite messy works to reconstruct control flow quite
+					well. You can find that{' '}
+					<a href="https://github.com/umasii/disassembler-graph-view">here</a>. Either way, I do not
+					feel that this affects the readability of specific blocks/functions very much, as our
+					recursive traversal still produces the basic building blocks of the VMs control flow. We
+					need only to read them in the right order.
+				</p>
+				<figure className="text-center w-full mx-auto">
+					<img src={graph.src} alt="graph" width={300} height={100} />
+					<figcaption>
+						Graph view of the function given at pointer <code>5901</code> in my testing bytecode.
+					</figcaption>
+				</figure>
 				<h1>Future Work</h1>
 				<p>
-					Although we have completed an early version of our disassembler, much work remains to be
-					done. Control flow issues still remain. As branches are separated from where they were
-					created, the disassembly can be difficult to understand from a higher level. Instead of
-					simply reformatting the JSON files, it may be useful to implement an IDA graph view
-					inspired frontend to the disassembler. I may push this in the next week or so, but anyone
-					who is so inclined is free to make a pull request. Either way, I do not feel that this
-					affects the readability of specific blocks/functions very much, as our recursive traversal
-					still produces the basic building blocks of the VMs control flow. We need only to read
-					them in the right order.
-				</p>
-				<p>
-					Additionally, now that the VM can be analyzed statically, it would be useful to make
-					dynamic analysis more practical. While the JavaScript itself is easy to debug, actually
-					debugging the bytecode is very difficult. To this end, it would be cool to implement a GDB
-					style debugger, capable of stepping through the bytecode in disassembled format and
-					inspecting registers and memory. This would be a rather simple undertaking, but would be a
-					great way to learn more about the VM. If you plan on working on this, feel free to reach
-					out. I would recommend the webdriver <a href="https://playwright.dev/">Playwright</a>.
-				</p>
-				<p>
-					There also remains the problem of decompilation. A cursory decompilation would not be too
+					There still remains the problem of decompilation. A cursory decompilation would not be too
 					difficult to produce. However, decompiling our output into JavaScript that resembles
 					human-written code is a difficult task, and requires a lot of pattern recognition and
 					compiler theory. Namely, we will have to analyze recurring syntax patterns in the
 					disassembly, and think deeply about how variable definitions, function calls, and loops
 					are implemented both pre and post compilation. But this is a problem for another day, and
 					may be covered in a future post.
+				</p>
+				<p>
+					Now that the VM can be analyzed statically, it would be useful to make dynamic analysis
+					more practical. While the JavaScript itself is easy to debug, actually debugging the
+					bytecode is very difficult. To this end, it would be cool to implement a GDB style
+					debugger, capable of stepping through the bytecode in disassembled format and inspecting
+					registers and memory. This would be a rather simple undertaking, but would be a great way
+					to learn more about the VM. If you plan on working on this, feel free to reach out. I
+					would recommend the webdriver <a href="https://playwright.dev/">Playwright</a>.
 				</p>
 				<p>
 					If you think I got something wrong, please feel free to reach out to me. Much of this work
