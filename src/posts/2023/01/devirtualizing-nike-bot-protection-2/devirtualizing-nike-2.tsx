@@ -36,41 +36,46 @@ export class DevirtualizingNike2 extends Post {
 				</p>
 				<p>
 					Last time, we went over performing string extraction on the VM, and scratched the surface
-					of analyzing the execution itself. Obviously, this the significant problem of actually
-					attempting to devirtualize the bytecode. For instance, we mentioned that individual
-					strings are difficult to extract in a static manner—as specific values of the instruction
-					pointer are required—but this difficulty also applies to opcodes and registers. As the
-					bytecode is a stream of numbers, it's impossible to determine whether a number indicates a
-					register, opcode, or constant without knowing what came before it.
+					of analyzing the execution itself. Obviously, this leaves the significant problem of
+					actually attempting to devirtualize the bytecode. For instance, we mentioned that
+					individual strings are difficult to extract in a static manner—as specific values of the
+					instruction pointer are required—but this difficulty also applies to opcodes and
+					registers. As the bytecode is a stream of numbers, it's impossible to determine whether a
+					number indicates a register, opcode, or constant without knowing what came before it.
 				</p>
 				<p>
 					To solve this problem we must construct a disassembler. Starting with conventional
 					disassembly methodologies, we will attempt to disassemble the virtual machine's bytecode,
 					and eventually touch on some of the basic building blocks necessary to both restore
-					control flow and JavaScript pseudocode.
+					control flow and generate JavaScript pseudocode.
 				</p>
 				<p>
 					Once again, I will not be actually analyzing the bytecode program itself (i.e. whatever
 					fingerprinting is occurring), but will instead be converting it to a more human-readable
-					format. Additionally, although I am releasing a significant amount of code with this post,
-					I have no plans to keep any of it up to date. The point of open sourcing this information
-					is for people to learn from my thought process and methodology.
+					format. Although I am releasing a significant amount of code with this post, I have no
+					plans to keep any of it up to date. The point of open sourcing this information is for
+					people to learn from my thought process and methodology.
 				</p>
 				<h1>Bytecode Traversal</h1>
 				<p>
-					Conventional disassemblers, such as Ghidra and IDA, traverse binaries with two primary
-					methods: linear sweeps, and recursive traversals. In a linear sweep, the program is read
-					from the first byte, interpreting every subsequent byte not used as a read or write as
-					another instruction. This kind of disassembly can be easily fooled by the insertion of
-					bloat, or other unreachable code. Worse still, if tricked into misinterpreting a single
-					value, a linear sweep will misinterpret all subsequent values. In a recursive traversal,
-					the disassembler begins identically to a linear sweep. However, jump instructions are
-					followed, and conditional jumps are "branched" and stored to be disassembled later. In
-					this manner, we can begin to analyze control flow, and identify functions definitions or
-					loops. This type of disassembly is much more difficult to fool as it only disassembles
-					code that can be reached, starting from points that are confirmed to be instructions.
-					However, it is still susceptible to bloat, as static recursive traversal can not identify
-					when a branch is impossible.
+					Conventional disassemblers traverse binaries with one of two primary methods: linear
+					sweeps, and recursive traversals.
+				</p>
+				<p>
+					In a linear sweep, the program is read from the first byte, interpreting every subsequent
+					byte not used as a read or write as another instruction. This kind of disassembly can be
+					easily fooled by the insertion of bloat, or other unreachable code. Worse still, if
+					tricked into misinterpreting a single value, a linear sweep will misinterpret all
+					subsequent values.
+				</p>
+				<p>
+					In a recursive traversal, the disassembler begins identically to a linear sweep. However,
+					jump instructions are followed, and conditional jumps are "branched" and stored to be
+					disassembled later. In this manner, we can begin to analyze control flow, and identify
+					functions definitions or loops. This type of disassembly is much more difficult to fool as
+					it only disassembles code that can be reached, starting from points that are confirmed to
+					be instructions. However, it is still susceptible to bloat, as static recursive traversal
+					can not identify when a branch is impossible.
 				</p>
 				<p>
 					In the interest of staying true to what a disassembler <em>should be</em>, and making
@@ -142,15 +147,14 @@ export class DevirtualizingNike2 extends Post {
 					<a href="https://github.com/umasii">GitHub</a>.
 				</p>
 				<p>
-					However, before we get into any specifics, it's important to make clear what about each
-					opcode we are attempting to distill. If we aren't evaluating expressions or actually
-					storing anything, what left is there? Well, we know from the previous discussion that the
-					instruction pointer needs to be tracked. By condensing every opcode down to how it mutates
-					the instruction pointer, we can pull constants from the bytecode, identify the registers
-					used in calculations, and see where results are stored. Additonally, other instruction
-					pointer values indicated by opcodes are highly relevant to recursive traversal. For
-					example, if an opcode indicates a function is defined at a certain pointer value, we
-					should add that pointer to our disassembly queue.
+					However, we only need part of the information from each opcode. If we aren't evaluating
+					expressions or actually storing anything, what's left? Well, we know from the previous
+					discussion that we need to track the instruction pointer. By condensing every opcode down
+					to how it mutates the instruction pointer, we can pull constants from the bytecode,
+					identify the registers used in calculations, and see where results are stored.
+					Additonally, other instruction pointer values indicated by opcodes are highly relevant to
+					recursive traversal. For example, if an opcode indicates a function is defined at a
+					certain pointer value, we should add that pointer to our disassembly queue.
 				</p>
 				<p>
 					Now that we understand our task, we can begin looking at the opcodes. One of the first
@@ -364,9 +368,8 @@ r.unshift(void 0),
 						here
 					</a>
 					. Thanks to Musicbot for telling me this obscure compiler fact. Much credit in solving
-					this problem is also due to my good friend Nic Perez, whose knowledge of computer
-					architecture and conventional compilers was invaluable in understanding it in the first
-					place.
+					this problem is also due to my good friend Nic Perez, who painstakingly debugged most of
+					these calls with me.
 				</p>
 				<h1>Recursive Traversal</h1>
 				<p>
@@ -720,12 +723,12 @@ fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));`}</
 						proficient with dev tools. Thanks for taking the time!
 					</li>
 					<li>
-						Nic Perez, for spending hours with me in the MADD center, trying to figure out why in
-						the world bytecode functions were being called in so many confusing ways. Additionally,
-						a central tenet of my reversing process has been finding conventional computer
-						architecture analogues to the more confusing opcodes, and testing to see if they worked
-						as expected. His knowledge in both theoretical and practical computer science proved to
-						be invaluable. You can find his stuff{' '}
+						Nic Perez, for spending hours with me in the MADD center trying to figure out why
+						bytecode functions were being called in so many confusing ways. Additionally, a central
+						tenet of my reversing process has been finding conventional computer architecture
+						analogues to the more confusing opcodes, and testing to see if they worked as expected.
+						His knowledge in both theoretical and practical computer science proved to be
+						invaluable. You can find his stuff{' '}
 						<a href="https://www.linkedin.com/in/nic-perez-4a9217227/">here</a>.
 					</li>
 					<li>
