@@ -2,8 +2,8 @@
 	"name": "Devirtualizing Nike.com's Bot Protection (Part 2)",
 	"author": "umasi",
 	"slug": "devirtualizing-nike-vm-2",
-	"date": "2023-1-09",
+	"date": "2023-1-12",
 	"hidden": false,
-	"excerpt": "Last time when we left off, we had just finished performing string extraction on the VM, as well as having scratched the surface of analyzing the VM execution itself. Obviously, this leaves the more than significant problem of actually attempting to devirtualize the bytecode.",
+	"excerpt": "Starting with conventional disassembly methodologies, we will attempt to disassemble the virtual machine's bytecode, and eventually touch on some of the basic building blocks necessary to both restore control flow and generate JavaScript pseudocode.",
 	"keywords": ["nike", "kasada", "virtualization", "obfuscation", "virtual machine"]
 }
