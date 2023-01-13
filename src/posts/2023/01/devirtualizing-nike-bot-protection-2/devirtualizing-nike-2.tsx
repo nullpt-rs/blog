@@ -3,8 +3,8 @@ import {Highlighter} from '../../../../client/components/highlighter';
 import {Post} from '../../../Post';
 import prototype from './img/prototype.webp';
 import getter from './img/getter.webp';
-import run from './img/run.webp';
 import graph from './img/graph.webp';
+import locs from './img/locs.webp';
 
 export class DevirtualizingNike2 extends Post {
 	public name = "Devirtualizing Nike.com's Bot Protection (Part 2)";
@@ -37,7 +37,7 @@ export class DevirtualizingNike2 extends Post {
 				</p>
 				<p>
 					Last time, we went over performing string extraction on the VM, and scratched the surface
-					of analyzing the execution itself. Obviously, this leaves the significant problem of
+					of analyzing the execution itself. However, this leaves the significant problem of
 					actually devirtualizing the bytecode. For instance, we mentioned that individual strings
 					are difficult to extract in a static manner—as specific values of the instruction pointer
 					are required—but this difficulty also applies to opcodes and registers. As the bytecode is
@@ -51,11 +51,11 @@ export class DevirtualizingNike2 extends Post {
 					control flow and generate JavaScript pseudocode.
 				</p>
 				<p>
-					Once again, I will not be actually analyzing the bytecode program itself (i.e. whatever
-					fingerprinting is occurring), but will instead be converting it to a more human-readable
-					format. Although I am releasing a significant amount of code with this post, I have no
-					plans to keep any of it up to date. The point of open sourcing this information is for
-					people to learn from my thought process and methodology.
+					I will not be examining the bytecode program in detail, including any fingerprinting
+					taking place. Instead, I will be converting it to a format that is more easily
+					understandable by humans. Although I am releasing a significant amount of code with this
+					post, I have no plans to keep any of it up to date. The point of open sourcing this
+					information is for people to learn from my thought process and methodology.
 				</p>
 				<h1>Bytecode Traversal</h1>
 				<p>
@@ -81,13 +81,12 @@ export class DevirtualizingNike2 extends Post {
 				<p>
 					In the interest of staying true to what a disassembler <em>should be</em>, and making
 					things a little bit more fun, we will perform our transformations without actually running
-					the VM. But from a practical standpoint, why attack this problem statically? Analyzing the
-					script in our browser's debugger only lets us see the code ran in our specific browser.
-					Certain cases could trigger differently in a different environment. Either way, my goal is
-					full source code retrieval. This requires solving the system in the most complete manner
-					possible. Further, we will not be storing any values, or evaluating the outcome of any
-					operations. Any functionality that resembles "running" the bytecode will not be allowed.
-					My reasoning for this is two-fold.
+					the VM. Analyzing the script in our browser's debugger only lets us see the code ran in
+					our specific environment. Certain cases could trigger differently in a separate
+					environment. Either way, our goal is full source code retrieval. This requires solving the
+					system in the most complete manner possible. Further, we will not be storing any values,
+					or evaluating the outcome of any operations. Any functionality that resembles "executing"
+					the bytecode will not be allowed. My reasoning for this is two-fold:
 				</p>
 				<ul>
 					<li>
@@ -101,8 +100,7 @@ export class DevirtualizingNike2 extends Post {
 					<li>
 						Dumping every operation's internal calculations, as well as where and how certain things
 						are being stored offers a level of transparency that can be easily missed otherwise.
-						This is the different between the following two logs. The latter could be any other
-						permutation of evaluating and displaying read values as well.
+						This is the difference between the following two logs:
 						<Highlighter>{`INIT MEMORY 55\nADD 3 + 2 -> reg2\nSET MEMORY reg2 -> 55\n`}</Highlighter>
 						<Highlighter>{`INIT MEMORY 55\nADD 3 + 2 -> reg2\nSET MEMORY 5 -> 55\n`}</Highlighter>
 						As you can see, it's extremely useful for us to know <em>exactly</em> where a value is
@@ -112,13 +110,14 @@ export class DevirtualizingNike2 extends Post {
 					</li>
 				</ul>
 				<p>
-					We also need an initial value to begin interpreting from. Luckily, we can tell from
-					reading the script that the VM execution starts from the first index's (read: second)
+					However, we also need an initial value to begin interpreting from. Luckily, we can tell
+					from reading the script that the VM execution starts from the first index's (read: second)
 					value in the bytecode array. This is apparent from the value of the instruction pointer in
 					a newly initialized state.
 				</p>
 				<Highlighter>
-					{`var n = [1, {
+					{`var n = [1, // Starting instruction pointer
+{
     h: a,
     M: null,
     $: [],
@@ -134,32 +133,31 @@ export class DevirtualizingNike2 extends Post {
 				<h1>Opcode Identification</h1>
 				<p>
 					Now that we know that the byte at <code>[1]</code> is definitely an opcode, we can begin
-					reading from there. However, we still need to know what the opcode means to figure out
-					when the next opcode is. To do this, we will need to look at the opcode definitions
-					themselves.
+					reading from there. However, to understand the meaning of an opcode and determine when the
+					next opcode is, we need to examine the opcode definitions.
 				</p>
 				<p>
-					While some opcodes are simple, such as the <code>ADD</code> opcode:
+					While some opcodes are simple, such as the <code>ADD</code> instruction:
 				</p>
 				<Highlighter>{`m(n, M(n) + M(n))`}</Highlighter>
 				<p>
 					Others can be much more complex. For the purpose of this article, I will only go over some
-					of the more complicated opcodes. For a full list of opcodes, see my repository{' '}
+					of the more complicated opcodes. For a comprehensive list of opcodes, see my repository{' '}
 					<a href="https://github.com/umasii/ips-disassembler/blob/main/src/opcodes.js">here</a>.
 				</p>
 				<p>
-					However, we only need part of the information from each opcode. If we aren't evaluating
-					expressions or actually storing anything, what's left? Well, we know from the previous
-					discussion that we need to track the instruction pointer. By condensing every opcode down
-					to how it mutates the instruction pointer, we can pull constants from the bytecode,
-					identify the registers used in calculations, and see where results are stored.
-					Additonally, other instruction pointer values indicated by opcodes are highly relevant to
-					recursive traversal. For example, if an opcode indicates a function is defined at a
-					certain pointer value, we should add that pointer to our disassembly queue.
+					However, we only require certain information from each opcode. If we aren't evaluating
+					expressions or maintaining a stack, what's left? Well, we know from the previous article
+					that we need to track the instruction pointer. By condensing every opcode down to how it
+					mutates the instruction pointer, we can pull constants from the bytecode, identify the
+					registers used in calculations, and see where results are stored. Additonally, other
+					instruction pointer values indicated by opcodes are highly relevant to recursive
+					traversal. For example, if an opcode indicates a function is defined at a certain address,
+					we should add that location to our disassembly queue.
 				</p>
 				<p>
 					Now that we understand our task, we can begin looking at the opcodes. One of the first
-					opcodes that caught my eye was opcode 50.
+					opcodes that caught my eye was opcode 50:
 				</p>
 				<Highlighter>{`var r = M(n)
     , t = M(n)
@@ -213,10 +211,10 @@ u[v] = {
 				</p>
 				<p>
 					This behavior is highly interesting. Namely, <code>u()</code> seems to indicate that a
-					section of the bytecode program is meant to be reusable, and ran within its own scope with
-					certain provided arguments. This is precisely what a function definition in the bytecode
-					would look like. But if this opcode defines a function, how is it called? To answer this
-					question, we direct our attention to opcode 23.{' '}
+					section of the bytecode program is meant to be reusable, as well as ran within its own
+					scope with certain provided arguments. This is precisely what a function definition in the
+					bytecode would look like. But if this opcode defines a function, how is it called? To
+					answer this question, we direct our attention to opcode 23.{' '}
 				</p>
 				<Highlighter>{`var t = M(n)
     , r = M(n)
@@ -238,27 +236,25 @@ if (void 0 === t && j() && (t = a),
         n.g.push(i[o])
 } else if (r.toString)
     n.g[2] = r.apply(t, i);
-else {
-    // omitted
-}`}</Highlighter>
+`}</Highlighter>
 				<p>
 					Examining the conditional logic, it's clear that the primary discriminator between the{' '}
-					<code>if</code> and the <code>else if</code> cases are the existence of certain properties
-					on <code>r</code>. Otherwise, the <code>if</code> case makes no sense. The else case is
-					omitted due to never executing in my tests.
+					<code>if</code> (alternate) and the <code>else if</code> (consequent) cases are the
+					existence of certain properties on <code>r</code>. Otherwise, the alternate case would not
+					be valid.
 				</p>
 				<p>
 					At this stage of the reversal, it's impossible to say what the first case does without
 					seeing some examples. While debugging, we can see that the only values passed into the{' '}
-					<code>if</code> case are functions of type <code>u()</code>. This is an amazing stroke of
-					luck, as the whole opcode now holds meaning. It defines a new state, with instruction
-					pointer set to the same pointer as <code>u</code> (see the last few lines of opcode 50),
-					and overwrites the VM state to the new one. This is exactly what we would expect from a
-					function call operation. Reading further, we see that values from <code>i</code> are
+					alternate case are functions of type <code>u()</code>. This is an amazing stroke of luck,
+					as the whole opcode now holds meaning. It defines a new state, with instruction pointer
+					set to the same pointer as <code>u</code> (see the last few lines of opcode 50), and
+					overwrites the VM state to the new one. This is exactly what we would expect from a
+					function call instruction. Reading further, we see that values from <code>i</code> are
 					pushed into the new state's registers. These are the function's arguments. This
 					interpretation, as well as the theorized standard return to register 2, is further
-					corroborated by the <code>else if</code>. This case runs a function previously stored
-					JavaScript function, returning the function's result to register 2.
+					corroborated by the <code>else if</code>. This case runs a function from the bytecode,
+					returning the function's result to register 2.
 				</p>
 				<p>
 					Continuing this chain of logic, bytecode function calls need a return operation. Opcodes
@@ -293,16 +289,15 @@ function w(n, t) {
 					However, we have forgotten an important piece of the puzzle. Thus far, <code>u()</code>{' '}
 					has never actually been called! In order to fully understand bytecode function calls, we
 					need to analyze where/how <code>u()</code> is actually called. However, breakpointing and
-					stepping through every call manually would be far too lengthy a process. Luckily,
-					debugging wizard and Chrome Dev Tools engineer{' '}
-					<a href="https://www.paulirish.com/">Paul Irish</a> got in touch with me. You should check
-					out his blog/Mastodon if you haven't already.
+					stepping through every call manually would be a lengthy process, unlikely to impart much
+					useful information. Luckily, debugging wizard and Chrome Dev Tools engineer{' '}
+					<a href="https://www.paulirish.com/">Paul Irish</a> got in touch with me and provided
+					amazing advice on tackling this issue. Check out his blog/socials if you haven't already.
 				</p>
 				<p>
-					After Paul gave me some Dev Tools tips, such as the use of <code>debug()</code> and{' '}
-					<code>monitor()</code>, and explained the meanings of <code>.bind()</code> and{' '}
-					<code>.apply()</code> to me numerous times (sorry, Paul), he sent me the following code to
-					log all callers of <code>u()</code>.
+					After Paul gave me some DevTools tips, and explained the meanings of <code>.bind()</code>{' '}
+					and <code>.apply()</code> to me numerous times (sorry, Paul), he sent me the following
+					snippet to log all callers of <code>u()</code>:
 				</p>
 				<Highlighter>{`globalThis.locs = globalThis.locs ?? new Map();
 const stack = new Error('').stack.split('\\n');
@@ -310,12 +305,18 @@ const calleeloc = stack.filter(s => s.includes('ips.js')).at(1);
 let sum = locs.get(calleeloc) ?? 0;
 locs.set(calleeloc, ++sum);`}</Highlighter>
 				<p>
-					By inserting this code inside of <code>u()</code> and calling <code>locs</code> in
-					console, we could see all the places it is invoked. While one of these cases makes
-					immediate sense, being the <code>else if</code> case in the function call opcode, the
-					other two are more confusing and give rise to some of the stranger aspects of this script.
+					By inserting this code inside of <code>u()</code> and evaluating <code>locs</code> in
+					console, we could see all the places it is invoked. The alternate case in the opcode is
+					straightforward, but the other two cases are more perplexing, contributing to some of the
+					script's unusual features.
 				</p>
-				<p>The first case is opcode 24.</p>
+				<figure className="text-center w-full mx-auto">
+					<img src={locs.src} alt="locs" width={300} height={100} />
+					<figcaption>
+						All the places <code>u()</code> is called, as well as how many times.
+					</figcaption>
+				</figure>
+				<p>The first case is opcode 24:</p>
 				<Highlighter>{`var t = M(n)
     , r = M(n).slice();
 r.unshift(void 0),
@@ -341,13 +342,13 @@ r.unshift(void 0),
 					Specifically, we should remember this edge case when opcode 24 occurs in our disassembly.
 				</p>
 				<p>
-					The next <code>u()</code> call comes from opcode 10.
+					The next <code>u()</code> call comes from opcode 10:
 				</p>
 				<Highlighter>{`m(n, M(n)[M(n)])`}</Highlighter>
 				<p>
-					This is not typical array behavior, however. Checking dynamically we can see that, like
-					above, specific methods have been overwritten. In this case, the first value's "getters"
-					have been overwritten to call <code>u()</code>.
+					How does this call a function, you might be wondering? Checking dynamically we can see
+					that, like above, specific methods have been overwritten. In this case, the first value's
+					"getters" have been overwritten to call <code>u()</code>.
 				</p>
 				<figure className="text-center w-full mx-auto">
 					<img src={getter.src} alt="getter" width={300} height={100} />
@@ -491,11 +492,11 @@ r.unshift(void 0),
 }`}</Highlighter>
 				<p>
 					The <code>step</code> function steps through the bytecode array, executing each opcode
-					given by the instruction pointer. Each opcode is then ran with our skeletal
-					implementation—reading, writing, and jumping. This results in the instruction pointer
-					being ready to read another opcode upon completion. For a linear sweep, this will continue
-					until the end of the array. For a recursive traversal, until no new code is discovered.
-					The <code>branch()</code> function is used to store a pointer value for later, and both{' '}
+					given by the instruction pointer. Each opcode then performs our skeletal implementation of
+					it—reading, writing, and jumping. This results in the instruction pointer being ready to
+					read another opcode upon completion. For a linear sweep, this will continue until the end
+					of the array. For a recursive traversal, until no new code is discovered. The{' '}
+					<code>branch()</code> function is used to store a pointer value for later, and both{' '}
 					<code>getRegister()</code> and <code>getValue()</code> are implemented identically to the
 					original script.
 				</p>
@@ -569,12 +570,30 @@ let { funcTraces, branchTraces } = MainDisassembler.scanPointers();
 fs.writeFileSync("./output/functions" + ".json", JSON.stringify(funcTraces));
 fs.writeFileSync("./output/branches" + ".json", JSON.stringify(branchTraces));
 
-console.log("Recursive traversal has recovered " + (MainDisassembler.scanned["step"].size) + " out of " + decodedBytecode.length + " instructions.");`}</Highlighter>
+console.log("Recursive traversal has recovered " + (MainDisassembler.scanned["step"].size) + " out of " + decodedBytecode.length + " instructions.");
+
+let unscanned = [];
+for (let i = 1; i < decodedBytecode.length; i++) {
+    if (!MainDisassembler.scanned["step"].has(i)) {
+/home/voidstar/blog2/src/posts        unscanned.push(i);
+    }
+}
+let intervals = findIntervals(unscanned);
+fs.writeFileSync("./output/unscanned" + ".json", JSON.stringify(intervals));`}</Highlighter>
 				<h1>Interpreting Disassembly</h1>
-				<figure className="text-center w-full mx-auto">
-					<img src={run.src} alt="run" width={300} height={100} />
-					<figcaption>The logging of a successful disassembly.</figcaption>
-				</figure>
+				<Highlighter>
+					{`$ npm start
+					
+> kasada-disassembler@1.0.0 start
+> node src/index.js
+
+Performing linear scan...
+Linear scanning has recovered 187424 out of 187426 instructions.
+Starting recursive traversal
+Disassembling main function...
+Disassembling functions and branches...
+Recursive traversal has recovered 186690 out of 187426 instructions.`}
+				</Highlighter>
 				<p>
 					Running our disassembler gives us outputs of the following form, where the first number is
 					the instruction pointer, followed by my representation of the opcode:
@@ -651,19 +670,20 @@ console.log("Recursive traversal has recovered " + (MainDisassembler.scanned["st
 					The disassembler does not read all the instructions in either scan. In a linear sweep,
 					this is due to the execution beginning at the second element of the bytecode array, and
 					the program terminating before the final value of the instruction pointer. In the case of
-					recursive traversal, this is due to a small amount of the bytecode being unreachable
+					recursive traversal, this is due to a certain amount of the bytecode being unreachable
 					bloat. It's easy to verify that none of the values not covered by recursive traversal are
 					ever actually reached in browser.
 				</p>
 				<p>
 					As a last note, you might find the branch output of the disassembler difficult to
-					understand due to the separation of where branches are spawned, and where they are stored.
-					To solve this problem, I have included a graph view repository, which although a little
-					messy works quite well to reconstruct control flow. You can find that{' '}
+					understand, as branches are not disassembled where they are created but instead
+					disassembled in a recursive descent algorithm. To solve this problem, I have included a
+					graph view repository, which although a little messy works quite well to reconstruct
+					control flow. You can find that{' '}
 					<a href="https://github.com/umasii/disassembler-graph-view">here</a>. Either way, I do not
 					feel that this affects the readability of specific blocks/functions very much, as our
 					recursive traversal still produces the basic building blocks of the VMs control flow. We
-					only need to read them in the right order.
+					need only to read them in the right order.
 				</p>
 				<figure className="text-center w-full mx-auto">
 					<img src={graph.src} alt="graph" width={300} height={100} />
@@ -674,27 +694,27 @@ console.log("Recursive traversal has recovered " + (MainDisassembler.scanned["st
 				<h1>Future Work</h1>
 				<p>
 					There still remains the problem of decompilation. A cursory decompilation would not be too
-					difficult to produce. However, decompiling our output into a format that resembles
-					human-written JavaScript is a difficult task, and requires a lot of pattern recognition
-					and compiler theory. Namely, we will have to analyze recurring syntax patterns in the
+					difficult to produce. However, decompiling our output into JavaScript that resembles
+					human-written code is a difficult task, and requires a lot of pattern recognition and
+					compiler theory. Namely, we will have to analyze recurring syntax patterns in the
 					disassembly, and think deeply about how variable definitions, function calls, and loops
 					are implemented both pre and post compilation. But this is a problem for another day, and
 					may be covered in a future post.
 				</p>
 				<p>
 					Now that the VM can be analyzed statically, it would be useful to make dynamic analysis
-					more practical. While the JavaScript itself is easy to debug, debugging the bytecode
-					itself is very difficult. To this end, it would be cool to implement a GDB style debugger,
-					capable of stepping through the bytecode in disassembled format and inspecting registers
-					and memory. This would be a rather simple undertaking, but would be a great way to learn
-					more about the VM. If you plan on working on this, feel free to reach out. I would
-					recommend the webdriver <a href="https://playwright.dev/">Playwright</a>.
+					more practical. While the JavaScript itself is easy to debug, actually debugging the
+					bytecode is very difficult. To this end, it would be cool to implement a GDB style
+					debugger, capable of stepping through the bytecode in disassembled format and inspecting
+					registers and memory. This would be a rather simple undertaking, but would be a great way
+					to learn more about the VM. If you plan on working on this, feel free to reach out. I
+					would recommend the webdriver <a href="https://playwright.dev/">Playwright</a>.
 				</p>
 				<p>
 					If you think I got something wrong, please feel free to reach out to me. Much of this work
-					was done in the last week, so it's very possible I've made an error somewhere. Either way,
-					I'm always happy to hear from other reverse engineers/those interested in my work, even if
-					I don't get back to you immediately.
+					was done in the last week, so it is very possible I've made an error somewhere. Either
+					way, I'm always happy to hear from other reverse engineers/those interested in my work,
+					even if I don't get back to you immediately.
 				</p>
 				<p>
 					I may not post about this topic again, depending on how long it continues to hold my
@@ -705,11 +725,12 @@ console.log("Recursive traversal has recovered " + (MainDisassembler.scanned["st
 				<p>Once again, a few thanks are in order.</p>
 				<ul>
 					<li>
-						Paul Irish: It's not every day that I get to work with a Google engineer, much less
-						someone who works on a tool I use almost every day. Your contributions were invaluable
-						to the more technical and confusing parts of this analysis. You also greatly improved my
-						understanding of some of JavaScript's more confusing methods, and made me even more
-						proficient with dev tools. Thanks for taking the time!
+						Paul Irish: It's not every day that I get to collaborate on a project with a Google
+						engineer, much less someone who works on a tool I use almost every day. Your
+						contributions were invaluable to the more technical and confusing parts of this
+						analysis. You also greatly improved my understanding of some of JavaScript's more
+						confusing methods, and made me even more proficient with dev tools. Thanks for taking
+						the time!
 					</li>
 					<li>
 						Nic Perez, for spending hours with me in the MADD center trying to figure out why
