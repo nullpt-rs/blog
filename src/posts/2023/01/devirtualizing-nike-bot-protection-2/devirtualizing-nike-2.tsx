@@ -14,7 +14,7 @@ export class DevirtualizingNike2 extends Post {
 	public date = new Date('12 Jan 2023');
 	public hidden = false;
 	public excerpt =
-		'Starting with conventional disassembly methodologies, we will attempt to disassemble the virtual machine's bytecode, and eventually touch on some of the basic building blocks necessary to both restore control flow and generate JavaScript pseudocode.';
+		'Starting with conventional disassembly methodologies, we will attempt to disassemble the virtual machine\'s bytecode, and eventually touch on some of the basic building blocks necessary to both restore control flow and generate JavaScript pseudocode.';
 	public keywords = [
 		'nike',
 		'kasada',
