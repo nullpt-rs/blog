@@ -11,10 +11,10 @@ export class DevirtualizingNike2 extends Post {
 	public image = undefined;
 	public author = 'umasi';
 	public slug = 'devirtualizing-nike-vm-2';
-	public date = new Date('09 Jan 2023');
+	public date = new Date('12 Jan 2023');
 	public hidden = false;
 	public excerpt =
-		'Last time when we left off, we had just finished performing string extraction on the VM, as well as having scratched the surface of analyzing the VM execution itself. Obviously, this leaves the more than significant problem of actually attempting to devirtualize the bytecode.';
+		'Starting with conventional disassembly methodologies, we will attempt to disassemble the virtual machine's bytecode, and eventually touch on some of the basic building blocks necessary to both restore control flow and generate JavaScript pseudocode.';
 	public keywords = [
 		'nike',
 		'kasada',
