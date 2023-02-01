@@ -43,7 +43,7 @@ export default function Home() {
 	);
 }
 
-function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
+export function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
 	return (
 		<div>
 			<div className="flex flex-col">
@@ -52,7 +52,7 @@ function BlogLink(props: {href: string; date: Date; author: string; children: Re
 				</Link>
 				<div className="flex">
 					<p className="text-neutral-400">{props.date.toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-					<p className="pl-1 text-neutral-400">by {props.author}</p>
+					<p className="pl-1 text-neutral-400">by <Link className="underline" passHref href={`/author/${props.author}`}>{props.author}</Link></p>
 				</div>
 			</div>
 		</div>
