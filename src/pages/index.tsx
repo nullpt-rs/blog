@@ -9,7 +9,6 @@ export default function Home() {
 				<h2>
 					<span>nullpt.rs</span>{' '}
 					<a
-						target="_blank"
 						href="https://github.com/chairwomanpark"
 						className="text-neutral-500 hover:text-blue-500"
 						rel="noreferrer"
