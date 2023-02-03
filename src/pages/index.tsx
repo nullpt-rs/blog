@@ -10,7 +10,7 @@ export default function Home() {
 					<span>nullpt.rs</span>{' '}
 					<a
 						target="_blank"
-						href="https://github.com/nullpt-rs"
+						href="https://github.com/chairwomanpark"
 						className="text-neutral-500 hover:text-blue-500"
 						rel="noreferrer"
 					>
@@ -18,11 +18,11 @@ export default function Home() {
 					</a>
 					<a
 						target="_blank"
-						href="https://twitter.com/nullpt_rs"
+						href="new-beginnings"
 						className="text-neutral-500 hover:text-blue-500"
 						rel="noreferrer"
 					>
-						{" "} - twitter
+						{" "} - about
 					</a>
 				</h2>
 
