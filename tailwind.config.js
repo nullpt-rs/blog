@@ -6,10 +6,11 @@ module.exports = {
 	darkMode: 'media',
 	theme: {
 		fontFamily: {
-			mono: ['"DM Mono"', 'monospace'],
+			sansserif: ['Inter', '"SF Pro Display"', 'system-ui', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"'],
+			mono: ['"SFMono Regular"', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', 'monospace'],
 		},
 		fontWeight: {
-			light: 300,
+			light: 400,
 			medium: 500,
 		},
 	},

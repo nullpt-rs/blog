@@ -1,5 +1,22 @@
 body {
-	@apply bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200 font-mono font-light;
+	@apply bg-neutral-100 text-neutral-900 dark:bg-black dark:text-neutral-200 font-sansserif font-light;
+}
+
+p {
+	font-size: 16px;
+	line-height: 1.74;
+}
+
+main h1 {
+	margin-bottom: 0 !important;
+}
+
+a {
+	@apply font-medium;
+}
+
+code {
+	@apply font-mono;
 }
 
 .no-pre-margin pre {

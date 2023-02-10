@@ -21,7 +21,7 @@
 		"dayjs": "^1.11.0",
 		"envsafe": "^2.0.3",
 		"jsonwebtoken": "^8.5.1",
-		"next": "^13.0.2",
+		"next": "^13.1.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-syntax-highlighter": "^15.5.0",
