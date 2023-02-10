@@ -15,11 +15,4 @@ const ensurePosts = ensure<readonly Post[] | Post[]>();
 
 export const posts = ensurePosts([
   new NewBeginnings(),
-  new ReverseEngineeringTikTok(),
-  new NewBlog(),
-  new TheModernizationOfTheLatrine(),
-  new TacklingJavaScriptClientSideSecurity(),
-  new AnatomyOfASupremeBot3(),
-  new AnatomyOfASupremeBot2(),
-  new AnatomyOfASupremeBot1(),
 ] as const);
