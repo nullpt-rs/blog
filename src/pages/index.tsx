@@ -7,7 +7,7 @@ export default function Home() {
 		<>
 			<main className="space-y-8">
 				<h2>
-					<span>nullpt.rs</span>{' '}
+					<span>0xparker</span>{' '}
 					<a
 						target="_blank"
 						href="https://github.com/chairwomanpark"
