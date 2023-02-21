@@ -1,0 +1,517 @@
+---
+slug: devirtualizing-nike-vm-1
+date: Jan 6 2023
+author: umasi
+name: Devirtualizing Nike.com's Bot Protection (Part 1)
+excerpt: In this blog post, we'll examine the virtualization obfuscation used by Nike
+keywords: nike,kasada,virtualization,obfuscation,virtual machine,cybersecurity,browser fingerprinting
+---
+
+Web-based attacks—such as account brute forcing and botting—pose a significant threat to companies
+that rely on digital systems to store and process sensitive information. One technique to protect 
+against these attacks is browser fingerprinting. This method works by collecting data about a user's 
+browser, which is then used to create a unique fingerprint for differentiating between genuine users
+and bots. However, browser fingerprints are easy to spoof and often fail to impede attackers.
+
+This is where obfuscation comes in: by making scripts difficult for humans to read and understand, 
+obfuscation can prevent the reverse engineering and emulation of browser fingerprints.
+
+As attacks become more sophisticated, increasing layers of complexity are required to protect code. 
+This has led to the development of virtualization obfuscation: the implementation of custom virtual 
+machine like architecture. The real program is then stored as bytecode, which is decoded and 
+interpreted by the virtual machine. In this blog post, we'll examine the virtualization obfuscation 
+used by Nike contractor Kasada to protect Nike's web assets.
+
+As my days of peddling anti-anti bot APIs are behind me, this article will focus less on the specifics 
+of what data is collected, and more on dissecting the script's reverse engineering protections.
+
+If you are curious, a production script can be found 
+[here](https://accounts.nike.com/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/ips.js).
+The script may change slightly on each reload. The information should hold regardless of the
+changes, as they are primarily different strings and function names. However, any significant updates
+to the script may break some of the functions here.
+
+# Script Structure
+Lets begin by looking at the control flow of the main script. Collapsing all function definitions, we
+reveal the following high-level structure:
+
+```javascript
+KPSDK.scriptStart = KPSDK.now();
+(function() {
+	function F(n) { ... }
+	function t() { ... }
+	function r(n, t) { ... }
+	function i(n) { ... }
+	function o(n) { ... }
+	function u(n, t) { ... }
+	var n = function (r) { ... }([function (n, t, r) { ... }]).eEA({ ... }, window, bytecode);
+})();
+```
+
+The entirety of the script lies inside an 
+[Immediately Invoked Function Expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE)
+(IIFE), and the only explicit function calls in this scope is to the property `eEA`.
+
+It is unclear what `eEA` represents, so we direct our attention to its parent. A cursory 
+glance at the code is hardly illuminating.
+
+A starting point for analyzing this function is not immediately clear. While we could
+simply begin at the top of the function and analyze its flow, the nested definition of{' '}
+`eEA` presents a more logical starting point. This function is then bound to
+the input object `t`, and seems to be accessible from outside of `n`. 
+This suggests that `eEA` is the main function and start of execution.
+
+```javascript
+function eEA(t, a, n) {
+    for (var r = "string" == typeof n ? A.default.u(n) : n, i = r.length, v = "", o = {
+      v: ""
+    }, u = 0; u < 28; u++)
+      v += String.fromCharCode(97 + Math.floor(26 * Math.random()));
+
+    function s(n, t) {
+      for (var r = [], i = 0; i < n; i++)
+        r.push(t(i));
+      return r
+    }
+
+    var d = function () {
+      var f = 0;
+      return function (n, t) {
+        for (var r, i, o = 17 * f++ | 0, u = [], e = 0; e < 3; e++)
+          u.push(e === o % 3 ? n : t());
+        return r = Math.floor(20 * Math.random()),
+          i = function () {
+            return o % (this + r)
+          }.bind(3 - r),
+          function () {
+            return u[i()]
+          }
+      }
+    }()
+    // further code omitted
+    t.eEA = eEA
+}
+```
+
+Looking at the arguments of `eEA`, the first input is an object with a single
+property labeled as `inj0`. By looking at the syntax and copyright clause, we
+can immediately write this off as a promise polyfill. Its purpose is to implement promise
+functionality to legacy browsers.
+
+```javascript
+]).eEA({
+"inj0":
+/**
+ * Copyright (c) 2014 Taylor Hakes
+ * Copyright (c) 2014 Forbes Lindesay
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+typeof Promise != 'undefined' ? Promise : (function () {
+"use strict";
+function e(n) {
+	var t = this.constructor;
+	return this.then(function (e) {
+		return t.resolve(n()).then(function () {
+			return e
+		})
+	}, function (e) {
+		return t.resolve(n()).then(function () {
+			return t.reject(e)
+		})
+	})
+}
+// further code omitted
+```
+
+The second argument is the browser's window property: the main source of a browser
+fingerprint. The final argument (replaced in Figure 1 as `bytecode` for
+formatting reasons) should immediately stand out. This one comes in at a whopping 386000
+characters. Hence, analyzing this string could be an important step in the reverse
+engineering process. This will prove to be much more complex than in the average bot
+protection program, and will be the focus of this article.
+
+```
+4aQdQfQhQjQlQnQpQrQtQvQxQzQBQDQFQHQJQLQNQPQRQTQVQXYaZgg334aaf0jSd0jM9QP1a4gP3a0jT3a8lw8l0jH0jg237ei4gN4g1lT3a8lH8lm0jo0j4gN4gZpsgZ21dj4gBd8lr8lbg2YZgYay4g8l0jV0jT1a4osg36kg0jq0jg821gg8lBf0rT3a4wN4w9uT3a8tq8tg737fj0zo0z4wr0rb4wz8tz4wT1a8Br4wg26Uf8Br4wg627eiir4wg7Y6fmir8tg6ZPl4wr0rd8tx0j8l0ro0b4gr4og737fj4gsg36kg0rq0rgY5ko4gBh4oT1a0zr4ob0zr4odg737fjz8tr8tg627eikr4of8tx0r4g4oo0b8lT3a4gN4g7QTt4oBf8lT1a8tr8lb8tT3a8tr8ld8txo4o8lo0b4gXYa9Sg334aad4gSf4gM12cP3b4gQ5bTp0jA4oxo0j4oo0b4gS5b4gYa7Xg334aab4gM91cR9bQZcQ1cQ3cTv0jBd8lT3b4or8lb4oxo0j8lo0b4gSZc4gT5b4gN4g93bTv0jBd0rU4or0rb4oxo0j0ro0b4gq4gg6ZPl8lS3c8lsg539fh0jq0jgZ7Fj8lBh0rTZc4or0rb4or0rd8dT3c4or0rf4ox0j8l0ro0b4gS1c4gM19bTZc8lq8lg667ef0rBf4oU8tr4ob8tr4od8dx8l0r4oo0b4gS1c4gTh0rBf4oU4wr4ob...
+```
+
+For brevity, the entire string has not been included. If you're curious, you can view 
+it from the script linked above.
+
+# VM Structure
+
+Trying to understand the logic of `eEA` from a strictly static analysis
+perspective is no easy task. (If any of you can evaluate bitwise logic and complex loops
+in your head, please contact me). However, by following our bytecode through the
+interpreter we can reveal its purpose.
+
+```javascript
+for (var r = "string" == typeof n ? A.default.u(n) : n, i = r.length, v = "", o = {
+    v: ""
+}, u = 0; u < 28; u++)
+    v += String.fromCharCode(97 + Math.floor(26 * Math.random()));
+```
+
+Right off the bat, we notice that the variable `r` is set to the result of
+`A.default.u(n)`. This variable definition is nested within a for loop and is
+the result of a conditional expression. Luckily, as we know that the type of
+`r` is a string for the call we are investigating, we can safely assume it is
+set to `A.default.u(n)`.
+
+As the definition of `A.default.u` is not immediately apparent, I used
+breakpoints to find the function definition, as demonstrated below:
+
+![Figure 2: The breakpoint I used to find the definition of <code>u(n)</code>](/posts/devirtualizing-nike-vm-1/breakpoint.webp)
+
+We now find the function r.u (note this r is in a different scope!)
+
+```javascript
+r.u = function (n) {
+  for (var t = s.P, r = t.V, i = t.W, o = r.length - i, u = [], e = 0; e < n.length;)
+    for (var f = 0, c = 1; ;) {
+      var a = r.indexOf(n[e++]);
+      if (f += c * (a % i), a < i) {
+        u.push(0 | f);
+        break
+      }
+      f += i * c, c *= o
+    }
+  return u
+}
+```
+
+Further exploration reveals the value of `s.P` to be an object with a 
+hardcoded alphanumeric string and a number.
+
+```javascript
+// t.P is not a typo here, the two values are equal.
+t.P = {
+    V: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    W: 50
+}
+```
+
+It appears that `r.u` is a simple decoding function. Specifically, 
+it seems to convert the string to a corresponding array of bytes.
+
+Further down the body of `eEA`, we can see the following 
+references to our array, `r`:
+
+```javascript
+var f = $()
+, c = r[i + v.indexOf(".")] ^ i
+, b = r.splice(c, r[c + f.g[0]] + 2);
+```
+
+Recalling how `v` is constructed (see the first snippet of `eEA`), and 
+that `i` is simply the length of `r`, we deduce that a chunk of `r` is 
+being isolated and removed. This removed chunk is stored as the 
+variable `b`, but more on that later. Importantly, the type of our 
+bytecode has not changed: it is still an array of bytes.
+
+While our analysis thus far has not been particularly helpful, the final 
+call to `r` reveals the true nature of this script.
+
+```javascript
+function y(n) {
+    return r[n.g[0]++] >> 5
+}
+
+function M(n) {
+    return A.default.R(r, n.g, o)
+}
+
+o.v = A.default.R(b, f.g[1].g());
+var g = [];
+
+function m(n, t) {
+    n.g[y(n)] = t
+}
+
+// ...
+
+function S(t) {
+    for (; ;) {
+        var n = g[r[t.g[0]++]];
+        if (null === n)
+            break;
+        try {
+            n(t)
+        } catch (n) {
+            O(t, n)
+        }
+    }
+}
+
+g.push(function (n) {
+	m(n, M(n) + M(n))
+}),
+g.push(function (n) {
+	m(n, M(n) - M(n))
+}),
+g.push(function (n) {
+	m(n, M(n) * M(n))
+}),
+g.push(function (n) {
+	m(n, M(n) / M(n))
+}),
+g.push(function (n) {
+	m(n, M(n) % M(n))
+}),
+g.push(function (n) {
+	m(n, +M(n))
+}),
+g.push(function (n) {
+	m(n, !M(n))
+}),
+
+// ...
+```
+
+Examining `S(t)`—called on `f` as previously defined—we notice some interesting 
+characteristics. `S(t)` runs a 
+[state machine](https://en.wikipedia.org/wiki/Finite-state_machine), executing 
+functions out of an array, `g`. Each of these functions takes in a single argument, 
+`t`, and many of them follow a relatively simple pattern. Namely, they seem to use 
+`m(n, t)` to store the output of a calculation, `M(n)` to retrieve various values, 
+and `n` to store a “state” variable given by `$()`. I count around 60 of them. Lastly, 
+the element of `g` to be run is chosen in a deterministic manner: a number 
+given by `t.g[0]` points to an element of `r`, our bytecode, before being 
+incremented.
+
+If you've read veritas' previous article, [Reverse Engineering Tiktok's VM Obfuscation 
+(Part 1)](https://www.nullpt.rs/reverse-engineering-tiktok-vm-1), this should scream 
+virtualized JavaScript to you.
+
+Applying our knowledge of computer architecture, we can now begin to assign meaning to 
+each function. `S(t)` is a stepper function, executing the virtual machine's program in 
+its argumentless loop. `g` is an array of short atomic functions, or opcodes, with 
+instructions on when to call them. Recalling that we obtained the array from our 
+initial string, this means that the string is a “program” of sorts, running inside of 
+Kasada's custom virtual machine. Effectively, it is an array of opcode indices, 
+register numbers, and other encoded information necessary to perform fingerprinting. 
+`t.g[0]` is an instruction pointer, incrementing as the state machine is run, telling 
+the script which element of `g` is next. If you haven't taken an operating system class, 
+don't worry. I haven't either. It won't get much more technical than this.
+
+As a final note for this section, we can confirm our suspicions on function calls 
+`$()`, `y(n)`, `m(n)`, and `M(n)`. The return of `$()` is fed directly into `S(t)`, and 
+has the following form:
+
+```javascript
+function $() {
+  var n = [1, {
+    h: a,
+    M: null,
+    $: [],
+    g: function () {
+        return [0]
+    },
+    j: function () {
+        return [0]
+    },
+    O: function () { }
+  }, void 0];
+  return {
+    j: h(),
+    g: n,
+    F: void 0
+  }
+}
+```
+
+As this is passed into every opcode, as well as the other three functions, we can 
+conclude it acts as the VM state. A glance at `m(n)` reveals that it sets an element 
+of the array `g` to the value `t`, analogous to setting register values in a conventional 
+processor. Following this chain of logic, `y(n)` fetches the register number from the 
+bytecode, and `M(n)` presumably retrieves a value from a register.
+
+# Decoding the Bytecode
+
+Now that we understand the problem at hand, it's clear that any attempt at de-virtualizing 
+and understanding this script must begin with the decoding of the VM bytecode. Isolating 
+the necessary code from that discussed above, we can use the following script to get the 
+proper array of bytes, post splicing.
+
+```javascript
+const fs = require("fs");
+                    
+const bytecode = fs.readFileSync("./test/bytecode.txt", "utf8");
+
+// this is constant. lmao
+const decryptionConstants = {
+    V: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    W: 50,
+};
+
+function decodeBytecode(n) {
+    for (
+    var t = decryptionConstants,
+    r = t.V,
+    i = t.W,
+    o = r.length - i,
+    u = [],
+    e = 0;
+    e < n.length;
+
+    )
+    for (var f = 0, c = 1; ;) {
+        var a = r.indexOf(n[e++]);
+        if (((f += c * (a % i)), a < i)) {
+        u.push(0 | f);
+        break;
+        }
+        (f += i * c), (c *= o);
+    }
+    return u;
+}
+
+// note: edit made here to remove ternary. I assume function is not called on bytecode that is not of string form
+// for (var r = decodeBytecode(bytecode), i = r.length, v = "", o = {
+//     v: ""
+// }, u = 0; u < 28; u++)
+//     v += String.fromCharCode(97 + Math.floor(26 * Math.random()));
+
+let decodedBytecode = decodeBytecode(bytecode);
+// Removed v call, I do not believe it ever takes a value that is not "-1," as that would introduce randomness to the decryption process. 
+// If it does can replace -1 back with "v.indexOf(".")"
+// edit made here replacing i with the length of r.u(bytecode)
+let c = decodedBytecode[decodedBytecode.length - 1] ^ decodedBytecode.length;
+
+// replaced f.g[0] with 1
+let bytecodeStrings = decodedBytecode.splice(c, decodedBytecode[c + 1] + 2);
+
+console.log(decodedBytecode)
+
+// [56,42,3,42,5,42,7,42,9,42,
+// 11,42,13,42,15,42,17,42,19,
+// 42,21,42,23,42,25,42,27,42,
+// 29,42,31,42,33,42,35,42,37,
+// 42,39,42,41,42,43,42,45,42,
+// 47,42,49,50,123,6,8779,0,5, ...]
+```
+
+Which can be verified to match the array generated in the browser. Now that we are capable of 
+retrieving the program's bytecode, we can use our knowledge of the VM's opcodes and registers 
+to figure out what is happening. This will be done in a future article, and involves creating 
+an interpreter, and eventually a decompiler for the VM's unique language.
+
+# String Retrieval
+
+However, there is one important part of this process that we have neglected. Inspired by veritas' 
+previous article, I decided to try to find a way to retrieve strings from the bytecode. During my 
+search, I suddenly remembered the spliced out section of the bytecode. At the time, I had been so 
+pleased with my correct generation of the instruction array that it had totally slipped my mind.
+
+Looking at references to the removed portion of the array, `b`, we see that it is used in a call to 
+`A.default.R(b, f.g[1].g())`, a function also used in `M(n)`. As we theorized that `M(n)` retrieves 
+values from the bytecode, perhaps this entire section of the array is simply the strings section! 
+The definition of `R` validates this assumption:
+
+```javascript
+(r = i = i || {}).R = function (n, t, r) {
+  var i, o, u, e, f = n[t[0]++];
+  if (1 & f)
+    return f >> 1;
+  if (f === s.B.q)
+    return e = n[t[0]++],
+      i = n[t[0]++],
+      o = 2147483648 & e ? -1 : 1,
+      u = (2146435072 & e) >> 20,
+      e = (1048575 & e) * Math.pow(2, 32) + (i < 0 ? i + Math.pow(2, 32) : i),
+      2047 === u ? e ? NaN : 1 / 0 * o : (0 !== u ? e += Math.pow(2, 52) : u++,
+        o * e * Math.pow(2, u - 1075));
+  if (f !== s.B.D)
+    return f === s.B.G || f !== s.B.H && (f === s.B.J ? null : f !== s.B.K ? t[f >> 5] : void 0);
+  if (null != r && r._)
+    return r._(n[t[0]++], n[t[0]++]);
+  for (var c = "", a = n[t[0]++], v = 0; v < a; v++) {
+    var l = n[t[0]++];
+    c += String.fromCharCode(4294967232 & l | 39 * l & 63)
+  }
+  return c
+}
+```
+
+From runtime analysis, we can make a few observations:
+
+- The initial call to this function only provides two parameters, thus triggering the final return statement.
+- Calls to this function from `M(n)` use three parameters, and return a call to `r._()`. This is how individual strings are retrieved.
+- Nested in the confusing ternary statement is a call to a register value, which is usually returned if none of the other conditionals trigger.
+
+If you're not convinced, the function r._() is defined as follows:
+
+```javascript
+o._ = function (n, t) {
+  return o.v.slice(n, n + t)
+}
+```
+
+Running this function with our value for b, removing conditionals not triggered on this call, 
+and noting that `f.g[1].g()` simply returns `[0]` (see the definition of `$()`), we can add the 
+following logic to our script:
+
+```javascript
+function decodeString(n, t) {
+  // edit: removed variables and cases that are not relevant to this call.
+  n[t[0]++];
+
+  for (let c = "", a = n[t[0]++], v = 0; v < a; v++) {
+    let l = n[t[0]++];
+    c += String.fromCharCode((4294967232 & l) | ((39 * l) & 63));
+  }
+  return c;
+}
+
+let strings = decodeString(bytecodeStrings, [0]);
+
+console.log(strings)
+```
+
+Which indeed returns the VM's strings, albeit concatenated together.
+
+```
+setTimecom.apple.fps.1_0navigator.mimeTypesi_cwwdtransformOriginufocusSTENCIL_VALUE_MASKjoinracecharAtaHR0cHM6Ly93d3cueW91dHVsasaiZS5jb20vd2F0Y2g/dj1lYUVNU0t6cUdBZw==hchContent-Typevjh[object Object]nppmnpxcvfif__valuesshouldAutoSolveCaptchaMax Varying ComponentsprepareStackTracexmpeg322MAX_UNIFORM_BLOCK_SIZEversionhostMax Texture LOD BiasWebClientUnknownErrorgetContextwebkitGenerateKeyRequestsensorFnGroupsArray.toString820x1180MAX_ARRAY_TEXTURE_LAYERSUnmasked VendorceMax Draw Buffersaudio/ogg; codecs="vorbis"MAX_3D_TEXTURE_SIZESCISSOR_BOXseedRandomValuepdjSecurityErroralignunicodelnhaacdataButtonHighlightlocationopsgetIsInstalledMAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBSUNIFORM_BUFFER_OFFSET_ALIGNMENT149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3screen-moz-default-colordomainLookupStartunloadEventEndMem123psic/0xFFFFFFFFFFFFFBFFgpcslicermmasetIntervalgetItemUNPACK_FLIP_Y_WEBGLinnerTextvideoELEMENT_ARRAY_BUFFER_BINDINGProxy_currentEventbindscorejsSTENCIL_BACK_REFtrolMax Uniform Buffer BindingsModuleScrollbarreloadwypxMax Separate Components$<([^>]+)>744x1133__asyncValuesaddEventListenerFRONT_FACEstyledomContentLoadedEventEndouterHeightxmlHTTPRequesteventsHistoryusredirectStartfilter[0]LINUX AARCH64asyncIterator19.123pxopenkl{}Coordinated Universal TimegetCaptchaWidgetpositionnwiframetransformfirstKeys-moz-ComboboxText377kgxgpMax Array Texture LayersvgetSupportedExtensionswpUnmasked RendererperformancehtmlbfeMenuTextMimeTypeArrayreturntoTimeStringmsbase64FromBytesFnremoveChildNaNSymbol.asyncIterator is not defined.missingwebkittypeMinsnpJsSdkSetupErrorwsoffsetkey must be 128-bitMAX_VIEWPORT_DIMS() => ['en-US', 'en']DEPTH_BITSAppWorkspaceMAX_TEXTURE_LOD_BIAScloseStencil Bitskeytxf3f6ed0597ef61c22e164558d7d87f7d1dpvFloat32ArrayTimeout__defineGetter__Max Vertex Uniform BlocksMax Separate AttribsdfpMemoryresSM-CrOSips.js?([^=]+)=([^:]{16})?[^:]+0Yg9URYdBlkigjo8bFZ88ZcEcDFIc3v74va9KajAhHF7GXXQJdplK2PEag8EPd51gZJ14rWFUT8l4WxflrxjsCSabdTxeyEOVtOekyCZNVurevCBj6o4wNVjpvEzH7VJfKvXRN6okifQg4YJy5taCQzH0reportErrors===InfoTextitsnavigationSAMPLESMAX_TEXTURE_IMAGE_UNITS__asyncDelegator__awaiterALIASED_POINT_SIZE_RANGE[path]hmdefinePropertyqdhObjectconfirmdsdEXT_texture_filter_anisotropicscriptx-kpsdk-vjlnMAX_VERTEX_UNIFORM_VECTORSxfwwidevineXMLHttpRequestcharCodeAtlistapplication/json;charset=UTF-8SCISSOR_TESTsetLocalDescriptionvisibleresponseEndMAX_VARYING_COMPONENTSowconnectEndMax Uniform Block Size2.1pxavailWidth476x847zvzVIEWPORTbmak.fpcf.fpVal()^functions*()s*{s*returns+_0x[0-9a-fA-F]+;?s*}s*brandspwid5margininvalid byte encountered during base64 conversionfile:dclfreeze~amijscommunicatorrefreshrequestMediaKeySystemAccessKPSDKresponseTextMax Vertex Texture Image UnitsvmxanimationmaxtransitionscrollLINUXcreateDataChannelpgdohivactrueBLENDtestmoz-extensionattemptScriptserror: searchHighlightalPr0FRAMEBUFFER_BINDINGzwxLINUX X86_64AutomationhelpersparseaudioforEachfontSHADING_LANGUAGE_VERSIONlanguageMax Sampleswav0ptm2beaef54a533d01dba30613085c6477bhcpKP_REF=^Mozilla(\/5|/5\.0).*$loadEventStart321 ;)promptInvalid attempt to iterate non-iterable instance.
+```
+
+Recovering the individual strings is more complicated, as the value of the instruction pointer 
+has to be known at the time `r._()` is run. A full dump of the strings can be found [here](https://gist.github.com/umasii/432c9ebf758ea4b5a21673c173112e8b).
+
+# What now?
+
+Although understanding the script architecture is likely sufficient to replicate a fingerprint through 
+rigorous debugging, we have barely scratched the surface of disassembling the virtual machine. Now that 
+we have a better understanding of the bytecode, as well as how it is decoded and interpreted, we can begin 
+analyzing the opcodes and registers in an attempt to restore JavaScript pseudocode. Namely, in order to 
+fully disassemble the virtual machine, it will be easiest to convert the bytecode to an intermediary representation, 
+similar to assembly, before attemping to fully decompile the program.
+
+However, that is a problem that will be tackled in the next post. In the meantime, I would encourage those who are 
+curious to play with the code themselves. Investigate how variables are stored in registers and later retrieved. 
+Whether or not there are further patterns in the opcodes, that can perhaps be used to generate traces without simply 
+running the VM. How can we tackle the problem of subroutines in the virtualization, or the control flow necessary for 
+the implementation of different loops?
+
+While I have the answers to some of these questions, the work is far from done. In the meantime, a few brief thanks are 
+in order:
+
+- Veritas: For being one of my first teachers through his open source repositories and blog posts, as well as for publishing this article.
+- Musicbot: For subliminally planting these ideas in my head over 2 years ago, and helping me cultivate my love for reverse engineering back in the day.
+
+![pic related](/posts/devirtualizing-nike-vm-1/met.webp)

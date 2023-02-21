@@ -44,7 +44,7 @@ const keywordSearchJsonResponse = {
   "feedback_type": "user"
 };
 
-const WebGLFingerprint = () => {
+export const WebGLFingerprint = () => {
   const [vendor, setVendor] = useState("");
   const [renderer, setRenderer] = useState("");
   const canvas = useRef<HTMLCanvasElement>();

@@ -1,5 +1,13 @@
 body {
-	@apply bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200 font-mono font-light;
+	@apply bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200 font-sansserif font-400;
+}
+
+p {
+	@apply font-sansserif font-400;
+}
+
+code {
+	@apply font-mono font-400;
 }
 
 .no-pre-margin pre {

@@ -1,8 +1,12 @@
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
 import Link from 'next/link';
 import {ReactNode} from 'react';
-import {posts} from '../posts';
+// import {posts} from '../posts';
+import { postFilePaths } from '../utils/mdxUtils';
 
-export default function Home() {
+export default function Home({ posts }: { posts: any[] }) {
 	return (
 		<>
 			<main className="space-y-8">
@@ -28,10 +32,10 @@ export default function Home() {
 
 				<ul className="space-y-1 list-disc list-inside">
 					{posts
-					.filter(post => !post.hidden)
+					.filter((post: any) => !post.hidden)
 					.map(post => (
-						<BlogLink key={post.slug} date={post.date} author={post.author} href={`/${post.slug}`}>
-							{post.name}
+						<BlogLink key={post.data.slug} filePath={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.href}`}>
+							{post.data.name}
 						</BlogLink>
 					))}
 				</ul>
@@ -43,14 +47,34 @@ export default function Home() {
 	);
 }
 
-function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
+function BlogLink(props: {href: string; date: string; author: string; filePath: string; children: ReactNode}) {
+	console.log("Props: ", props);
 	return (
 		<li className="flex">
-			<p className="w-24 text-right text-neutral-400">{props.date.toLocaleDateString()}</p>
-			<Link passHref href={props.href} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+			<p className="w-24 text-right text-neutral-400">{new Date(props.date).toLocaleDateString()}</p>
+			<Link passHref as={`/${props.filePath}`} href={`/[slug]`} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
 				{props.children}
 			</Link>
 			<p className="pl-2 text-neutral-400">- {props.author}</p>
 		</li>
 	);
+}
+
+export async function getStaticProps() {
+	const fps = await postFilePaths;
+	const posts = fps.map((filePath) => {
+    const source = fs.readFileSync(filePath);
+		console.log("Filepath: ", filePath);
+		console.log("Source: ", source);
+    const { content, data } = matter(source)
+		console.log("Content: ", content);
+		console.log("Data: ", data);
+    return {
+      content,
+      data,
+      filePath,
+    }
+  })
+
+  return { props: { posts } }
 }
