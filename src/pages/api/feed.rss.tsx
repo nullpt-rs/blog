@@ -2,14 +2,12 @@ import {NextRequest} from 'next/server';
 import {feed} from '../../server/feed';
 
 export const config = {
-	runtime: 'experimental-edge',
+	runtime: 'nodejs',
 };
 
-export default async function handler(req: NextRequest) {
-	return new Response(feed.rss2(), {
-		status: 200,
-		headers: {
-			'content-type': 'text/xml',
-		},
-	});
+export default function handler(req: NextRequest, res: any) {
+	res.setHeader('Content-Type', 'text/xml')
+	res.status(200);
+    res.write(feed.rss2())
+    res.end()
 }

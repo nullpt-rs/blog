@@ -9,6 +9,9 @@ const withMDX = require('@next/mdx')({
  **/
 const config = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
+  experimental: {
+    mdxRs: true,
+  },
 	typescript: {
 		ignoreBuildErrors: true,
 	},
@@ -48,42 +51,12 @@ const config = {
         permanent: false,
       },
       {
-        source: '/the-modernization-of-the-latrine',
-        destination: 'https://old.nullpt.rs/the-modernization-of-the-latrine',
-        permanent: false,
-      },
-      {
-        source: '/evading-anti-debugging-techniques',
-        destination: 'https://old.nullpt.rs/evading-anti-debugging-techniques',
-        permanent: false,
-      },
-      {
-        source: '/tackling-javascript-client-side-security-pt-2',
-        destination: 'https://old.nullpt.rs/tackling-javascript-client-side-security-pt-2',
-        permanent: false,
-      },
-      {
         source: '/how-do-i-make-a-bot',
         destination: 'https://old.nullpt.rs/how-do-i-make-a-bot',
         permanent: false,
       },
-      {
-        source: '/tackling-javascript-client-side-security-pt-1',
-        destination: 'https://old.nullpt.rs/tackling-javascript-client-side-security-pt-1',
-        permanent: false,
-      },
-      {
-        source: '/anatomy-of-a-supreme-bot-pt-2',
-        destination: 'https://old.nullpt.rs/anatomy-of-a-supreme-bot-pt-2',
-        permanent: false,
-      },
-      {
-        source: '/anatomy-of-a-supreme-bot-pt-1',
-        destination: 'https://old.nullpt.rs/anatomy-of-a-supreme-bot-pt-1',
-        permanent: false,
-      }
 		];
 	},
 };
 
-module.exports = config;
+module.exports = withMDX(config);

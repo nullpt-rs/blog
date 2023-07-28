@@ -33,8 +33,9 @@ export default function Home({ posts }: { posts: any[] }) {
 				<ul className="space-y-1 list-disc list-inside">
 					{posts
 					.filter((post: any) => !post.hidden)
+					.sort((p, p2) => Date.parse(p2.data.date) - Date.parse(p.data.date))
 					.map(post => (
-						<BlogLink key={post.data.slug} filePath={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.href}`}>
+						<BlogLink key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`}>
 							{post.data.name}
 						</BlogLink>
 					))}
@@ -47,28 +48,26 @@ export default function Home({ posts }: { posts: any[] }) {
 	);
 }
 
-function BlogLink(props: {href: string; date: string; author: string; filePath: string; children: ReactNode}) {
-	console.log("Props: ", props);
+export function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
 	return (
-		<li className="flex">
-			<p className="w-24 text-right text-neutral-400">{new Date(props.date).toLocaleDateString()}</p>
-			<Link passHref as={`/${props.filePath}`} href={`/[slug]`} className="pl-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
-				{props.children}
-			</Link>
-			<p className="pl-2 text-neutral-400">- {props.author}</p>
-		</li>
+		<div>
+			<div className="flex flex-col">
+				<Link passHref href={props.href} className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
+					{props.children}
+				</Link>
+				<div className="flex">
+					<p className="text-neutral-400">{new Date(props.date).toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+					<p className="pl-1 text-neutral-400">by <Link className="underline" passHref href={`/author/${props.author}`}>{props.author}</Link></p>
+				</div>
+			</div>
+		</div>
 	);
 }
-
 export async function getStaticProps() {
 	const fps = await postFilePaths;
 	const posts = fps.map((filePath) => {
     const source = fs.readFileSync(filePath);
-		console.log("Filepath: ", filePath);
-		console.log("Source: ", source);
     const { content, data } = matter(source)
-		console.log("Content: ", content);
-		console.log("Data: ", data);
     return {
       content,
       data,

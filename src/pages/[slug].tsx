@@ -9,6 +9,8 @@ import { MDXRemote } from 'next-mdx-remote';
 import Image from 'next/image';
 import { globby } from 'globby';
 import { WebGLFingerprint } from '../posts/2022/12/reverse-engineering-tiktok-vm-obfuscation/reverse-engineering-tiktok';
+import rehypePrism from 'rehype-prism-plus'
+import { OldPost } from '../client/components/oldpost';
 
 interface Props {
 	source: any;
@@ -19,6 +21,7 @@ interface Props {
 
 const components = {
 	Head,
+	OldPost: OldPost,
 	WebGLFingerprint,
 	img: (props: any) => (
     // height and width are part of the props, so they get automatically passed here with {...props}
@@ -43,7 +46,7 @@ export default function PostPage({source, frontMatter}: Props) {
 			)}
 
 			<div>
-				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600">
+				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono">
 					../
 				</Link>
 			</div>
@@ -51,7 +54,7 @@ export default function PostPage({source, frontMatter}: Props) {
 			<p>
 				<time dateTime={new Date(frontMatter.date).toISOString()}>{new Date(frontMatter.date).toDateString()}</time>
 			</p>
-			<small>authored by {frontMatter.author}</small>
+			<small>authored by <Link className="underline" passHref href={`/author/${frontMatter.author}`}>{frontMatter.author}</Link></small>
 			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
 				<h1>{frontMatter.name}</h1>
 				<MDXRemote {...source} components={components} />
@@ -73,7 +76,7 @@ export const getStaticProps: GetStaticProps<Props> = async ({params}) => {
 		scope: data,
 		mdxOptions: {
 			remarkPlugins: [],
-			rehypePlugins: [],
+			rehypePlugins: [rehypePrism],
 		},
 	});
 

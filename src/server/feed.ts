@@ -1,14 +1,23 @@
 import {Feed} from '@nullptrs/feed';
+import { postFilePaths } from '../utils/mdxUtils';
+import { readFileSync } from 'fs';
+import matter from 'gray-matter';
 
-import metadata1 from '../posts/2018/9/anatomy-of-a-supreme-bot-1/metadata.json'
-import metadata2 from '../posts/2018/9/anatomy-of-a-supreme-bot-2/metadata.json'
-import metadata3 from '../posts/2018/10/anatomy-of-a-supreme-bot-3/metadata.json'
-import metadata4 from '../posts/2019/02/tackling-javascript-client-side-security/metadata.json'
-import metadata5 from '../posts/2022/12/reverse-engineering-tiktok-vm-obfuscation/metadata.json'
-import metadata6 from '../posts/2022/05/new-blog/metadata.json'
-import metadata7 from '../posts/2023/01/devirtualizing-nike-bot-protection/metadata.json'
+async function getPosts() {
+	const fps = await postFilePaths;
+	const posts = fps.map((filePath) => {
+	console.log("File Path", filePath);
+    const source = readFileSync(filePath);
+    const { content, data } = matter(source)
+    return {
+      content,
+      data,
+      filePath,
+    }
+  });
 
-const posts = [metadata1, metadata2, metadata3, metadata4, metadata5, metadata6, metadata7];
+  return posts;
+}
 
 export const feed = new Feed({
 	title: 'nullpt.rs • blog',
@@ -24,19 +33,24 @@ export const feed = new Feed({
 	},
 });
 
-posts
-	.filter(post => !post.hidden)
+async function addPosts() {
+	const posts = await getPosts();
+	posts.filter(post => !post.data.hidden)
 	.forEach(post =>
 		feed.addItem({
-			title: post.name,
-			id: post.slug,
-			link: `${process.env.SITE_URL ?? ''}/${post.slug}`,
-			content: post.excerpt,
-			date: new Date(post.date),
+			title: post.data.name,
+			id: post.data.slug,
+			link: `${process.env.SITE_URL ?? ''}/${post.data.slug}`,
+			content: post.data.excerpt,
+			date: new Date(post.data.date),
 			author: [
 				{
-					name: post.author,
+					name: post.data.author,
 				},
 			],
 		})
 	);
+
+}
+
+addPosts();

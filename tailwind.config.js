@@ -6,12 +6,11 @@ module.exports = {
 	darkMode: 'media',
 	theme: {
 		fontFamily: {
-			sansserif: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif'],
-			mono: ['"DM Mono"', 'monospace'],
+			sansserif: ['Inter', '"SF Pro Display"', 'system-ui', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"'],
+			mono: ['"SFMono Regular"', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', 'monospace'],
 		},
 		fontWeight: {
-			light: 300,
-			400: 400,
+			light: 400,
 			medium: 500,
 		},
 	},

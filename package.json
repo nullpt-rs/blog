@@ -19,6 +19,7 @@
 		"@next/mdx": "^13.1.1",
 		"@nullptrs/feed": "^4.2.2",
 		"axios": "^0.26.1",
+		"bright": "^0.8.4",
 		"common-tags": "^1.8.2",
 		"cookie": "^0.4.2",
 		"dayjs": "^1.11.0",
@@ -32,6 +33,7 @@
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-syntax-highlighter": "^15.5.0",
+		"rehype-prism-plus": "^1.6.1",
 		"remark-images": "^3.1.0",
 		"sharp": "^0.30.7",
 		"urlcat": "^2.0.4"

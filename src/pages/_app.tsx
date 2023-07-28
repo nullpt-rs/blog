@@ -1,6 +1,6 @@
 import 'tailwindcss/tailwind.css';
 import '../styles/main.css';
-
+import '../styles/prism-one-dark.css';
 import React from 'react';
 import Head from 'next/head';
 import {AppProps} from 'next/app';
