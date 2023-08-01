@@ -40,38 +40,21 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     . We can find this endpoint by switching to a mobile user-agent and opening up the network
     tab in your browser’s dev tools while on the Supreme shop page.
 </p>
-<figure>
     ![Supreme fetching mobile_stock.json](/posts/anatomy-of-a-supreme-bot-part-1/mobile_stock.png)
-    <figcaption>Supreme fetching mobile_stock.json</figcaption>
-</figure>
 <p>
     One interesting field to note in the network tab is the Initiator. This tells us which
     script and even which function has made the call to request mobile_stock. Peeking inside
     the script, you’re able to find a lot of interesting things about the Supreme site. We’re
     interested in the loadDataForPoll function.
 </p>
-<figure>
-    ![Supreme loadDataForPoll function that grabs mobile_stock and updates the site view.](/posts/anatomy-of-a-supreme-bot-part-1/load_data_for_poll.png)
-    <figcaption>
-        Supreme loadDataForPoll function that grabs mobile_stock and updates the site view.
-    </figcaption>
-</figure>
-<figure>
-    ![Supreme calling their function every _pollInterval ms.](/posts/anatomy-of-a-supreme-bot-part-1/set_interval.png)
-    <figcaption>Supreme calling their function every _pollInterval ms.</figcaption>
-</figure>
-<figure>
-    ![_pollInterval set to 15000ms (15 seconds)](/posts/anatomy-of-a-supreme-bot-part-1/poll_interval.png)
-    <figcaption>_pollInterval set to 15000ms (15 seconds)</figcaption>
-</figure>
+![Supreme loadDataForPoll function that grabs mobile_stock and updates the site view.](/posts/anatomy-of-a-supreme-bot-part-1/load_data_for_poll.png)
+![Supreme calling their function every _pollInterval ms.](/posts/anatomy-of-a-supreme-bot-part-1/set_interval.png)
+![_pollInterval set to 15000ms (15 seconds)](/posts/anatomy-of-a-supreme-bot-part-1/poll_interval.png)
 <p>
     We’re able to visit this endpoint ourselves from the browser. Simply head to the URL and
     voila.
 </p>
-<figure>
-    ![Preview of the mobile_stock endpoint for FW18](/posts/anatomy-of-a-supreme-bot-part-1/mobile_stock_example.png)
-    <figcaption>Preview of the mobile_stock endpoint for FW18</figcaption>
-</figure>
+![Preview of the mobile_stock endpoint for FW18](/posts/anatomy-of-a-supreme-bot-part-1/mobile_stock_example.png)
 <p>
     Immediately, you’re able to view the name, id, image, price, and more of every single item
     in the shop as JSON. Most languages have JSON parsing libraries, find one of your choice.
@@ -88,42 +71,27 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     restocks but has the advantage of not iterating through as many items. Let’s go with
     option 2 for simplicity sake.
 </p>
-<figure>
-    ![An example of fetching and parsing mobile stock endpoint using Javascript](/posts/anatomy-of-a-supreme-bot-part-1/fetch_example.png)
-    <figcaption>
-        An example of fetching and parsing mobile stock endpoint using Javascript
-    </figcaption>
-</figure>
+![An example of fetching and parsing mobile stock endpoint using Javascript](/posts/anatomy-of-a-supreme-bot-part-1/fetch_example.png)
 <p>
     Keywords can be found by checking the [Supreme preview page](https://www.supremenewyork.com/previews/fallwinter2018/all)
     or by checking EU drop if you are in the US. Once finding your item, you want to store its
     id for the other steps.
 </p>
 <h1 id="finding-the-style-size">Finding the Style + Size</h1>
-<figure className="kg-card kg-image-card">
 ![Supreme shirt](/posts/anatomy-of-a-supreme-bot-part-1/supreme_shirt.png)
-</figure>
 <p>
     When visiting an item on the Supreme site you’re able to pick your style and sizing
     information in order to add to cart and checkout. Supreme pulls this information from the
     item’s endpoint and we’re able to find it using the same technique we used to find the
     mobile_stock endpoint.
 </p>
-<figure>
-    ![The item endpoint for the Hanes tee found inside the network tab on the item page](/posts/anatomy-of-a-supreme-bot-part-1/json_network.png)
-    <figcaption>
-        The item endpoint for the Hanes tee found inside the network tab on the item page
-    </figcaption>
-</figure>
+![The item endpoint for the Hanes tee found inside the network tab on the item page](/posts/anatomy-of-a-supreme-bot-part-1/json_network.png)
 <p>
     The endpoint follows the following format:
     https://www.supremenewyork.com/shop/&lt;id&gt;.json
    `id` being the id found inside the mobile_stock for the desired item.
 </p>
-<figure>
-    ![A preview of the endpoint for the Hanes tee FW18](/posts/anatomy-of-a-supreme-bot-part-1/variant_json.png)
-    <figcaption>A preview of the endpoint for the Hanes tee FW18</figcaption>
-</figure>
+![A preview of the endpoint for the Hanes tee FW18](/posts/anatomy-of-a-supreme-bot-part-1/variant_json.png)
 <p>
     Inside the endpoint is an array named “styles” containing all of the style objects for the
     particular item. Inside each style object we’re able to find the style name, id, image

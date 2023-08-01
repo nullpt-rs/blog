@@ -17,26 +17,17 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
 </p>
 <h1 id="add-to-cart">Add to Cart</h1>
 <p>How does adding to cart work you ask? Let’s open our network tab and find out.</p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/1.gif)
-    <figcaption>/add endpoint showing when adding to cart</figcaption>
-</figure>
+![/add endpoint showing when adding to cart](/posts/anatomy-of-a-supreme-bot-part-2/1.gif)
 <p>
     After clicking the “add to cart” button, Supreme sends a POST request to
     `https://supremenewyork.com/shop/<id>/add`
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/2.png)
-    <figcaption>A request to Supreme’s add endpoint on the Hanes boxers</figcaption>
-</figure>
+![A request to Supreme’s add endpoint on the Hanes boxers](/posts/anatomy-of-a-supreme-bot-part-2/2.png)
 <p>
     Looking at the form data, we notice fields <code>st</code> and <code>s</code> storing what
     seems to be IDs. If we check out the item’s json we can find out if this is true.
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/3.png)
-    <figcaption>Boxer’s item json</figcaption>
-</figure>
+![Boxer’s item json](/posts/anatomy-of-a-supreme-bot-part-2/3.png)
 <p>
     Looking at our style’s first field we find our id 21347 and under size small we find id
     59764. So we send a POST request to the add endpoint with the correct form body and we’re
@@ -47,9 +38,7 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     Opening up the request headers tab we’re able to find an interesting header:{' '}
     <code>x-csrf-token</code>
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/4.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/4.png)
 <p>
     x-csrf-tokens are used to prevent [cross-site request forgery](https://en.wikipedia.org/wiki/Cross-site_request_forgery). There has to be an easier way. And there is
 </p>
@@ -63,10 +52,7 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     Using a [user-agent switcher](https://chrome.google.com/webstore/detail/user-agent-switcher-for-c/djflhoibgkdhkhhcedjiklpkjnoahfmg) we’re able to switch to an iPhone user-agent and POST to the mobile endpoint instead of
     the desktop.
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/5.png)
-    <figcaption>ATC request from the mobile site</figcaption>
-</figure>
+![ATC request from the mobile site](/posts/anatomy-of-a-supreme-bot-part-2/5.png)
 <p>
     The form data is essentially the same. We still have a style id and a size id being
     passed. This time, we also have a qty field. This is the quantity and for most items will
@@ -78,21 +64,14 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     a mobile user-agent to POST to this endpoint and set the <code>content-type</code> to{' '}
     <code>application/x-www-form-urlencoded</code>
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/6.png)
-</figure>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/7.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/6.png)
+![](/posts/anatomy-of-a-supreme-bot-part-2/7.png)
 <p>
     The response from this request is an array containing all the items in your cart and
     whether or not they’re still in stock. The stock information is used to notify you when an
     item in your cart has been sold out.
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/8.png)
-    <figcaption>Response from /add.json endpoint</figcaption>
-</figure>
+![Response from /add.json endpoint](/posts/anatomy-of-a-supreme-bot-part-2/8.png)
 <p>Once you have all your items in cart, it’s time to checkout.</p>
 <h1 id="checkout">Checkout</h1>
 <p>
@@ -101,30 +80,21 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     extensions do. Your second option is to do what we’re already doing and POST to the
     checkout endpoint. Lets view the second option.
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/9.png)
-    <figcaption>The mobile checkout page</figcaption>
-</figure>
+![The mobile checkout page](/posts/anatomy-of-a-supreme-bot-part-2/9.png)
 <p>
     After putting in some fake data we’re ready to checkout and find which endpoint is
     contacted.
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/10.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/10.png)
 <p>
     Time to process payment. *click*
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/11.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/11.png)
 <p>
     Uh oh, there’s a captcha. Supreme added ReCAPTCHA to their checkout in March 2017 to
     combat bots. After completing the captcha we’re able to view the request
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/12.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/12.png)
 <p>
     All of your checkout information gets sent to `https://www.supremenewyork.com/checkout.json`
 </p>
@@ -132,17 +102,13 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     Everything here is pretty normal but one thing that may stand out is the
     `cookie-sub`. Placing the cooke-sub in a URL decoder shows us what this truly is.
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/13.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/13.png)
 <p>
     59764 is the size ID for our item and 1 is the quantity. This is stored as JSON and URL
     encoded to create the cookie-sub.
 </p>
 <p>Let’s see what other fields we have to POST to checkout.json</p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/14.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/14.png)
 <p>
     Oh darn, it’s that captcha response from the puzzle we completed earlier. This is bad
     because it means we need to complete a captcha for each checkout. Bots have two ways of
@@ -181,25 +147,18 @@ keywords: supreme,bots,surpeme bots,javascript,reverse engineering
     user. If all information is correct, you’ll get a status of <code>queued</code> and a
     slug.
 </p>
-<figure className="kg-card kg-image-card kg-card-hascaption">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/16.png)
-    <figcaption>We’re in queue and we have a slug!</figcaption>
-</figure>
+![We’re in queue and we have a slug!](/posts/anatomy-of-a-supreme-bot-part-2/16.png)
 <p>
     This slug comes in handy because it lets us see whether or not we’ve gotten the items in
     our cart.
 </p>
 <h1 id="checking-status">Checking Status</h1>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/17.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/17.png)
 <p>
     After the checkout request follows a status.json GET request.{' '}
     `https://www.supremenewyork.com/checkout/<slug>/status.json`
 </p>
-<figure className="kg-card kg-image-card">
-    ![](/posts/anatomy-of-a-supreme-bot-part-2/18.png)
-</figure>
+![](/posts/anatomy-of-a-supreme-bot-part-2/18.png)
 <p>
     The response to this is similar to the checkout.json response. Status will returned queued
     if checkout is still not complete. It will return failed if checkout has failed. Because
