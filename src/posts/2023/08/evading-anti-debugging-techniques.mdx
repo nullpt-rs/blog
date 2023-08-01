@@ -1,0 +1,95 @@
+---
+slug: evading-anti-debugging-techniques
+date: Aug 1 2023
+author: veritas
+name: Evading JavaScript Anti-Debugging Techniques
+excerpt: Debuggers serve as invaluable tools that empower developers to halt code execution and thoroughly analyze its behavior at any given moment. By utilizing debuggers, developers can efficiently identify and resolve issues within their code, making it an indispensable part of their toolkit.
+keywords: supreme,obfuscation,reverse engineering,javascript,firefox,debugger,anti-debugging
+---
+
+Debuggers serve as invaluable tools that empower developers to halt code execution and thoroughly 
+analyze its behavior at any given moment. By utilizing a debugger, developers can efficiently 
+identify and resolve issues within their code, making it an indispensable part of their toolkit.
+
+![Chromium's dev tools debugger](/posts/evading-anti-debugging-techniques/chromium_debugger.webp)
+
+Debuggers are equally valuable tools for reverse-engineers, especially when dealing with obfuscated 
+code that frequently employs name-mangling techniques for variables and functions. By utilizing 
+debuggers, reverse-engineers can gain crucial insights into the functionality of obscured functions. 
+Companies that employ client-side protection are aware of this fact and thus devise strategies to thwart 
+attempts at debugging protected code.
+
+Once upon a time, whenever you tried to open your devtools on Supreme's website, you found yourself trapped 
+in a pesky debugger loop. This made it incredibly annoying to reverse engineer their anti-bot scripts. 
+
+## The Obvious Approach
+
+In many browsers, there's an option to disable all breakpoints from triggering. While this approach will prevent 
+getting stuck in a loop, it comes with a trade-off – the debugger's functionality for further analysis becomes 
+unavailable.
+
+![Deactivating breakpoints in Chromium](/posts/evading-anti-debugging-techniques/deactivate_breakpoints.webp)
+
+For complex scripts like the anti-bot employed by Supreme, this approach was simply not an option.
+
+## The Ez Approach
+
+Greasyfork scripts such as Anti Anti-debugger attempt to bypass these debugger traps by overriding the caller's 
+function body, removing the debugger statements, and `eval` the new function. While this approach seemed promising, 
+it unfortunately does not succeed with JScrambler-protected scripts due to the evaluation of debugger traps in a distinct 
+context.
+
+They also utilize integrity checks[^1] and hide debugger calls inside of further obfuscated eval functions[^2].
+
+[^1]: https://docs.jscrambler.com/code-integrity/documentation/transformations/anti-tampering
+[^2]: https://docs.jscrambler.com/code-integrity/documentation/transformations/self-defending
+
+![JScrambler's debugger trap being called from an eval context](/posts/evading-anti-debugging-techniques/jscrambler_debug_trap.webp)
+
+## The Final Approach
+
+The approach my friend Jordin and I ultimately adopted involved renaming the debugger keyword entirely. 
+By renaming it to something like "banana," the debugger would no longer trigger on occurrences of the `debugger` 
+keyword. To achieve this, we built customized version of Firefox. If you're interested in trying 
+this out, here's the patch we came up with.
+
+```diff
+--- a/js/src/frontend/ReservedWords.h
++++ b/js/src/frontend/ReservedWords.h
+@@ -20,7 +20,7 @@
+   MACRO(catch, catch_, TokenKind::Catch)                \
+   MACRO(const, const_, TokenKind::Const)                \
+   MACRO(continue, continue_, TokenKind::Continue)       \
+-  MACRO(debugger, debugger, TokenKind::Debugger)        \
++  MACRO(ticket_debugger, debugger, TokenKind::Debugger) \
+   MACRO(default, default_, TokenKind::Default)          \
+   MACRO(delete, delete_, TokenKind::Delete)             \
+   MACRO(do, do_, TokenKind::Do)                         \
+--- a/js/src/vm/CommonPropertyNames.h
++++ b/js/src/vm/CommonPropertyNames.h
+@@ -107,7 +107,7 @@
+   MACRO_(currencySign, currencySign, "currencySign")  \
+   MACRO_(day, day, "day")                             \
+   MACRO_(dayPeriod, dayPeriod, "dayPeriod")           \
+-  MACRO_(debugger, debugger, "debugger")              \
++  MACRO_(ticket_debugger, debugger, "ticket_debugger")\
+   MACRO_(decimal, decimal, "decimal")                 \
+```
+
+Finding this was daunting as reading through a browser's codebase is never a fun time. A simple 
+grep for a keyword like "debugger" could produce thousands of results, making the search 
+even more challenging.
+
+Many builds later, we tested our patch by loading the anti-bot script `ticket.js` and hooking 
+`Array.prototype.slice`[^3] to call our new `ticket_debugger` keyword.
+
+[^3]: Supreme's anti-bot system relied on the AES library [aes-js](https://github.com/ricmoo/aes-js), which utilizes `Array.prototype.slice` internally for managing encryption keys used on crucial cookies
+
+![Our new `ticket_debugger` keyword triggers a breakpoint](/posts/evading-anti-debugging-techniques/ticket_debugger.webp)
+
+## It works!
+
+We introduced a new `ticket_debugger` keyword, which not only triggers a breakpoint but also resolves 
+the issue of the previous debugger infinite loop. We also extended this custom browser to 
+automatically retrieve the anti-bot's obfuscated encryption round keys and convert them back to their 
+original form, but I'll cover that in a later post :)

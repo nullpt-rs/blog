@@ -12,6 +12,7 @@ import rehypePrism from 'rehype-prism-plus'
 import { OldPost } from '../client/components/oldpost';
 import { WebGLFingerprint } from '../client/components/webgl_fingerprint';
 import { AuthorLinks } from '../client/components/author_links';
+import remarkGfm from 'remark-gfm'
 
 interface Props {
 	source: any;
@@ -25,8 +26,10 @@ const components = {
 	OldPost: OldPost,
 	WebGLFingerprint,
 	img: (props: any) => (
-    // height and width are part of the props, so they get automatically passed here with {...props}
-    <Image {...props} layout="responsive" loading="lazy" width={100} height={100} />
+	<figure className="prose-img flex flex-col items-center">
+		<Image {...props} layout="responsive" loading="lazy" width={100} height={100} />
+		<figcaption>{props.alt}</figcaption>
+	</figure>
   ),
 };
 
@@ -77,7 +80,7 @@ export const getStaticProps: GetStaticProps<Props> = async ({params}) => {
 	const mdxSource = await serialize(content, {
 		scope: data,
 		mdxOptions: {
-			remarkPlugins: [],
+			remarkPlugins: [remarkGfm],
 			rehypePlugins: [rehypePrism],
 		},
 	});
