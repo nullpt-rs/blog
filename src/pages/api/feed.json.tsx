@@ -1,10 +1,11 @@
 import type {NextRequest} from 'next/server';
-import {feed} from '../../server/feed';
+import {addPosts, feed} from '../../server/feed';
 
 export const config = {
 	runtime: 'nodejs',
 };
 
-export default function handler(req: NextRequest, res: any) {
+export default async function handler(req: NextRequest, res: any) {
+	await addPosts();
 	res.status(200).json(JSON.parse(feed.json1()));
 }

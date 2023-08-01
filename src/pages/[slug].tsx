@@ -8,9 +8,9 @@ import matter from 'gray-matter';
 import { MDXRemote } from 'next-mdx-remote';
 import Image from 'next/image';
 import { globby } from 'globby';
-import { WebGLFingerprint } from '../posts/2022/12/reverse-engineering-tiktok-vm-obfuscation/reverse-engineering-tiktok';
 import rehypePrism from 'rehype-prism-plus'
 import { OldPost } from '../client/components/oldpost';
+import { WebGLFingerprint } from '../client/components/webgl_fingerprint';
 
 interface Props {
 	source: any;

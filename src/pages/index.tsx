@@ -1,9 +1,7 @@
 import fs from 'fs';
-import path from 'path';
 import matter from 'gray-matter';
 import Link from 'next/link';
 import {ReactNode} from 'react';
-// import {posts} from '../posts';
 import { postFilePaths } from '../utils/mdxUtils';
 
 export default function Home({ posts }: { posts: any[] }) {
@@ -48,7 +46,7 @@ export default function Home({ posts }: { posts: any[] }) {
 	);
 }
 
-export function BlogLink(props: {href: string; date: Date; author: string; children: ReactNode}) {
+export function BlogLink(props: {href: string; date: string; author: string; children: ReactNode}) {
 	return (
 		<div>
 			<div className="flex flex-col">

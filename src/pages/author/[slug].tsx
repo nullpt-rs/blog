@@ -13,6 +13,16 @@ interface Props {
     }
 }
 
+interface Post {
+    data: {
+        hidden: boolean;
+        date: string;
+        author: string;
+        slug: string;
+        name: string;
+    }
+}
+
 export default function PostPage({ author, data }: Props) {
     return (
         <div className="space-y-4 m-auto max-w-4xl">
@@ -25,8 +35,9 @@ export default function PostPage({ author, data }: Props) {
             <h1>Posts by <strong>{author}</strong></h1>
             <ul className="space-y-1 list-disc list-inside">
                 {data
-                    .filter((post: any) => !post.data.hidden)
-                    .map((post: any) => (
+                    .filter((post: Post) => !post.data.hidden)
+                    .sort((p: Post, p2: Post) => Date.parse(p2.data.date) - Date.parse(p.data.date))
+                    .map((post: Post) => (
                         <BlogLink key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`}>
                             {post.data.name}
                         </BlogLink>
