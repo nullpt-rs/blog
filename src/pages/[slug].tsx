@@ -11,6 +11,7 @@ import { globby } from 'globby';
 import rehypePrism from 'rehype-prism-plus'
 import { OldPost } from '../client/components/oldpost';
 import { WebGLFingerprint } from '../client/components/webgl_fingerprint';
+import { AuthorLinks } from '../client/components/author_links';
 
 interface Props {
 	source: any;
@@ -58,6 +59,7 @@ export default function PostPage({source, frontMatter}: Props) {
 			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
 				<h1>{frontMatter.name}</h1>
 				<MDXRemote {...source} components={components} />
+				<AuthorLinks author={frontMatter.author} />
 			</main>
 			<footer className="my-8 text-center">
 				<span><span className="text-neutral-500">Content on this site is licensed</span> <Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link></span>
