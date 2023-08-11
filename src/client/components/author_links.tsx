@@ -13,6 +13,13 @@ const authorData = {
             discord: "umasi."
         }
     },
+    "jordin": {
+        contacts: {
+            website: "https://jord.in/",
+            twitter: "https://twitter.com/jordinjm",
+            discord: "jordin"
+        }
+    }
 };
 
 type Authors = keyof typeof authorData;

@@ -1,0 +1,1047 @@
+---
+slug: compiling-browser-to-bypass-antibot-measures
+date: Aug 11 2023
+author: jordin
+name: Compiling a Custom Browser to Bypass Anti-Bot Measures
+excerpt: In this blog post, I will be documenting the journey veritas and I took to extract the AES keys and browser flags/fingerprint from the Supreme anti-bot system.
+keywords: supreme,obfuscation,reverse engineering,javascript,firefox,debugger,anti-debugging,firefox,aes
+---
+
+## Preamble
+In this blog post, I will be documenting the journey [veritas](https://www.nullpt.rs/author/veritas) and I took to extract the AES keys and browser flags/fingerprint from the Supreme anti-bot system. This work was done using the `ticket.js` anti-bot from March, 2021, and is being published now that Supreme has migrated away from the ticket anti-bot system in favour of using Shopify. Extracting these keys allows for a complete bypass of the anti-bot system.
+
+## Chapter 1: Background
+Supreme, renowned for its streetwear apparel, "drops" (merchandise release) its products in extremely limited numbers. This makes it highly desirable for scalpers who use bots to buy these products in bulk in order to sell them for insane markups. In the Fall/Winter 2016 collection, Supreme sold a red clay brick for $30 that resold for $250 at it's peak.[^clay-brick] In response to this trend, Supreme took action by unveiling its proprietary anti-bot solution, initially dubbed `pooky.js`. The anti-bot that Supreme used for their Spring 2021 season was known as "ticket" due to the file `ticket.js` that created the required cookies. During this time, the implementation and obfuscation techniques of the anti-bot were constantly evolving and it would be common to have a new version for each drop. This is likely due to how much information was publicly known about the mechanics of the anti-bot. While the exact implementation changed quite a bit throughout the evolution of ticket, starting in JS then moving to WASM then back to JS, each version essentially operated in the same manner.
+
+[^clay-brick]: The anti-bot wasn't a result of this exact release but is a perfect example of a ridiculous markup on a basic item. https://stockx.com/supreme-clay-brick-red
+
+### Cookie Format
+The main result from executing the `ticket.js` script is the `ntbcc` cookie, which is essentially a proof-of-work that is used in subsequent requests to Supreme. In the construction of this cookie, several browser challenges are used to form a browser fingerprint. These challenges included straightforward webdriver checks, canvas fingerprinting, checking for media playback through the use of the `canPlayType()` method, and various other techniques used to classify the environment the user was executing the script in. This fingerprint is embedded in the cookie in an encrypted form and Supreme decrypts this cookie on the server to verify the fingerprint matches one of the allowed web browsers. This is done in an attempt to prevent botting, as constructing a single cookie correctly would seemingly require running all of the challenges in a genuine web browser. In reality, once the browser fingerprint was determined, many of these cookies could be generated and then encrypted using the encryption key stored somewhere in the `ticket.js` file.
+
+### New Request: /live.json
+During this season, a new request was added as a part of the ticket anti-bot system. A request is sent to `/live.json` and Supreme responds with a (seemingly) randomly generated token. The following is an example of the body of the response: 
+```js
+{
+  "v": "a3c8ee7949fab93156c66ffb5f2de4b0a305337550b42407a5f2441cedfab5d8dc8d8ee8c2026e13e7b960211928f1c97edd5d93218d759c9c06fb6d0bf4aeb503ea17528561a083f6a0ff3548dd440b"
+}
+```
+
+In the object of this response, there's a single `v` field with a value of 160 hexadecimal values, representing a sequence of 80-bytes. Through reverse-engineering of `ticket.js`, it was known that these 80-bytes contained two values:
+1. 64-bytes ciphertext [^1]
+2. 16-bytes IV (Initialization Vector)
+
+[^1]: Using the term *ciphertext* may be a bit misleading as even after analysis, there was no obvious interpretation of the *plaintext*. Interpreting it as UTF-7 shows some structure but this could simply be some structure in another encoding.
+
+When generating a `ntbcc` cookie, the ciphertext is decrypted using a dedicated decryption key and is inserted in the decrypted form of the cookie. 
+
+### Cookie Generation Procedure
+To properly construct a ticket cookie the following three pieces of information are required:
+- A: `live.json` decryption key
+- B: Browser-specific fingerprint
+- C: Final `ntbcc` cookie encryption key
+
+Using these three pieces of information, a copious number of `ntbcc` cookies can be arbitrarily generated using the following procedure:
+1. Send a request to `/live.json` to obtain a token to embed in the `ntbcc` cookie.
+2. Use (A) to decrypt the value of live token
+3. Concatenate the decrypted token[^2] with (B) to create the plaintext form of the `ntbcc` cookie
+4. Use (C) to encrypt the plaintext form of the `ntbcc` cookie[^3]
+
+[^2]: The plaintext of the token is 56-bytes (+8-bytes padding) while only the first 48-bytes are used in cookie and the remaining 8-bytes are discarded.
+
+[^3]: There's an additional randomly generated IV that is included in the cookie.
+
+This procedure can be seen below:
+
+<details>
+<summary>Example Cookie Generation Code</summary>
+
+```ts
+const aesjs = require('aes-js');
+const { randomBytes } = require('crypto');
+
+const generateCookie = ({ liveToken, liveDecryptionKey, cookieEncryptionKey, fingerprint }) => {
+  const liveCipherLength = 128; // in hex characters (64 bytes)
+  const liveCipherText = aesjs.utils.hex.toBytes(liveToken.slice(0, liveCipherLength));
+  const liveIv = aesjs.utils.hex.toBytes(liveToken.slice(liveCipherLength));
+  const liveAesCbc = new aesjs.ModeOfOperation.cbc(liveDecryptionKey, liveIv);
+
+  const liveDecrypted = liveAesCbc.decrypt(liveCipherText);
+  
+  const liveLengthInCookie = 48; // (in bytes)
+  const livePortion = Array.from(liveDecrypted.slice(0, liveLengthInCookie));
+  
+  const cookieDecrypted = livePortion.concat(fingerprint);
+  const cookieIv = Array.from(randomBytes(16));
+  const cookieAesCbc = new aesjs.ModeOfOperation.cbc(cookieEncryptionKey, cookieIv);
+  
+  const cookie = cookieAesCbc.encrypt(aesjs.padding.pkcs7.pad(cookieDecrypted));
+  const cookieHex = aesjs.utils.hex.fromBytes(Array.from(cookie).concat(cookieIv));
+
+  return cookieHex;
+}
+
+// The value `v` from the /live.json response
+const liveToken = "3a765667139687af19c7486afefb5e5880d8cd1dcda9ee3ad46732776eed35413c96b3ef4ae7611b85db10ab76b0f0d56bdbfa17fd57eb423ae16234dcf98f9e04f24ac7d03879063c55a88ecb2d439a";
+
+const liveDecryptionKey = [
+  0xb6, 0x3a, 0xd0, 0x39, 0xcb, 0xca, 0x2c, 0xc5, 
+  0xd4, 0xfc, 0x30, 0x43, 0x93, 0x90, 0xfa, 0x55, 
+  0xac, 0x9e, 0x5f, 0xc2, 0x79, 0xcf, 0x9d, 0x94, 
+  0x34, 0x92, 0x54, 0xf2, 0xa4, 0xf7, 0x9f, 0x4e 
+];
+
+const cookieEncryptionKey = [
+  0x79, 0x81, 0x5a, 0xd3, 0xf6, 0x53, 0x8e, 0xcc, 
+  0x19, 0x77, 0xc9, 0x9d, 0xe5, 0x04, 0x34, 0x26, 
+  0x61, 0x3d, 0xe9, 0xc3, 0xf2, 0xfe, 0x28, 0xdf, 
+  0x52, 0x83, 0xf6, 0x1d, 0xb3, 0xad, 0x4f, 0x78
+];
+
+const fingerprint = [
+  0x4d, 0x61, 0xab, 0x0f, 0xce, 0xaa, 0x32, 0x46, 
+  0x52, 0x75, 0x35, 0x08, 0xef, 0x84, 0x78, 0xc1, 
+  0xd1, 0x9a, 0xc5, 0x3b, 0xa5, 0xa2, 0xac, 0xd6, 
+  0xd9, 0x6b, 0xca, 0xf6, 0xc0, 0x79, 0x82, 0xca, 
+  0xaf, 0x8d, 0x86, 0x3a, 0x89, 0xe5, 0x0a, 0x5c, 
+  0xa0, 0xa9, 0x40, 0x1c, 0x04, 0x74, 0xd7, 0x89, 
+  0x28, 0x12, 0x55, 0x4f, 0x52, 0x34, 0x0c, 0x6d, 
+  0x6c, 0x65, 0x72, 0x2e, 0xe7, 0xde, 0x29, 0x4e, 
+  0xd3, 0x46, 0xf9, 0xdd, 0xd5, 0xc6, 0x90, 0x50
+];
+
+const cookieHex = generateCookie({ liveToken, liveDecryptionKey, cookieEncryptionKey, fingerprint });
+
+// the value of the `ntbcc` cookie (all of the browser fingerprints collected)
+console.log(cookieHex);
+```
+
+</details>
+
+Which can be condensed as:
+
+```js
+const ntbcc = encrypt(
+    decrypt(
+        live.v.cipher, // first 64 bytes
+        decryptKey, 
+        live.v.decryptIv // last 16 bytes
+    ).slice(0, 48) + fingerprint,
+    encryptKey,
+    encryptIv
+) + encryptIv
+```
+
+### aes-js Analysis
+To perform the encryption and decryption functions, `ticket.js` uses the [aes-js](https://github.com/ricmoo/aes-js/) library (or something very similar to it). Therefore, this section includes code snippets from the [aes-js](https://github.com/ricmoo/aes-js/) project created by [ricmoo](https://github.com/ricmoo/) which is licensed under the MIT License. These snippets are presented to illustrate the approach used to extract the decryption and encryption keys.
+
+<details>
+<summary>aes-js License</summary>
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2015 Richard Moore
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+</details>
+
+#### Decryption
+The ultimate goal is to obtain the decryption key in order to be able to decrypt the `live.json` token. Usually, the decryption key would be fairly trivial to extract. However, in an effort to make this process more difficult, `ticket.js` removes the decryption and encryption keys from source and instead inlines the expanded keys. The value of `_Kd` (expanded decryption key) used throughout the [aes-js decrypt function](https://github.com/ricmoo/aes-js/blob/7c9fad4add4b349dcb89a4e2125f37defaef3bc8/index.js#L331-L368) can be used to obtain the original decryption key[^4]. The following is the implementation of the decrypt function with 3 comments added.
+
+[^4]: Due to how the expanded decryption key is calculated, only the last two expanded keys are needed to construct the original decryption key.
+
+```js
+AES.prototype.decrypt = function(ciphertext) {
+  if (ciphertext.length != 16) {
+    throw new Error('invalid ciphertext size (must be 16 bytes)');
+  }
+
+  var rounds = this._Kd.length - 1;
+  var a = [0, 0, 0, 0];
+
+  var t = convertToInt32(ciphertext);
+  for (var i = 0; i < 4; i++) {
+    t[i] ^= this._Kd[0][i]; // (A) Simple XOR with first expanded key
+  }
+
+  for (var r = 1; r < rounds; r++) {
+    for (var i = 0; i < 4; i++) {
+      a[i] = (T5[(t[ i          ] >> 24) & 0xff] ^
+              T6[(t[(i + 3) % 4] >> 16) & 0xff] ^
+              T7[(t[(i + 2) % 4] >>  8) & 0xff] ^
+              T8[ t[(i + 1) % 4]        & 0xff] ^
+              this._Kd[r][i]); // (B) XOR with the second through fourteenth expanded key
+    }
+    t = a.slice();
+  }
+
+  var result = createArray(16), tt;
+  for (var i = 0; i < 4; i++) {
+    tt = this._Kd[rounds][i];
+    // (C) XOR performed separately for each byte for the fifteenth expanded key
+    result[4 * i    ] = (Si[(t[ i         ] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
+    result[4 * i + 1] = (Si[(t[(i + 3) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
+    result[4 * i + 2] = (Si[(t[(i + 2) % 4] >>  8) & 0xff] ^ (tt >>  8)) & 0xff;
+    result[4 * i + 3] = (Si[ t[(i + 1) % 4]        & 0xff] ^  tt       ) & 0xff;
+  }
+
+  return result;
+}
+```
+
+As described in the comments, the value of `_Kd` is used in three separate ways in the function:
+* A: Simple XOR with first expanded key
+* B: XOR with the second through fourteenth expanded key
+* C: XOR performed separately for each byte for the fifteenth expanded key
+
+With a known plaintext and a capture of the inputs for each XOR operation, it would be possible to reconstruct the value of `_Kd` and thus obtain the decryption key. However, there are many challenges faced using this approach and this is far easier said than done. While in earlier versions of ticket (December 2020), it was possible to easily transform the AST (Abstract Syntax Tree) of `ticket.js` to essentially hook all XOR operations, this is no longer feasible due to the updated obfuscation techniques. Additionally, extracting the fifteenth round would prove to be challenging, as the values are all calculated byte-by-byte. Because of this, the inputs for each XOR operation are incredibly small and would be difficult to identify between all other irrelevant XOR operations.
+
+#### Encryption
+The ultimate goal is to obtain the encryption key in order to be able to encrypt the final `ntbcc` cookie. The value of `_Ke` (expanded encryption key) used throughout the [aes-js encrypt function](https://github.com/ricmoo/aes-js/blob/7c9fad4add4b349dcb89a4e2125f37defaef3bc8/index.js#L292-L329) can be used to obtain the original encryption key[^5]. The following is the implementation of the encrypt function with 3 comments added.
+
+[^5]: Due to how the expanded encryption key is calculated, only the first two expanded keys are needed to construct the original encryption key.
+
+```js
+AES.prototype.encrypt = function(plaintext) {
+  if (plaintext.length != 16) {
+    throw new Error('invalid plaintext size (must be 16 bytes)');
+  }
+
+  var rounds = this._Ke.length - 1;
+  var a = [0, 0, 0, 0];
+
+  var t = convertToInt32(plaintext);
+  for (var i = 0; i < 4; i++) {
+    t[i] ^= this._Ke[0][i]; // (A) Simple XOR with first expanded key
+  }
+
+  for (var r = 1; r < rounds; r++) {
+    for (var i = 0; i < 4; i++) {
+      a[i] = (T1[(t[ i         ] >> 24) & 0xff] ^
+              T2[(t[(i + 1) % 4] >> 16) & 0xff] ^
+              T3[(t[(i + 2) % 4] >>  8) & 0xff] ^
+              T4[ t[(i + 3) % 4]        & 0xff] ^
+              this._Ke[r][i]); // (B) XOR with the second through fourteenth expanded key
+    }
+    t = a.slice();
+  }
+
+  var result = createArray(16), tt;
+  for (var i = 0; i < 4; i++) {
+    tt = this._Ke[rounds][i];
+    // (C) XOR performed separately for each byte for the fifteenth expanded key
+    result[4 * i    ] = (S[(t[ i         ] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
+    result[4 * i + 1] = (S[(t[(i + 1) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
+    result[4 * i + 2] = (S[(t[(i + 2) % 4] >>  8) & 0xff] ^ (tt >>  8)) & 0xff;
+    result[4 * i + 3] = (S[ t[(i + 3) % 4]        & 0xff] ^  tt       ) & 0xff;
+  }
+
+  return result;
+}
+```
+
+As described in the comments, the value of `_Ke` is used in three separate ways in the function:
+* A: Simple XOR with first expanded key
+* B: XOR with the second through fourteenth expanded key
+* C: XOR performed separately for each byte for the fifteenth expanded key
+
+Which is... exactly how `_Kd` is used in the decryption function. However, the plaintext input to the encrypt function must somehow be known. After that is solved and once the challenges described in the decryption section are dealt with, the approach can be easily adapted to obtain the encryption key. The main differences between the encrypt and decrypt functions are simply the transformation and substitution tables that are used in each function.
+
+## Chapter 2: Extracting the Decryption Key
+The following two chapters were initially implemented in JavaScript that was loaded alongside a modified `ticket.js`. However, over time this became challenging as the obfuscation used on ticket improved and ultimately that implementation was replaced by a C++ implementation which was added to a customized version of firefox. The very first change that was made was the change described in [Evading JavaScript Anti-Debugging Techniques](https://www.nullpt.rs/evading-anti-debugging-techniques). Afterwards, the changes described in the next two chapters were made to ultimately have a custom firefox browser that was capable of extracting the decryption/encryption keys and browser fingerprint from the ticket anti-bot.
+
+### Adding Custom Sources
+The next changes made were the creation of the following three files:
+1. `aes_constants.cpp`: stored lookup tables for encryption transformations (T1, T2, T3, T4), decryption (T5, T6, T7, T8), and the transformations for the decryption key expansion (U1, U2, U3, U4).
+2. `aes_helper.cpp`: held functions for performing the various AES operations (encrypt, decrypt, substitution, etc.) and a function to convert the decryption expanded key to the original decryption key.
+3. `ticket.cpp`: held the key extraction logic described over the next two chapters. 
+
+Then, to have these files included in the firefox compilation, they were added to the `SOURCES` array in `moz.build`:
+
+```diff
+--- a/js/src/moz.build
++++ b/js/src/moz.build
+@@ -449,6 +449,9 @@ UNIFIED_SOURCES += [
+ SOURCES += [
+     "builtin/RegExp.cpp",
+     "jsmath.cpp",
++    "ticket/aes_constants.cpp",
++    "ticket/aes_helper.cpp",
++    "ticket/ticket.cpp",
+     "util/DoubleToString.cpp",
+     "util/Utility.cpp",
+     "vm/Interpreter.cpp",
+```
+
+### AES Utility Functions
+As previously mentioned, several different AES utility functions were created to perform the decryption and encryption operations. These functions are so common you could probably get ChatGPT to write them[^6] and are just included here to cover every aspect of the procedure.
+
+[^6]: Please do not use ChatGPT to write your important encryption/decryption code!
+
+<details>
+<summary>aes_helper</summary>
+
+`aes_helper.h`:
+```cpp
+#ifndef ticket_aes_helper_h
+#define ticket_aes_helper_h
+
+#include <stdint.h>
+
+namespace ticket {
+    #define ENCRYPT_ROUND_COUNT (2)
+    #define DECRYPT_ROUND_COUNT (15)
+    #define AES_BLOCK_SIZE (4)
+    #define AES_BLOCK_SIZE_BYTES ((AES_BLOCK_SIZE) * 4)
+
+    #define BYTE0(num) (((num) >> 24) & 0xFF)
+    #define BYTE1(num) (((num) >> 16) & 0xFF)
+    #define BYTE2(num) (((num) >> 8) & 0xFF)
+    #define BYTE3(num) ((num) & 0xFF)
+    #define BE_NUM(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | (d))
+
+    #define ROUND_BYTE(round_key, idx, byte_idx) ((round_key)[(idx) % AES_BLOCK_SIZE].bytes[(byte_idx)])
+
+    typedef struct decrypt_round_keys {
+        uint32_t round_keys[DECRYPT_ROUND_COUNT][AES_BLOCK_SIZE];
+    } decrypt_round_keys_t;
+
+    typedef struct encrypt_round_keys {
+        uint32_t round_keys[ENCRYPT_ROUND_COUNT][AES_BLOCK_SIZE];
+    } encrypt_round_keys_t;
+
+    uint32_t calculate_encrypt(const uint32_t round_key[AES_BLOCK_SIZE], int base);
+
+    uint32_t calculate_decrypt(const uint32_t round_key[AES_BLOCK_SIZE], int base);
+
+    uint32_t expand_decryption_key(const uint32_t round_key);
+
+    void decrypt_with_round_keys(
+        const uint32_t ciphertext[AES_BLOCK_SIZE], 
+        const decrypt_round_keys_t *key,
+        uint32_t result[AES_BLOCK_SIZE]
+    );
+
+    void decrypt_rounds_to_key(
+        decrypt_round_keys_t *key,
+        uint32_t result[8]
+    );
+
+    void encrypt_rounds_to_key(
+        const uint32_t last_two_encrypt_rounds[2][AES_BLOCK_SIZE],
+        uint8_t result[32]
+    );
+}
+#endif
+```
+
+`aes_helper.cpp`:
+```cpp
+#include "ticket/aes_helper.h"
+
+#include <iostream>
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "ticket/aes_constants.h"
+
+namespace ticket {
+    uint32_t calculate_encrypt(const uint32_t round_key[AES_BLOCK_SIZE], int base) {
+        return T1[BYTE0(round_key[(base + 0) % 4])] ^
+               T2[BYTE1(round_key[(base + 1) % 4])] ^
+               T3[BYTE2(round_key[(base + 2) % 4])] ^
+               T4[BYTE3(round_key[(base + 3) % 4])];
+    }
+
+    uint32_t calculate_decrypt(const uint32_t round_key[AES_BLOCK_SIZE], int base) {
+        return T5[BYTE0(round_key[(base + 4) % 4])] ^
+               T6[BYTE1(round_key[(base + 3) % 4])] ^
+               T7[BYTE2(round_key[(base + 2) % 4])] ^
+               T8[BYTE3(round_key[(base + 1) % 4])];
+    }
+
+    uint32_t calculate_substitution(const uint32_t round_key[AES_BLOCK_SIZE], int base) {
+        return BE_NUM(Si[BYTE0(round_key[(base + 4) % 4])],
+               Si[BYTE1(round_key[(base + 3) % 4])],
+               Si[BYTE2(round_key[(base + 2) % 4])],
+               Si[BYTE3(round_key[(base + 1) % 4])]);
+    }
+
+    uint32_t expand_decryption_key(const uint32_t round_key) {
+        return U1[BYTE0(round_key)] ^ 
+               U2[BYTE1(round_key)] ^
+               U3[BYTE2(round_key)] ^
+               U4[BYTE3(round_key)];
+    }
+
+    void decrypt_with_round_keys(
+        const uint32_t ciphertext[AES_BLOCK_SIZE], 
+        const decrypt_round_keys_t *key,
+        uint32_t result[AES_BLOCK_SIZE]
+    ) {
+        int rounds = DECRYPT_ROUND_COUNT - 1;
+        uint32_t a[] = {0, 0, 0, 0};
+
+        // convert plaintext to (ints ^ key)
+        uint32_t t[AES_BLOCK_SIZE];
+
+        for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+            t[i] = ciphertext[i] ^ key->round_keys[0][i];
+        }
+
+        // apply round transforms
+        for (int r = 1; r < rounds; r++) {
+            for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+                a[i] = calculate_decrypt(t, i) ^ key->round_keys[r][i];
+            }
+            memcpy(t, a, AES_BLOCK_SIZE * 4);
+        }
+        
+        // the last round is special
+        for (int base = 0; base < 4; base++) {
+            result[base] = calculate_substitution(t, base) ^ key->round_keys[rounds][base];
+        }
+    }
+
+    void decrypt_rounds_to_key(
+        decrypt_round_keys_t *key,
+        uint32_t result[8]
+    ) {
+        std::cout << "decrypt_rounds_to_key" << std::endl;
+        int last_round = DECRYPT_ROUND_COUNT - 1;
+        int second_last_round = last_round - 1;
+
+        for (int i = 0; i < 12; i++) {
+            key->round_keys[second_last_round][i % 4] = expand_decryption_key(key->round_keys[second_last_round][i % 4]);
+        }
+
+        for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+            // First 16 bytes are the last round
+            result[i] = key->round_keys[last_round][i];
+            
+            // Last 16 bytes
+            result[AES_BLOCK_SIZE + i] = key->round_keys[second_last_round][i];
+        }
+    }
+}
+```
+
+</details>
+
+### Redirect /live.json Request
+Next, the request to `/live.json` was redirected to simplify the decryption key extraction process. This simplifies it by having a known ciphertext and IV used in the `decrypt()` function which does not need to be intercepted or determined in another way. The following is the patch used to modify this request and use a `/live.json` served on a custom domain:
+
+```diff
+--- a/dom/fetch/InternalRequest.h
++++ b/dom/fetch/InternalRequest.h
+@@ -143,7 +143,12 @@ class InternalRequest final : public AtomicSafeRefCounted<InternalRequest> {
+     MOZ_ASSERT(!aURL.IsEmpty());
+     MOZ_ASSERT(!aURL.Contains('#'));
+ 
+-    mURLList.AppendElement(aURL);
++    if (aURL.Equals("https://www.supremenewyork.com/live.json")) {
++      mURLList.AppendElement("https://example.com/live.json"_ns);
++    } else {
++      mURLList.AppendElement(aURL);
++    }
+ 
+     mFragment.Assign(aFragment);
+   }
+```
+
+### Initialization
+Now is a convenient time to initialize the ticket decryption key extraction code. The hard-coded encryption IV is added to the `ticket_init()` function in `ticket.cpp`:
+
+```cpp
+void ticket_init(ticket_state_t *state) {
+    std::cout << "ticket_init" << std::endl;
+    state->done = 0;
+    state->current_decrypt_round_index = 0;
+
+    // From the hard-coded /live.json response
+    state->decrypt_iv[0] = BE_NUM(0xfc, 0x12, 0xc1, 0xeb);
+    state->decrypt_iv[1] = BE_NUM(0x26, 0x50, 0x74, 0x07);
+    state->decrypt_iv[2] = BE_NUM(0xc5, 0x30, 0xcb, 0x45);
+    state->decrypt_iv[3] = BE_NUM(0xb9, 0x4d, 0xf5, 0x0d);
+
+    // From the hard-coded /live.json response
+    state->current_decrypt_round[0] = state->decrypt_payload[0] = BE_NUM(0x1e, 0xb6, 0x87, 0x77);
+    state->current_decrypt_round[1] = state->decrypt_payload[1] = BE_NUM(0x63, 0x43, 0x0c, 0x42);
+    state->current_decrypt_round[2] = state->decrypt_payload[2] = BE_NUM(0x3a, 0x60, 0x3f, 0xf7);
+    state->current_decrypt_round[3] = state->decrypt_payload[3] = BE_NUM(0xf2, 0x15, 0x94, 0xc4);
+}
+```
+
+### Capture XOR Operations
+The next step is to capture all the XOR operations that occur in JS. To do this, the two operands to the bitwise XOR operation are captured by modifying the interpreter `BitXorOperation()` function:
+
+```diff
+--- a/js/src/vm/Interpreter.cpp
++++ b/js/src/vm/Interpreter.cpp
+@@ -1525,6 +1660,8 @@ static MOZ_ALWAYS_INLINE bool BitXorOperation(JSContext* cx,
+     return BigInt::bitXorValue(cx, lhs, rhs, out);
+   }
+ 
++  ticket::ticket_on_xor(&state, (uint32_t) lhs.toInt32(), (uint32_t) rhs.toInt32());
++
+   out.setInt32(lhs.toInt32() ^ rhs.toInt32());
+   return true;
+ }
+```
+
+Great! Now all XOR operations can be captured and can be used to extract the decryption and encryption keys. After quickly testing it by printing out `lhs` and `rhs`, it seems like it works... until it doesn't. This is due to the baseline JIT (potentially even then the IonMonkey JIT) which is replacing the slow calls to `BitXorOperation()` with native machine code. This is normally great as it allows for some JavaScript code to finish executing before the heat death of universe, but makes capturing all XOR operations very difficult. This was easily fixed by disabling the JIT, which unfortunately makes all JS execution even slower:
+
+```diff
+--- a/js/src/vm/Interpreter.cpp
++++ b/js/src/vm/Interpreter.cpp
+@@ -3225,7 +3362,7 @@ static MOZ_NEVER_INLINE JS_HAZ_JSNATIVE_CALLER bool Interpret(JSContext* cx,
+       // Use the slow path if the callee is not an interpreted function, if we
+       // have to throw an exception, or if we might have to invoke the
+       // OnNativeCall hook for a self-hosted builtin.
+-      if (!isFunction || !maybeFun->isInterpreted() ||
++      if (true || !isFunction || !maybeFun->isInterpreted() ||
+           (construct && !maybeFun->isConstructor()) ||
+           (!construct && maybeFun->isClassConstructor()) ||
+           cx->insideDebuggerEvaluationWithOnNativeCallHook) {
+```
+
+Now that all XOR operations are *actually* captured, the operands can be used to extract the decryption and encryption key. To do so, the `ticket_on_xor()` function was added to `ticket.cpp`, which sends the operands to the `ticket_handle_encryption()` and `ticket_handle_decryption()` functions:
+
+```cpp
+void ticket_on_xor(ticket_state_t *state, uint32_t a, uint32_t b) {
+    if (state->done) {
+        return;
+    }
+
+    // we only care about first two rounds of encryption
+    bool encrypt_done = state->current_encrypt_round_index >= ENCRYPT_ROUND_COUNT;
+    // we only get the first fourteen rounds of decryption with this method
+    bool decrypt_done = state->current_decrypt_round_index >= (DECRYPT_ROUND_COUNT - 1);
+
+    if (!encrypt_done) {
+        encrypt_done = ticket_handle_encryption(state, a, b);
+    }
+
+    if (!decrypt_done) {
+        decrypt_done = ticket_handle_decryption(state, a, b);
+    }
+
+    if (encrypt_done && decrypt_done) {
+        ticket_on_decryption_found(state);
+        state->done = 1;
+    }
+}
+```
+
+### Extract the Decryption Key
+Using the captured XOR operands, the decryption key can be extracted. To do this, the known input `state->current_decrypt_round` is compared with one of the operands and if it matches, the other operand is assumed to be the expanded key for the current round[^7]. After the expanded key for a round has been found, the input for the next round is computed and the process repeats until all the capturable rounds have been extracted.
+
+[^7]: This code assumes that the order of the operands have not been reversed. A better (but more complicated) solution could consider the case where these operands have been rearranged.
+
+```cpp
+void ticket_handle_decryption(ticket_state_t *state, uint32_t a, uint32_t b) {
+    bool found_complete_round = false;
+
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        if (a == state->current_decrypt_round[i]) {
+            // prepare for next round
+            state->current_decrypt_round[i] ^= b;
+
+            state->decrypt_key.round_keys[state->current_decrypt_round_index][i] = b;
+            
+            if (i == (AES_BLOCK_SIZE - 1)) {
+                found_complete_round = true;
+            }
+        }
+    }
+
+    if (!found_complete_round) {
+        return false;
+    }
+
+    std::cout << "found decrypt round" << std::endl;
+
+    uint32_t previous_decrypt_round[AES_BLOCK_SIZE];
+
+    memcpy(previous_decrypt_round, state->current_decrypt_round, AES_BLOCK_SIZE_BYTES);
+
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        state->current_decrypt_round[i] = calculate_decrypt(previous_decrypt_round, i);
+    }
+
+    state->current_decrypt_round_index++;
+
+    return state->current_decrypt_round_index >= (DECRYPT_ROUND_COUNT - 1);
+}
+```
+
+Once all of the capturable round keys have been extracted, the `ticket_on_decryption_found()` function is executed. Crucially, this function calls `ticket_find_last_decryption_round_key()` which is used to extract the final round key for the decryption. After this, the round keys are converted to the original decryption key and is finally stored in `state->decrypt_key_bytes`. This field is then used as described in the [Setting JS Value From CPP](#setting-js-value-from-cpp) section.
+
+```cpp
+void ticket_on_decryption_found(ticket_state_t *state) {
+    std::cout << "ticket_on_decryption_found" << std::endl;
+
+    ticket_find_last_decryption_round_key(state);
+
+    uint32_t decrypt_key[8];
+    decrypt_rounds_to_key(&state->decrypt_key, decrypt_key);
+
+    for (int i = 0; i < 8; i++) {
+        state->decrypt_key_bytes[AES_BLOCK_SIZE * i + 0] = BYTE0(decrypt_key[i]);
+        state->decrypt_key_bytes[AES_BLOCK_SIZE * i + 1] = BYTE1(decrypt_key[i]);
+        state->decrypt_key_bytes[AES_BLOCK_SIZE * i + 2] = BYTE2(decrypt_key[i]);
+        state->decrypt_key_bytes[AES_BLOCK_SIZE * i + 3] = BYTE3(decrypt_key[i]);
+    }
+
+    std::cout << "Decryption Key: [" << std::hex;
+    for (int i = 0; i < 32; i++) {
+        std::cout << "0x" << (int) state->decrypt_key_bytes[i];
+        if (i != 31) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "]" << std::endl;
+}
+```
+
+As previously mentioned, the last decryption round key must be extracted in a unique way, since the round is calculated byte-by-byte so the XOR operands are all too small to reliably differentiate between other XOR operations. To calculate the last round, the decryption payload is decrypted with all of the known decryption round keys (`partial_decrypt_result`) and is compared with the final result of the decryption (which is now known to be the input to the encrypt function `state->encrypt_payload`). By using the values from before and after the round has been applied, it's possible to determine the round key used. Also, the decryption uses the CBC (Cipher Block Chaining) mode of operation, so the decryption IV must also be accounted for.
+
+```cpp
+void ticket_find_last_decryption_round_key(ticket_state_t *state) {
+    std::cout << "ticket_find_last_decryption_round_key" << std::endl;
+    uint32_t partial_decrypt_result[AES_BLOCK_SIZE];
+    decrypt_with_round_keys(state->decrypt_payload, &state->decrypt_key, partial_decrypt_result);
+
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        state->decrypt_key.round_keys[DECRYPT_ROUND_COUNT - 1][i] = 
+            partial_decrypt_result[i] ^ state->encrypt_payload[i] ^ state->decrypt_iv[i];
+    }
+}
+```
+
+### Last Round Explanation
+The procedure for extracting the last decryption round can be illustrated by considering one byte of the last round (this is from [aes-js](https://github.com/ricmoo/aes-js/)):
+
+```js
+result[4 * i] = (Si[(t[i] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
+```
+
+Note that `Si` is the inverse S-box substitution table (as described in the AES specification), so the `Si[t]` is the decryption progress so far (what we call `partial_decrypt_result`), and `tt` is the decryption key for this round. 
+
+Then, the `result` is XOR'd with the decryption IV in the [`ModeOfOperationCBC: decrypt`](https://github.com/ricmoo/aes-js/blob/7c9fad4add4b349dcb89a4e2125f37defaef3bc8/index.js#L471-L493) function (this is from [aes-js](https://github.com/ricmoo/aes-js/)):
+
+```js
+plaintext[i + j] = block[j] ^ this._lastCipherblock[j];
+```
+
+Where `block` is just the `result` from this current block and `this._lastCipherblock` is initialized to the IV[^8]. This plaintext is then used as the first input to `encrypt` which is known because it is captured in [Extract Encryption Input](#extract-encryption-input). Putting this all together, the following formula is created:
+
+[^8]: This is why it's crucial the procedures for decryption and encryption key extraction are used on the *first* time `decrypt` and `encrypt` are called, otherwise we'd be stuck not knowing the last cipher block.
+
+```c
+partial_decrypt_result ^ round_key ^ decrypt_iv = plaintext
+```
+
+Where everything is known except for `round_key`. This formula can be rearranged to calculate the `round_key`:
+
+```c
+round_key = partial_decrypt_result ^ plaintext ^ decrypt_iv
+```
+
+<details>
+<summary>Rearranging XOR Equations</summary>
+
+For those of you that are not too familiar with XOR, this rearrangement may seem like magic. To better explain this, consider this example where the variables have been renamed to be shorter to be more easily manipulated:
+
+```js
+A ^ B ^ C = D
+```
+
+Where `A`, `C`, and `D` are the known values and `B` is the unknown value that we're trying to determine. Something important to know about XOR is that it's commutative, meaning that `A ^ B = B ^ A`. This formula can be rearranged by XOR-ing both sides by `A ^ C`:
+
+```js
+           A ^ B ^ C = D 
+A ^ C ^    A ^ B ^ C = D    ^ A ^ C
+A ^ A ^ B ^ C ^ C    = D ^ A ^ C
+```
+
+Now, it may look like all that we've done is make the formula much more complicated but it can actually now be simplified. Another important property of XOR is that XOR using the same value for both operands equals zero, meaning that `X ^ X = 0`. So, the formula can be simplified as:
+
+```js
+A ^ A ^ B ^ C ^ C = D ^ A ^ C
+    0 ^ B ^     0 = D ^ A ^ C
+```
+
+Additionally, XOR with one operand `X` and the other `0` has the result `X`, meaning that `X ^ 0 = X`.
+
+```js
+0 ^ B ^ 0 = D ^ A ^ C
+        B = D ^ A ^ C
+```
+
+Now the value of `B` can be calculated using the known values `D`, `A`, and `C`.
+
+</details>
+
+### Setting JS Value From CPP
+To obtain the extracted decryption and encryption keys, the modified firefox browser is used to set two arrays that are accessible from JavaScript. To do so, the following function was added which stores the specified buffer using the specified name:
+
+```cpp
+void set_array(JSContext* cx, const char *name, uint8_t buf[32]) {
+    JS::Rooted<JSObject*> arr(cx, JS_NewUint8ClampedArray(cx, 32));
+
+    JS::AutoCheckCannotGC nogc;
+    bool isShared;
+    uint8_t* data = JS_GetUint8ClampedArrayData(arr, &isShared, nogc);
+    memcpy(data, buf, 32);
+
+    JS::RootedValue arrVal(cx, JS::ObjectValue(*arr));
+
+    JS_DefineProperty(cx, cx->global(), name, arrVal, 0);
+}
+```
+
+This function can then be used when both keys are extracted to store them in `encryptKey` and `decryptKey`:
+
+```cpp
+if (state.done) {
+  set_array(cx, "encryptKey", state.encrypt_key_bytes);
+  set_array(cx, "decryptKey", state.decrypt_key_bytes);
+
+  // prepare to run again
+  state.done = 0;
+  ticket::ticket_init(&state);
+}
+```
+
+After this is done, these values are manually accessible from JavaScript in the browser or by using automation software such as [Playwright](https://playwright.dev/):
+
+```js
+await page.evaluate(() => {
+  const keyChecker = setInterval(() => {
+    if (window.decryptKey && window.encryptKey) {
+      console.log("Found the keys: " + window.decryptKey + " " + window.encryptKey);
+      clearInterval(keyChecker);
+    }
+  }, 100);
+});
+```
+
+## Chapter 3: Extract the Encryption Key
+Now that the encryption payload and IV are known, the encryption key can be extracted using a very similar procedure to that described in the [Extract the Decryption Key](#extract-the-decryption-key) section. Note that instead of calculating each next round using `calculate_decrypt()`, each round is now calculated using `calculate_encrypt()` and must be stored in a temporary buffer (`new_encrypt_round`).
+
+### Intercept Crypto::GetRandomValues
+The ticket anti-bot invokes the [`Crypto: getRandomValues()`](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues) function to generate an IV for the encryption. As expected, this function is implemented in the `GetRandomValues()` function in `Crypto.cpp`. This function was changed to always use a hard-coded IV so that it would always be known by the key extraction logic:
+
+```diff
+--- a/dom/base/Crypto.cpp
++++ b/dom/base/Crypto.cpp
+@@ -80,6 +80,19 @@ void Crypto::GetRandomValues(JSContext* aCx, const ArrayBufferView& aArray,
+     aRv.Throw(NS_ERROR_DOM_OPERATION_ERR);
+     return;
+   }
++  
++  uint8_t encrypt_iv[] = {
++      0xCA, 0xFE, 0xBA, 0xBE,
++      0xDE, 0xAD, 0xBE, 0xEF,
++      0x12, 0x34, 0x56, 0x78,
++      0x9A, 0xBC, 0xDE, 0xF0
++  };
++
++  if (dataLen >= 16) {
++    for (int i = 0; i < 16; i++) {
++      buf[i] = encrypt_iv[i];
++    }
++  }
+ 
+   // Copy random bytes to ABV.
+   memcpy(aArray.Data(), buf, dataLen);
+```
+
+### Initialization
+Now is a convenient time to initialize the ticket encryption key extraction code. This is added to the `ticket_init()` function in `ticket.cpp`:
+
+```cpp
+void ticket_init(ticket_state_t *state) {
+    /* ... previous code ... */
+
+    state->current_encrypt_round_index = 0;
+
+    // Initialize the current encrypt round to a placeholder value
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        state->current_encrypt_round[i] = PLACEHOLDER_ENCRYPT_ROUND;
+    }
+
+    // From the hard-coded result of `Crypto.getRandomValues()`
+    state->encrypt_iv[0] = BE_NUM(0xCA, 0xFE, 0xBA, 0xBE);
+    state->encrypt_iv[1] = BE_NUM(0xDE, 0xAD, 0xBE, 0xEF);
+    state->encrypt_iv[2] = BE_NUM(0x12, 0x34, 0x56, 0x78);
+    state->encrypt_iv[3] = BE_NUM(0x9A, 0xBC, 0xDE, 0xF0);
+}
+```
+
+### Extract Encryption Input
+As previously mentioned, the ticket anti-bot uses the [`Crypto: getRandomValues()`](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues) function to generate the encryption IV. Conveniently, this function is called in a function where the plaintext is passed as an argument. An example of what this might look like is the following:
+
+```javascript
+function encrypt(plaintext) {
+  const iv = new Uint8Array(16);
+  self.crypto.getRandomValues(iv);
+  /* encrypt plaintext with the IV using aes-js */
+}
+```
+
+Using this structure, the call to the `getRandomValues()` function is used to determine name of the encryption function (it is obfuscated so it doesn't have an obvious name like "encrypt"). To find the name of this function, the `ticket_backtrace()` function was created which goes up the call stack to determines the function name. This function was created by 'borrowing' from a similar Firefox function and then it was changed to capture the name of the ticket encryption function.[^borrwed-function] It is included here to cover every aspect of the procedure.
+
+[^borrowed-function]: `CallerGetterImpl` located inside `js/src/jsfun.cpp`
+
+<details>
+<summary>ticket_backtrace Code</summary>
+
+```cpp
+bool ticket_backtrace(JSContext* cx, const CallArgs& args) {
+  RootedFunction fun(cx, &args.thisv().toObject().as<JSFunction>());
+
+  NonBuiltinScriptFrameIter iter(cx);
+
+  while (!iter.done() && iter.isEvalFrame()) {
+    ++iter;
+  }
+
+  if (iter.done() || !iter.isFunctionFrame()) {
+    return true;
+  }
+
+  RootedObject caller(cx, iter.callee(cx));
+  if (!cx->compartment()->wrap(cx, &caller)) {
+    return false;
+  }
+
+  {
+    JSObject* callerObj = CheckedUnwrapStatic(caller);
+    if (!callerObj) {
+      return true;
+    }
+
+    if (JS_IsDeadWrapper(callerObj)) {
+      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr, JSMSG_DEAD_OBJECT);
+      return false;
+    }
+
+    JSFunction* callerFun = &callerObj->as<JSFunction>();
+    JSString *name = JS_GetFunctionDisplayId(callerFun);
+
+    const char *nameStr;
+
+    if (!name) {
+      return false;
+    }
+
+    JS::Rooted<JSString*> rootedStr(cx, name);
+    nameStr = JS_EncodeStringToUTF8(cx, rootedStr).release();
+
+    strcpy(state.encrypt_func_name, nameStr);
+    state.found_encrypt_func = 1;
+  }
+
+  return true;
+}
+```
+</details>
+
+Putting this all together, the following code was added to the `InternalCall()` function in `Interpreter.cpp`:
+
+```diff
+--- a/js/src/vm/Interpreter.cpp
++++ b/js/src/vm/Interpreter.cpp
+static bool InternalCall(JSContext* cx, const AnyInvokeArgs& args,
+                          CallReason reason = CallReason::Call) {
+   MOZ_ASSERT(args.array() + args.length() == args.end(),
+              "must pass calling arguments to a calling attempt");
+   if (args.thisv().isObject()) {
+     // We must call the thisValue hook in case we are not called from the
+     // interpreter, where a prior bytecode has computed an appropriate
+     // |this| already.  But don't do that if fval is a DOM function.
+     HandleValue fval = args.calleev();
++    if (fval.isObject() && fval.toObject().is<JSFunction>()) {
++      JSFunction *func = &fval.toObject().as<JSFunction>();
++      JSString *name = JS_GetFunctionDisplayId(func);
++      const char *nameStr;
++
++      if (!name) {
++        nameStr = "Unnamed function";
++      } else {
++        JS::Rooted<JSString*> rootedStr(cx, name);
++        nameStr = JS_EncodeStringToUTF8(cx, rootedStr).release();
++      }
++
++      if (!strcmp(nameStr, "getRandomValues")) {
++        ticket_backtrace(cx, args);
++      }
++
++      if (state.found_encrypt_func && strcmp(nameStr, state.encrypt_func_name) == 0) {
++          HandleValue val = args.get(0);
++
++          size_t length;
++          bool isSharedMemory;
++          uint8_t *data;
++          JS_GetObjectAsUint8Array(&val.toObject(), &length, &isSharedMemory, &data);
++
++          uint32_t payload[AES_BLOCK_SIZE_BYTES];
++          for (uint32_t i = 0; i < AES_BLOCK_SIZE; i++) {
++            payload[i] = BE_NUM(
++              data[AES_BLOCK_SIZE * i + 0],
++              data[AES_BLOCK_SIZE * i + 1],
++              data[AES_BLOCK_SIZE * i + 2],
++              data[AES_BLOCK_SIZE * i + 3]
++            );
++          }
++
++          ticket_set_encrypt_payload(&state, (uint8_t *) payload, AES_BLOCK_SIZE_BYTES);
++      }
++    }
+```
+
+In this code, the `ticket_backtrace()` function is called whenever the `getRandomValues()` function is called, which captures the name of the encryption function in `state.encrypt_func_name`. Then, when the encrypt function is known and is invoked, the plaintext payload is captured and is passed to the `ticket_set_encrypt_payload()` function. This function is implemented in `ticket.cpp` and is used to set `state->encrypt_payload` and prepare for the key extraction by calculating `state->current_encrypt_round`:
+
+```cpp
+void ticket_set_encrypt_payload(ticket_state_t *state, const uint8_t *payload, uint32_t payload_length) {
+    ASSERT(payload_length == AES_BLOCK_SIZE_BYTES);
+    memcpy(&state->encrypt_payload, payload, payload_length);
+
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        state->current_encrypt_round[i] = state->encrypt_iv[i] ^ state->encrypt_payload[i];
+    }
+}
+```
+
+### Extract the Encryption Key
+Now that the encryption payload and IV are known, the encryption key can be extracted using a very similar procedure to that described in the [Extract the Decryption Key](#extract-the-decryption-key) section. Note that instead of calculating each next round using `calculate_decrypt`, each round is now calculated using `calculate_encrypt` and must be stored in a temporary buffer (`new_encrypt_round`).
+
+```cpp
+void ticket_handle_encryption(ticket_state_t *state, uint32_t a, uint32_t b) {
+    bool found_complete_round = false;
+
+    for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+        if (a == state->current_encrypt_round[i]) {
+            // prepare for next round
+            state->current_encrypt_round[i] ^= b;
+
+            state->encrypt_key.round_keys[state->current_encrypt_round_index][i] = b;
+
+            if (i == (AES_BLOCK_SIZE - 1)) {
+                found_complete_round = true;
+            }
+        }
+    }
+
+    if (!found_complete_round) {
+        return false;
+    }
+
+    if (state->current_encrypt_round_index == 0) {
+        uint32_t new_encrypt_round[AES_BLOCK_SIZE];
+
+        for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+            new_encrypt_round[i] = calculate_encrypt(state->current_encrypt_round, i);
+        }
+        
+        for (int i = 0; i < AES_BLOCK_SIZE; i++) {
+            state->current_encrypt_round[i] = new_encrypt_round[i];
+        }
+    }
+
+    state->current_encrypt_round_index++;
+    
+    if (state->current_encrypt_round_index >= ENCRYPT_ROUND_COUNT) {
+        ticket_on_encryption_found(state);
+        return true;
+    }
+    return false;
+}
+```
+
+Then, once all relevant encryption round keys are found, the function `ticket_on_encryption_found()` is invoked. This function extracts the original encryption key by considering the first two round keys:
+
+```cpp
+void ticket_on_encryption_found(ticket_state_t *state) {
+    std::cout << "ticket_on_encryption_found" << std::endl;
+
+    for (int i = 0; i < 8; i++) {
+        uint32_t round_key = state->encrypt_key.round_keys[i / AES_BLOCK_SIZE][i % AES_BLOCK_SIZE];
+        state->encrypt_key_bytes[AES_BLOCK_SIZE * i + 0] = BYTE0(round_key);
+        state->encrypt_key_bytes[AES_BLOCK_SIZE * i + 1] = BYTE1(round_key);
+        state->encrypt_key_bytes[AES_BLOCK_SIZE * i + 2] = BYTE2(round_key);
+        state->encrypt_key_bytes[AES_BLOCK_SIZE * i + 3] = BYTE3(round_key);
+    }
+
+    std::cout << "Encryption Key: [" << std::hex;
+    for (int i = 0; i < 32; i++) {
+        std::cout << "0x" << (int) state->encrypt_key_bytes[i];
+        if (i != 31) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "]" << std::endl;
+}
+```
+
+## Chapter 4: Retrieving the Browser Fingerprint
+Now that both the decryption and encryption keys have been extracted, it is time to retrieve the browser fingerprint. This step is actually the easiest because it has *already* been done. There's no need for finding all of the individual challenges and trying to somehow pass them in a non-genuine environment. A perfectly legitimate web browser[^9] was used and already successfully performed all these challenges. The results of these challenges are stored in an encrypted form in the `ntbcc` cookie that was generated during the encryption stage. All that is required is to take that cookie and decrypt it using the captured encryption key:
+
+[^9]: At least for now. Who knows how long that will last with what Google is trying to do with Web Environment Integrity.
+
+```js
+const extractFingerprint = ({ encryptKey, cookies }) => {
+  const cookieParts = cookies.split(';')
+    .find(c => c.includes('ntbcc'))
+    .trim()
+    .split('=', 2);
+  
+  if (cookieParts.length !== 2) {
+    console.error(`Unable to extract ntbcc cookie value from parts: ${cookieParts}`);
+    return "";
+  }
+
+  const cookie = cookieParts[1];
+
+  const cipherLength = cookie.length - 32;
+
+  const cipher = aesjs.utils.hex.toBytes(cookie.slice(0, cipherLength));
+  const iv = aesjs.utils.hex.toBytes(cookie.slice(cipherLength));
+
+  const aesCbc = new aesjs.ModeOfOperation.cbc(encryptKey, iv);
+  const decryptedBytes = aesjs.padding.pkcs7.strip(aesCbc.decrypt(cipher));
+
+  const fingerprint = Array.from(decryptedBytes.slice(48));
+
+  return fingerprint;
+}
+```
+
+## Conclusion
+This post has documented the journey [veritas](https://www.nullpt.rs/author/veritas) and I went through to the extract the decryption and encryption keys from the supreme ticket anti-bot system. To do this, several changes and additions were made to the Firefox source code to automatically extract these keys from the ticket anti-bot system. Additionally, a valid browser fingerprint which passed all challenges was extracted by using the captured encryption key to decrypt a valid cookie. 
+
+Using the decryption key, encryption key, and valid browser fingerprint, countless valid cookies can be generated which allows for a complete bypass of the ticket anti-bot system.
+
+[Here is a link to the anti-bot for the curious](/posts/compiling-browser-to-bypass-antibot-measures/ticket.js)
