@@ -811,7 +811,7 @@ function encrypt(plaintext) {
 }
 ```
 
-Using this structure, the call to the `getRandomValues()` function is used to determine name of the encryption function (it is obfuscated so it doesn't have an obvious name like "encrypt"). To find the name of this function, the `ticket_backtrace()` function was created which goes up the call stack to determines the function name. This function was created by 'borrowing' from a similar Firefox function and then it was changed to capture the name of the ticket encryption function.[^borrwed-function] It is included here to cover every aspect of the procedure.
+Using this structure, the call to the `getRandomValues()` function is used to determine name of the encryption function (it is obfuscated so it doesn't have an obvious name like "encrypt"). To find the name of this function, the `ticket_backtrace()` function was created which goes up the call stack to determines the function name. This function was created by 'borrowing' from a similar Firefox function and then it was changed to capture the name of the ticket encryption function.[^borrowed-function] It is included here to cover every aspect of the procedure.
 
 [^borrowed-function]: `CallerGetterImpl` located inside `js/src/jsfun.cpp`
 
