@@ -8,6 +8,8 @@ import Image from "next/image";
 import "../styles/prism-one-dark.css";
 import { postFilePaths } from "../utils/mdxUtils";
 
+export const dynamicParams = false;
+
 const MDX_COMPONENTS = {
     WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
     OldPost: dynamic(() => import('../client/components/old_post')),
