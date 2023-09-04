@@ -20,7 +20,7 @@ export default function RootLayout({
             <link rel="preconnect" href="https://fonts.gstatic.com" />
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;800&display=swap" rel="stylesheet" />
         </head>
-        <body className='px-4 md:px-16 py-24'>{children}</body>
+        <body className='px-4 md:px-16 py-24 dark:[color-scheme:dark]'>{children}</body>
       </html>
     )
   }
