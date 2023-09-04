@@ -43,9 +43,10 @@ export default function PostPage({ author, data }: Props) {
                         </BlogLink>
                     ))}
             </ul>
-            <footer className="my-8 text-center">
-                <span><span className="text-neutral-500">Content on this site is licensed</span> <Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link></span>
-            </footer>
+            <footer className="my-8 text-center flex flex-col">
+				<span><span className="text-neutral-500">Content on this site is licensed</span> <Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link></span>
+				<span><Link href="/feed.rss">RSS</Link></span>
+			</footer>
         </div>
     );
 }

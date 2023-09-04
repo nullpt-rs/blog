@@ -26,6 +26,14 @@ export default function Home({ posts }: { posts: any[] }) {
 					>
 						{" "} - twitter
 					</a>
+					<a
+						target="_blank"
+						href="https://nullpt.rs/feed.rss"
+						className="text-neutral-500 hover:text-blue-500"
+						rel="noreferrer"
+					>
+						{" "} - rss
+					</a>
 				</h2>
 
 				<ul className="space-y-1 list-disc list-inside">
