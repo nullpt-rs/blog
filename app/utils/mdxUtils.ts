@@ -4,4 +4,4 @@ import path from 'path';
 
 export const POSTS_PATH = path.join(process.cwd(), 'src/posts');
 
-export const postFilePaths = globby("src/posts/**/*.mdx");
+export const postFilePaths = globby("app/posts/**/*.mdx");

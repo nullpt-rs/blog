@@ -1,6 +1,8 @@
+'use client';
+
 import { useEffect, useRef, useState } from "react";
 
-export const WebGLFingerprint = () => {
+export default function() {
     const [vendor, setVendor] = useState("");
     const [renderer, setRenderer] = useState("");
     const canvas = useRef<HTMLCanvasElement>();
@@ -16,7 +18,7 @@ export const WebGLFingerprint = () => {
     }, []);
 
     return (
-        <>
+        <div>
             {/* @ts-ignore */}
             <canvas ref={canvas} width="0" height="0" />
             {vendor && renderer && (
@@ -26,6 +28,6 @@ export const WebGLFingerprint = () => {
                     </code>
                 </>)
             }
-        </>
+        </div>
     );
 };

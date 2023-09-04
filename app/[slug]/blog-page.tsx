@@ -1,39 +1,17 @@
-import fs from 'fs';
-import {GetStaticPaths, GetStaticProps} from 'next';
-import {serialize} from 'next-mdx-remote/serialize';
+import { GetStaticPaths } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { postFilePaths } from '../utils/mdxUtils';
-import matter from 'gray-matter';
-import { MDXRemote } from 'next-mdx-remote';
-import Image from 'next/image';
-import { globby } from 'globby';
-import rehypePrism from 'rehype-prism-plus'
-import { OldPost } from '../client/components/oldpost';
-import { WebGLFingerprint } from '../client/components/webgl_fingerprint';
 import { AuthorLinks } from '../client/components/author_links';
-import remarkGfm from 'remark-gfm'
+import { postFilePaths } from '../utils/mdxUtils';
 
 interface Props {
-	source: any;
+	content: any;
 	frontMatter: {
 		[key: string]: any;
 	}
 }
 
-const components = {
-	Head,
-	OldPost: OldPost,
-	WebGLFingerprint,
-	img: (props: any) => (
-	<figure className="prose-img flex flex-col items-center">
-		<Image {...props} layout="responsive" loading="lazy" width={100} height={100} />
-		<figcaption>{props.alt}</figcaption>
-	</figure>
-  ),
-};
-
-export default function PostPage({source, frontMatter}: Props) {
+export default function PostPage({ content, frontMatter }: Props) {
 	return (
 		<div className="space-y-4 m-auto max-w-4xl">
 			<Head>
@@ -61,7 +39,7 @@ export default function PostPage({source, frontMatter}: Props) {
 			<small>authored by <Link className="underline" passHref href={`/author/${frontMatter.author}`}>{frontMatter.author}</Link></small>
 			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
 				<h1>{frontMatter.name}</h1>
-				<MDXRemote {...source} components={components} />
+				{content}
 				<AuthorLinks author={frontMatter.author} />
 			</main>
 			<footer className="my-8 text-center flex flex-col">
@@ -72,31 +50,9 @@ export default function PostPage({source, frontMatter}: Props) {
 	);
 }
 
-export const getStaticProps: GetStaticProps<Props> = async ({params}) => {
-	const postFilePath = await globby(`**/${params!.slug}.mdx`);
-	const source = fs.readFileSync(postFilePath[0]);
-
-	const { content, data } = matter(source);
-
-	const mdxSource = await serialize(content, {
-		scope: data,
-		mdxOptions: {
-			remarkPlugins: [remarkGfm],
-			rehypePlugins: [rehypePrism],
-		},
-	});
-
-	return {
-		props: {
-			source: mdxSource,
-			frontMatter: data,
-		},
-	};
-};
-
 export const getStaticPaths: GetStaticPaths = async () => {
 	const fps = await postFilePaths;
-	const paths = fps.map((path) => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/')+1)).map((slug) => ({params: {slug}}));
+	const paths = fps.map((path) => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/') + 1)).map((slug) => ({ params: { slug } }));
 
 	return {
 		paths,
