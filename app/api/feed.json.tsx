@@ -1,5 +1,5 @@
 import type {NextRequest} from 'next/server';
-import {addPosts, feed} from '../../server/feed';
+import { addPosts, feed } from '../server/feed';
 
 export const config = {
 	runtime: 'nodejs',

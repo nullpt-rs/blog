@@ -2,7 +2,7 @@
 
 /** @type {import("tailwindcss/tailwind-config").TailwindConfig } */
 module.exports = {
-	content: ['./src/**/*.{ts,tsx,css}'],
+	content: ['./app/**/*.{ts,tsx,css}'],
 	darkMode: 'media',
 	theme: {
 		fontFamily: {

@@ -1,8 +1,5 @@
-import fs from 'fs';
-import matter from 'gray-matter';
 import Link from 'next/link';
 import {ReactNode} from 'react';
-import { postFilePaths } from '../utils/mdxUtils';
 
 export default function Home({ posts }: { posts: any[] }) {
 	return (
@@ -68,18 +65,4 @@ export function BlogLink(props: {href: string; date: string; author: string; chi
 			</div>
 		</div>
 	);
-}
-export async function getStaticProps() {
-	const fps = await postFilePaths;
-	const posts = fps.map((filePath) => {
-    const source = fs.readFileSync(filePath);
-    const { content, data } = matter(source)
-    return {
-      content,
-      data,
-      filePath,
-    }
-  })
-
-  return { props: { posts } }
 }

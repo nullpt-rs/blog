@@ -1,10 +1,5 @@
-import { GetStaticPaths, GetStaticProps } from 'next';
 import Link from 'next/link';
-import { readFileSync } from 'fs';
-// import { BlogLink } from '..';
-import { postFilePaths } from '../../utils/mdxUtils';
-import matter from 'gray-matter';
-import { BlogLink } from '..';
+import { BlogLink } from '../../home-page';
 
 interface Props {
     author: string;
@@ -23,7 +18,7 @@ interface Post {
     }
 }
 
-export default function PostPage({ author, data }: Props) {
+export default function AuthorPage({ author, data }: Props) {
     return (
         <div className="space-y-4 m-auto max-w-4xl">
             <div>
@@ -50,38 +45,3 @@ export default function PostPage({ author, data }: Props) {
         </div>
     );
 }
-
-// @ts-ignore
-export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
-    const fps = await postFilePaths;
-    const posts = fps.map((filePath) => {
-        const source = readFileSync(filePath);
-        const { content, data } = matter(source)
-        return {
-            content,
-            data,
-            filePath,
-        }
-    }).filter(p => p.data.author === params!.slug)
-
-    if (!posts)
-        return { props: { posts } }
-
-    return {
-        props: {
-            author: params!.slug,
-            data: posts
-        },
-    };
-};
-
-
-export const getStaticPaths: GetStaticPaths = async () => ({
-    paths: [],
-    fallback: 'blocking',
-});
-
-// export const getStaticPaths: GetStaticPaths = async () => ({
-//     paths: posts.map(post => ({ params: { slug: post.slug } })),
-//     fallback: 'blocking',
-// });
