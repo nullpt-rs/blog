@@ -1,8 +1,8 @@
 // @ts-check
 
-const withMDX = require('@next/mdx')({
-  extension: /\.mdx?$/,
-});
+// const withMDX = require('@next/mdx')({
+//   extension: /\.mdx?$/,
+// });
 
 /**
  * @type {import('next').NextConfig}
@@ -59,4 +59,4 @@ const config = {
 	},
 };
 
-module.exports = withMDX(config);
+module.exports = config;
