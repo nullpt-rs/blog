@@ -1,9 +1,5 @@
 // @ts-check
 
-// const withMDX = require('@next/mdx')({
-//   extension: /\.mdx?$/,
-// });
-
 /**
  * @type {import('next').NextConfig}
  **/
