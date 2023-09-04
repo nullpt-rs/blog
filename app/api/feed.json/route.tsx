@@ -1,9 +1,5 @@
 import { addPosts, feed } from '../../server/feed';
 
-export const config = {
-	runtime: 'nodejs',
-};
-
 export async function GET() {
 	await addPosts();
 
