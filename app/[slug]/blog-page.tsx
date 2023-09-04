@@ -50,12 +50,12 @@ export default function PostPage({ content, frontMatter }: Props) {
 	);
 }
 
-// export const getStaticPaths: GetStaticPaths = async () => {
-// 	const fps = await postFilePaths;
-// 	const paths = fps.map((path) => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/') + 1)).map((slug) => ({ params: { slug } }));
+export const getStaticPaths: GetStaticPaths = async () => {
+	const fps = await postFilePaths;
+	const paths = fps.map((path) => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/') + 1)).map((slug) => ({ params: { slug } }));
 
-// 	return {
-// 		paths,
-// 		fallback: false,
-// 	};
-// };
+	return {
+		paths,
+		fallback: false,
+	};
+};
