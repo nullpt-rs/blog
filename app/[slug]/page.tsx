@@ -20,7 +20,7 @@ const MDX_COMPONENTS = {
 };
 
 export default async function Page({ params }: { params: { slug: string } }) {
-    const postFilePath = await globby(`**/${params.slug}.mdx`);
+    const postFilePath = await globby(`.*/${params.slug}.mdx`);
     const source = readFileSync(postFilePath[0]);
 
     const mdxSource = await compileMDX({
