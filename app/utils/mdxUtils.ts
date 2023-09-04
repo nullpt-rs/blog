@@ -2,7 +2,7 @@ import { globby } from 'globby';
 import path from 'path';
 import { stat } from 'fs/promises';
 
-export const POSTS_PATH = path.join(process.cwd(), 'posts');
+export const POSTS_PATH = path.join(process.cwd(), 'app/posts');
 
 stat(POSTS_PATH).then((res) => {
     if (!res.isDirectory()) {
@@ -10,4 +10,4 @@ stat(POSTS_PATH).then((res) => {
     }
 });
 
-export const postFilePaths = globby("**/posts/**/*.mdx");
+export const postFilePaths = globby("**/app/posts/**/*.mdx");

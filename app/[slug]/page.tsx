@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { globby } from "globby";
+import { join } from "path";
 import remarkGfm from "remark-gfm";
 import PostPage from "./blog-page";
 import rehypePrism from 'rehype-prism-plus'
@@ -20,6 +21,8 @@ const MDX_COMPONENTS = {
 };
 
 export default async function Page({ params }: { params: { slug: string } }) {
+    const bruhPlzzz = join(process.cwd(), 'app/posts/**/*.mdx');
+    console.log(bruhPlzzz)
     const postFilePath = await globby(`**/${params.slug}.mdx`);
     const source = readFileSync(postFilePath[0]);
 
