@@ -5,7 +5,7 @@ import rehypePrism from 'rehype-prism-plus'
 import { compileMDX } from "next-mdx-remote/rsc";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import "../styles/prism-one-dark.css";
+import "../styles/prism-dark.css";
 import { postFilePaths } from "../utils/mdxUtils";
 
 export const dynamicParams = false;
