@@ -1,9 +1,5 @@
 // @ts-check
 
-const withMDX = require('@next/mdx')({
-  extension: /\.mdx?$/,
-});
-
 /**
  * @type {import('next').NextConfig}
  **/
@@ -11,6 +7,9 @@ const config = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
   experimental: {
     mdxRs: true,
+    outputFileTracingIncludes: {
+      "/": ["posts/**/*", "./posts/**/*.mdx"],
+    }
   },
 	typescript: {
 		ignoreBuildErrors: true,
@@ -59,4 +58,5 @@ const config = {
 	},
 };
 
+const withMDX = require('@next/mdx')();
 module.exports = withMDX(config);

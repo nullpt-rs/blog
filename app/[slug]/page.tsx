@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { globby } from "globby";
+import { join } from "path";
 import remarkGfm from "remark-gfm";
 import PostPage from "./blog-page";
 import rehypePrism from 'rehype-prism-plus'
@@ -7,6 +8,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import "../styles/prism-one-dark.css";
+import { postFilePaths } from "../utils/mdxUtils";
 
 const MDX_COMPONENTS = {
     WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
@@ -20,7 +22,10 @@ const MDX_COMPONENTS = {
 };
 
 export default async function Page({ params }: { params: { slug: string } }) {
-    const postFilePath = await globby(`**/${params.slug}.mdx`);
+    // const bruhPlzzz = join(process.cwd(), 'app/posts/**/*.mdx');
+    // console.log(bruhPlzzz)
+    const postFilePath = (await postFilePaths).filter(p => p.includes(params.slug));
+    // const postFilePath = await globby(`**/${params.slug}.mdx`);
     const source = readFileSync(postFilePath[0]);
 
     const mdxSource = await compileMDX({
