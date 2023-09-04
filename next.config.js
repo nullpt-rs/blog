@@ -9,16 +9,17 @@ const config = {
     mdxRs: true,
     outputFileTracingIncludes: {
       "/": ["posts/**/*", "./posts/**/*.mdx"],
-    }
+    },
+    esmExternals: "loose",
   },
-	typescript: {
-		ignoreBuildErrors: true,
-	},
-	env: {
-		SITE_URL: 'https://nullpt.rs',
-	},
-	async redirects() {
-		return [
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  env: {
+    SITE_URL: 'https://nullpt.rs',
+  },
+  async redirects() {
+    return [
       {
         source: '/feed.json',
         destination: '/api/feed.json',
@@ -54,8 +55,8 @@ const config = {
         destination: 'https://old.nullpt.rs/how-do-i-make-a-bot',
         permanent: false,
       },
-		];
-	},
+    ];
+  },
 };
 
 const withMDX = require('@next/mdx')();
