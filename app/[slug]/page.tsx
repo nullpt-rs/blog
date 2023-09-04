@@ -1,6 +1,4 @@
 import { readFileSync } from "fs";
-import { globby } from "globby";
-import { join } from "path";
 import remarkGfm from "remark-gfm";
 import PostPage from "./blog-page";
 import rehypePrism from 'rehype-prism-plus'
@@ -21,13 +19,9 @@ const MDX_COMPONENTS = {
     ),
 };
 
-export default async function Page({ params }: { params: { slug: string } }) {
-    // const bruhPlzzz = join(process.cwd(), 'app/posts/**/*.mdx');
-    // console.log(bruhPlzzz)
-    const postFilePath = (await postFilePaths).filter(p => p.includes(params.slug));
-    // const postFilePath = await globby(`**/${params.slug}.mdx`);
+async function getMDXSource(slug: string) {
+    const postFilePath = (await postFilePaths).filter(p => p.includes(slug));
     const source = readFileSync(postFilePath[0]);
-
     const mdxSource = await compileMDX({
         source,
         // @ts-ignore
@@ -41,5 +35,33 @@ export default async function Page({ params }: { params: { slug: string } }) {
         }
     });
 
+    return mdxSource;
+}
+
+export default async function Page({ params }: { params: { slug: string } }) {
+    const mdxSource = await getMDXSource(params.slug);
     return <PostPage content={mdxSource.content} frontMatter={mdxSource.frontmatter} />
+}
+
+export async function generateStaticParams() {
+    const filePaths = (await postFilePaths);
+    const mdxSources = filePaths.map((filePath) => {
+        const source = readFileSync(filePath);
+
+        return compileMDX({
+            source,
+            // @ts-ignore
+            components: MDX_COMPONENTS,
+            options: {
+                parseFrontmatter: true,
+                mdxOptions: {
+                    remarkPlugins: [remarkGfm],
+                    rehypePlugins: [rehypePrism],
+                },
+            }
+        });
+    });
+    const resolvedSources = await Promise.all(mdxSources);
+    const slugs = resolvedSources.map(s => { return { slug: s.frontmatter.slug } });
+    return slugs;
 }
