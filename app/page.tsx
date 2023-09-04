@@ -3,6 +3,10 @@ import { readFileSync } from "fs";
 import { postFilePaths } from "./utils/mdxUtils";
 import Home from "./home-page"
 
+export const config = {
+	unstable_includeFiles: ["posts/**/*.mdx"]
+};
+
 export default async function Page() {
     const fps = await postFilePaths;
 	const posts = fps.map((filePath) => {
