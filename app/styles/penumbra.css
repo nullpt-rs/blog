@@ -29,7 +29,7 @@ pre {
 .type {
 	color: var(--green);
 }
-.type.enum.variant {
+.type\.enum\.variant {
 	color: var(--green);
 }
 .label {
@@ -41,25 +41,28 @@ pre {
 .constant {
 	color: var(--purple);
 }
-.constant.numeric {
+.constant\.numeric {
 	color: var(--cyan);
 }
-.constant.character {
+.constant\.character {
 	color: var(--purple);
 }
 .string {
 	color: var(--yellow);
 }
-.string.special.symbol {
+.string\.special\.symbol {
 	color: var(--cyan);
 }
-.string.special.path {
+.string\.special\.path {
 	color: var(--cyan);
 }
 .variable {
 	color: var(--sky);
 }
-.variable.builtin {
+.variable\.parameter {
+	color: var(--sky);
+}
+.variable\.builtin {
 	color: var(--red);
 }
 .keyword {
@@ -68,10 +71,16 @@ pre {
 .function {
 	color: var(--blue);
 }
-.function.macro {
+.function\.method {
+	color: var(--blue);
+}
+.function\.macro {
 	color: var(--purple);
 }
 .punctuation {
+	color: var(--sky);
+}
+.punctuation\.bracket {
 	color: var(--sky);
 }
 .operator {
@@ -80,13 +89,13 @@ pre {
 .namespace {
 	color: var(--sky);
 }
-.diff.plus {
+.diff\.plus {
 	color: var(--green);
 }
-.diff.minus {
+.diff\.minus {
 	color: var(--red);
 }
-.diff.delta {
+.diff\.delta {
 	color: var(--cyan);
 }
 .hint {
@@ -101,101 +110,101 @@ pre {
 .error {
 	color: var(--red);
 }
-.ui.background {
+.ui\.background {
 	background-color: var(--shade);
 }
-.ui.background.separator {
+.ui\.background\.separator {
 	color: var(--sky);
 }
-.ui.cursor.match {
+.ui\.cursor\.match {
 	background-color: var(--shadeplus);
 }
-.ui.cursorline.primary {
+.ui\.cursorline\.primary {
 	background-color: var(--shademinus);
 }
-.ui.linenr {
+.ui\.linenr {
 	color: var(--skyminus);
 }
-.ui.linenr.selected {
+.ui\.linenr\.selected {
 	color: var(--sky);
 }
-.ui.statusline {
+.ui\.statusline {
 	color: var(--shade);
 	background-color: var(--sky);
 }
-.ui.statusline.inactive {
+.ui\.statusline\.inactive {
 	color: var(--sky);
 	background-color: var(--shadeplus);
 }
-.ui.statusline.normal {
+.ui\.statusline\.normal {
 	color: var(--shade);
 	background-color: var(--blue);
 }
-.ui.statusline.insert {
+.ui\.statusline\.insert {
 	color: var(--shade);
 	background-color: var(--green);
 }
-.ui.statusline.select {
+.ui\.statusline\.select {
 	color: var(--shade);
 	background-color: var(--purple);
 }
-.ui.popup {
+.ui\.popup {
 	background-color: var(--shademinus);
 }
-.ui.popup.info {
+.ui\.popup\.info {
 	background-color: var(--shade);
 }
-.ui.window {
+.ui\.window {
 	color: var(--sky);
 }
-.ui.help {
+.ui\.help {
 	color: var(--sky);
 	background-color: var(--shademinus);
 }
-.ui.text {
+.ui\.text {
 	color: var(--sky);
 }
-.ui.text.focus {
+.ui\.text\.focus {
 	color: var(--blue);
 }
-.ui.text.info {
+.ui\.text\.info {
 	color: var(--sky);
 }
-.ui.virtual.ruler {
+.ui\.virtual\.ruler {
 	background-color: var(--shademinus);
 }
-.ui.virtual.whitespace {
+.ui\.virtual\.whitespace {
 	color: var(--skyminus);
 }
-.ui.virtual.indent-guide {
+.ui\.virtual\.indent-guide {
 	color: var(--shadeplus);
 }
-.ui.menu {
+.ui\.menu {
 	color: var(--sky);
 	background-color: var(--shademinus);
 }
-.ui.menu.selected {
+.ui\.menu\.selected {
 	color: var(--blue);
 }
-.ui.menu.scroll {
+.ui\.menu\.scroll {
 	color: var(--sky);
 	background-color: var(--shadeplus);
 }
-.ui.selection {
+.ui\.selection {
 	background-color: var(--shadeplus);
 }
-.markup.heading {
+.markup\.heading {
 	color: var(--skyplus);
 }
-.markup.list {
+.markup\.list {
 	color: var(--sky);
 }
-.markup.link.text {
+.markup\.link\.text {
 	color: var(--magenta);
 }
-.markup.quote {
+.markup\.quote {
 	color: var(--green);
 }
-.markup.raw {
+.markup\.raw {
 	color: var(--orange);
 }

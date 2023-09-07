@@ -1,7 +1,8 @@
 import {readFileSync} from 'fs';
 import remarkGfm from 'remark-gfm';
 import PostPage from './blog-page';
-import rehypeTrestSitter from 'rehype-trest-sitter';
+import rehypeTreeSitter from 'rehype-tree-sitter';
+// import rehypeTrestSitter from 'rehype-trest-sitter';
 import {compileMDX} from 'next-mdx-remote/rsc';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -33,7 +34,18 @@ async function getMDXSource(slug: string) {
 			mdxOptions: {
 				remarkPlugins: [remarkGfm],
 				rehypePlugins: [
-					[rehypeTrestSitter, {url: 'https://trest.zeb.zone', apiKey: process.env.TREST_API_KEY}],
+                    [rehypeTreeSitter, {
+                        treeSitterGrammarRoot: "./grammars/",
+                        scopeMap: {
+                          javascript: "source.js",
+                          js: "source.js",
+                          cpp: "source.cpp",
+                          sh: "source.bash",
+                          rust: "source.rust",
+                          html: "text.html.basic",
+                        },
+                      }]
+					// [rehypeTrestSitter, {url: 'https://trest.zeb.zone', apiKey: process.env.TREST_API_KEY}],
 				],
 			},
 		},

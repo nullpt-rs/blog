@@ -1327,6 +1327,7 @@ __metadata:
     prettier: ^2.6.1
     react: latest
     react-dom: latest
+    rehype-tree-sitter: ^0.1.4
     rehype-trest-sitter: ^0.1.0
     remark-gfm: ^3.0.1
     remark-images: ^3.1.0
@@ -3241,7 +3242,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hastscript@npm:^7.0.0":
+"hastscript@npm:^7.0.0, hastscript@npm:^7.2.0":
   version: 7.2.0
   resolution: "hastscript@npm:7.2.0"
   dependencies:
@@ -5704,6 +5705,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rehype-tree-sitter@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "rehype-tree-sitter@npm:0.1.4"
+  dependencies:
+    hastscript: ^7.2.0
+    rehype: ^12.0.1
+    string-byte-slice: ^2.0.0
+    unist-util-visit: ^5.0.0
+  checksum: 2367295c68cba6214ee9dab4526845be455b9ff511d1a7bdd3b7abcd9661087c86347e7cf2f3558f0fcc2fe90f4c350ebc038ba4e68489edeed3173674c0a819
+  languageName: node
+  linkType: hard
+
 "rehype-trest-sitter@npm:^0.1.0":
   version: 0.1.0
   resolution: "rehype-trest-sitter@npm:0.1.0"
@@ -6197,6 +6210,13 @@ __metadata:
   version: 1.1.0
   resolution: "streamsearch@npm:1.1.0"
   checksum: 1cce16cea8405d7a233d32ca5e00a00169cc0e19fbc02aa839959985f267335d435c07f96e5e0edd0eadc6d39c98d5435fb5bbbdefc62c41834eadc5622ad942
+  languageName: node
+  linkType: hard
+
+"string-byte-slice@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "string-byte-slice@npm:2.0.0"
+  checksum: 45cace58c3aff16416959e4847d078f886a32827ca2853bb0c9f8293cea592f7bbf0a36f7e6e88578e86aab06fb6752c30ed40d9b2a2c85c866e5213b35f778f
   languageName: node
   linkType: hard
 
