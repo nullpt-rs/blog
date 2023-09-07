@@ -34,6 +34,9 @@ jobs:
         with:
           toolchain: stable
           override: true
+
+      - name: Install nj-cli build
+        run:  cargo install --path nj-cli
  
       - name: Install dependencies
         run: npm install
