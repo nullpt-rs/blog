@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "next",
 		"dev:watch": "next-remote-watch ./posts",
-		"build": "next build",
+		"build": "turbo run build",
 		"export": "next export",
 		"start": "next start",
 		"lint": "eslint ."
@@ -37,6 +37,7 @@
 		"remark-gfm": "^3.0.1",
 		"remark-images": "^3.1.0",
 		"sharp": "^0.30.7",
+		"turbo": "^1.10.13",
 		"urlcat": "^2.0.4"
 	},
 	"devDependencies": {
