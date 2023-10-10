@@ -1327,7 +1327,7 @@ __metadata:
     prettier: ^2.6.1
     react: latest
     react-dom: latest
-    rehype-tree-sitter: ^0.1.4
+    rehype-tree-sitter: ^0.2.4
     rehype-trest-sitter: ^0.1.0
     remark-gfm: ^3.0.1
     remark-images: ^3.1.0
@@ -5706,15 +5706,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rehype-tree-sitter@npm:^0.1.4":
-  version: 0.1.4
-  resolution: "rehype-tree-sitter@npm:0.1.4"
+"rehype-tree-sitter@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "rehype-tree-sitter@npm:0.2.4"
   dependencies:
     hastscript: ^7.2.0
     rehype: ^12.0.1
     string-byte-slice: ^2.0.0
     unist-util-visit: ^5.0.0
-  checksum: 2367295c68cba6214ee9dab4526845be455b9ff511d1a7bdd3b7abcd9661087c86347e7cf2f3558f0fcc2fe90f4c350ebc038ba4e68489edeed3173674c0a819
+  checksum: 0136cb6d5de3b3382c050bf36bf8a4967e274c7c328a68b4b4fdd1f93a419ded37b132b336aa22fe7fc17aff17e818ff6c23f17332e571adc058a585eed2fca5
   languageName: node
   linkType: hard
 

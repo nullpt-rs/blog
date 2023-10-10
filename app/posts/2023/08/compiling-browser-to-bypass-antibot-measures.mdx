@@ -658,13 +658,13 @@ Where `block` is just the `result` from this current block and `this._lastCipher
 
 [^8]: This is why it's crucial the procedures for decryption and encryption key extraction are used on the *first* time `decrypt` and `encrypt` are called, otherwise we'd be stuck not knowing the last cipher block.
 
-```c
+```cpp
 partial_decrypt_result ^ round_key ^ decrypt_iv = plaintext
 ```
 
 Where everything is known except for `round_key`. This formula can be rearranged to calculate the `round_key`:
 
-```c
+```cpp
 round_key = partial_decrypt_result ^ plaintext ^ decrypt_iv
 ```
 

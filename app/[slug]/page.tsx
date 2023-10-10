@@ -37,9 +37,12 @@ async function getMDXSource(slug: string) {
                     [rehypeTreeSitter, {
                         treeSitterGrammarRoot: "./grammars/",
                         scopeMap: {
+						  typescript: "source.ts",
+						  ts: "source.ts",
                           javascript: "source.js",
                           js: "source.js",
                           cpp: "source.cpp",
+						  c: "source.c",
                           sh: "source.bash",
                           rust: "source.rust",
                           html: "text.html.basic",
