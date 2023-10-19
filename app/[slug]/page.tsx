@@ -33,7 +33,7 @@ async function getMDXSource(slug: string) {
 			mdxOptions: {
 				remarkPlugins: [remarkGfm],
 				rehypePlugins: [
-					[rehypeTrestSitter, {url: 'https://trest.zeb.zone', apiKey: process.env.TREST_API_KEY}],
+					// [rehypeTrestSitter, {url: 'https://trest.zeb.zone', apiKey: process.env.TREST_API_KEY}],
 				],
 			},
 		},
