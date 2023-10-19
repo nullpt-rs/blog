@@ -3,6 +3,7 @@ import { postFilePaths } from "../../utils/mdxUtils";
 import matter from "gray-matter";
 import AuthorPage from "./author-page";
 
+export const runtime = 'edge';
   
 export default async function Page({ params }: { params: { slug: string } }) {
     const fps = await postFilePaths;
