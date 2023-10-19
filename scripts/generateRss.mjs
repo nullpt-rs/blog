@@ -1,0 +1,62 @@
+import { Feed } from '@nullptrs/feed';
+import { readFileSync, writeFileSync } from 'fs';
+import matter from 'gray-matter';
+import { globby } from 'globby';
+const postFilePaths = globby("**/app/posts/**/*.mdx");
+
+
+async function getPosts() {
+    const fps = await postFilePaths;
+    const posts = fps.map((filePath) => {
+        const source = readFileSync(filePath);
+        const { content, data } = matter(source)
+        return {
+            content,
+            data,
+            filePath,
+        }
+    });
+
+    return posts;
+}
+
+export const feed = new Feed({
+    title: 'nullpt.rs • blog',
+    id: process.env.SITE_URL ?? '',
+    link: process.env.SITE_URL ?? '',
+    favicon: `${process.env.SITE_URL ?? ''}/favicon.ico`,
+    language: 'en',
+    copyright: 'CC BY-NC-SA 4.0',
+    feedLinks: {
+        atom: `${process.env.SITE_URL ?? ''}/feed.atom`,
+        json: `${process.env.SITE_URL ?? ''}/feed.json`,
+        rss: `${process.env.SITE_URL ?? ''}/feed.rss`,
+    },
+});
+
+export async function addPosts() {
+    const posts = await getPosts();
+    posts.filter(post => !post.data.hidden)
+        .forEach(post => {
+            if (!feed.items.find(item => item.id === post.data.slug)) {
+                feed.addItem({
+                    title: post.data.name,
+                    id: post.data.slug,
+                    link: `${process.env.SITE_URL ?? ''}/${post.data.slug}`,
+                    content: post.data.excerpt,
+                    date: new Date(post.data.date),
+                    author: [
+                        {
+                            name: post.data.author,
+                        },
+                    ],
+                })
+            }
+        }
+    );
+    writeFileSync('./public/feed.json', feed.json1());
+    writeFileSync('./public/feed.rss', feed.rss2());
+    writeFileSync('./public/feed.atom', feed.atom1());
+}
+
+addPosts();

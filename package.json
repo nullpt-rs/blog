@@ -4,8 +4,9 @@
 	"private": true,
 	"scripts": {
 		"dev": "next",
+		"rss:generate": "node ./scripts/generateRss.mjs",
 		"dev:watch": "next-remote-watch ./posts",
-		"build": "next build",
+		"build": "npm run rss:generate && next build",
 		"export": "next export",
 		"start": "next start",
 		"lint": "eslint ."
