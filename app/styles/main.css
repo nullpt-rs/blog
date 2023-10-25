@@ -1,5 +1,17 @@
 body {
 	@apply bg-neutral-100 text-neutral-900 dark:bg-black dark:text-neutral-200 font-sansserif font-light;
+	-webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+::selection {
+	background: #27272a;
+}
+
+@media (prefers-color-scheme: light) {
+	::selection {
+		background: #e5e5e5;
+	}
 }
 
 p {
