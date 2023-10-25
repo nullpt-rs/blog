@@ -1,0 +1,421 @@
+@media (prefers-color-scheme: light) {
+	:root {
+		--red: #df7f78;
+		--orange: #ce9042;
+		--yellow: #9ca748;
+		--green: #50b584;
+		--cyan: #00b3c2;
+		--blue: #61a3e6;
+		--purple: #a48fe1;
+		--magenta: #d080b6;
+		--sunplus: #fffdfb;
+		--sun: #fff7ed;
+		--sunminus: #f2e6d4;
+		--skyplus: #cecece;
+		--sky: #535252;
+		--skyminus: #636363;
+		--shadeplus: #3e4044;
+		--shade: #24272b;
+		--shademinus: #181b1f;
+		--canvas-background: #fff;
+	}
+	code {
+		color: var(--sky) !important;
+	}
+	.comment {
+		color: var(--skyminus);
+	}
+	.type {
+		color: var(--sky);
+	}
+	.type.enum.variant {
+		color: var(--sky);
+	}
+	.label {
+		color: var(--sky);
+	}
+	.tag {
+		color: var(--sky);
+	}
+	.constant {
+		color: var(--shadeplus);
+	}
+	.constant.numeric {
+		color: var(--sky);
+	}
+	.constant.character {
+		color: var(--shadeplus);
+	}
+	.string {
+		color: var(--skyminus);
+	}
+	.string.special.symbol {
+		color: var(--sky);
+	}
+	.string.special.path {
+		color: var(--sky);
+	}
+	.variable {
+		color: var(--skyminus);
+	}
+	.variable.builtin {
+		color: var(--sky);
+	}
+	.keyword {
+		color: var(--sky);
+	}
+	.property-access,
+	.function {
+		color: var(--skyminus);
+	}
+	.function.macro {
+		color: var(--sky);
+	}
+	.punctuation {
+		color: var(--skyminus);
+	}
+	.operator {
+		color: var(--shade);
+	}
+	.namespace {
+		color: var(--skyminus);
+	}
+	.diff.plus {
+		color: var(--green);
+	}
+	.diff.minus {
+		color: var(--red);
+	}
+	.diff.delta {
+		color: var(--cyan);
+	}
+	.hint {
+		color: var(--sky);
+	}
+	.info {
+		color: var(--skyminus);
+	}
+	.warning {
+		color: var(--purple);
+	}
+	.error {
+		color: var(--red);
+	}
+	.ui.background {
+		background-color: var(--shade);
+	}
+	.ui.background.separator {
+		color: var(--skyminus);
+	}
+	.ui.cursor.match {
+		background-color: var(--shadeplus);
+	}
+	.ui.cursorline.primary {
+		background-color: var(--shademinus);
+	}
+	.ui.linenr {
+		color: var(--sky);
+	}
+	.ui.linenr.selected {
+		color: var(--skyminus);
+	}
+	.ui.statusline {
+		color: var(--shade);
+		background-color: var(--skyminus);
+	}
+	.ui.statusline.inactive {
+		color: var(--skyminus);
+		background-color: var(--shadeplus);
+	}
+	.ui.statusline.normal {
+		color: var(--shade);
+		background-color: var(--blue);
+	}
+	.ui.statusline.insert {
+		color: var(--shade);
+		background-color: var(--green);
+	}
+	.ui.statusline.select {
+		color: var(--shade);
+		background-color: var(--purple);
+	}
+	.ui.popup {
+		background-color: var(--shademinus);
+	}
+	.ui.popup.info {
+		background-color: var(--shade);
+	}
+	.ui.window {
+		color: var(--skyminus);
+	}
+	.ui.help {
+		color: var(--skyminus);
+		background-color: var(--shademinus);
+	}
+	.ui.text {
+		color: var(--skyminus);
+	}
+	.ui.text.focus {
+		color: var(--blue);
+	}
+	.ui.text.info {
+		color: var(--skyminus);
+	}
+	.ui.virtual.ruler {
+		background-color: var(--shademinus);
+	}
+	.ui.virtual.whitespace {
+		color: var(--sky);
+	}
+	.ui.virtual.indent-guide {
+		color: var(--shadeplus);
+	}
+	.ui.menu {
+		color: var(--skyminus);
+		background-color: var(--shademinus);
+	}
+	.ui.menu.selected {
+		color: var(--blue);
+	}
+	.ui.menu.scroll {
+		color: var(--skyminus);
+		background-color: var(--shadeplus);
+	}
+	.ui.selection {
+		background-color: var(--shadeplus);
+	}
+	.markup.heading {
+		color: var(--skyplus);
+	}
+	.markup.list {
+		color: var(--skyminus);
+	}
+	.markup.link.text {
+		color: var(--shade);
+	}
+	.markup.quote {
+		color: var(--green);
+	}
+	.markup.raw {
+		color: var(--orange);
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--red: #df7f78;
+		--orange: #ce9042;
+		--yellow: #9ca748;
+		--green: #50b584;
+		--cyan: #00b3c2;
+		--blue: #61a3e6;
+		--purple: #a48fe1;
+		--magenta: #d080b6;
+		--sunplus: #fffdfb;
+		--sun: #fff7ed;
+		--sunminus: #f2e6d4;
+		--skyplus: #cecece;
+		--sky: #9e9e9e;
+		--skyminus: #636363;
+		--shadeplus: #3e4044;
+		--shade: #24272b;
+		--shademinus: #181b1f;
+		--canvas-background: #0a0a0a;
+	}
+	
+	code {
+		color: var(--skyminus) !important;
+	}
+
+	pre > code {
+		color: var(--skyplus) !important;
+	}
+
+	.comment {
+		color: var(--skyminus) !important;
+	}
+	.type {
+		color: var(--green) !important;
+	}
+	.type.enum.variant {
+		color: var(--green) !important;
+	}
+	.label {
+		color: var(--blue) !important;
+	}
+	.tag {
+		color: var(--skyminus) !important;
+	}
+	.constant {
+		color: var(--skyminus) !important;
+	}
+	.constant.numeric {
+		color: var(--cyan) !important;
+	}
+	.constant.character {
+		color: var(--skyminus) !important;
+	}
+	.string {
+		color: var(--skyplus) !important;
+	}
+	.string.special.symbol {
+		color: var(--cyan) !important;
+	}
+	.string.special.path {
+		color: var(--cyan) !important;
+	}
+	.variable {
+		color: var(--skyminus) !important;
+	}
+	.variable.builtin {
+		color: var(--skyminus) !important;
+	}
+	.keyword {
+		color: var(--skyminus) !important;
+	}
+	.parameter,
+	.property,
+	.class-name,
+	.property-access,
+	.function {
+		color: var(--skyplus) !important;
+	}
+	.function.macro {
+		color: var(--purple);
+	}
+	.punctuation {
+		color: var(--skyminus);
+	}
+	.operator {
+		color: var(--skyminus);
+	}
+	.namespace {
+		color: var(--skyminus);
+	}
+	.diff.plus {
+		color: var(--green);
+	}
+	.diff.minus {
+		color: var(--red);
+	}
+	.diff.delta {
+		color: var(--cyan);
+	}
+	.hint {
+		color: var(--skyminus);
+	}
+	.info {
+		color: var(--skyminus);
+	}
+	.warning {
+		color: var(--purple);
+	}
+	.error {
+		color: var(--red);
+	}
+	.ui.background {
+		background-color: var(--shade);
+	}
+	.ui.background.separator {
+		color: var(--skyminus);
+	}
+	.ui.cursor.match {
+		background-color: var(--shadeplus);
+	}
+	.ui.cursorline.primary {
+		background-color: var(--shademinus);
+	}
+	.ui.linenr {
+		color: var(--skyminus);
+	}
+	.ui.linenr.selected {
+		color: var(--skyminus);
+	}
+	.ui.statusline {
+		color: var(--shade);
+		background-color: var(--skyminus);
+	}
+	.ui.statusline.inactive {
+		color: var(--skyminus);
+		background-color: var(--shadeplus);
+	}
+	.ui.statusline.normal {
+		color: var(--shade);
+		background-color: var(--blue);
+	}
+	.ui.statusline.insert {
+		color: var(--shade);
+		background-color: var(--green);
+	}
+	.ui.statusline.select {
+		color: var(--shade);
+		background-color: var(--purple);
+	}
+	.ui.popup {
+		background-color: var(--shademinus);
+	}
+	.ui.popup.info {
+		background-color: var(--shade);
+	}
+	.ui.window {
+		color: var(--skyminus);
+	}
+	.ui.help {
+		color: var(--skyminus);
+		background-color: var(--shademinus);
+	}
+	.ui.text {
+		color: var(--skyminus);
+	}
+	.ui.text.focus {
+		color: var(--blue);
+	}
+	.ui.text.info {
+		color: var(--skyminus);
+	}
+	.ui.virtual.ruler {
+		background-color: var(--shademinus);
+	}
+	.ui.virtual.whitespace {
+		color: var(--skyminus);
+	}
+	.ui.virtual.indent-guide {
+		color: var(--shadeplus);
+	}
+	.ui.menu {
+		color: var(--skyminus);
+		background-color: var(--shademinus);
+	}
+	.ui.menu.selected {
+		color: var(--blue);
+	}
+	.ui.menu.scroll {
+		color: var(--skyminus);
+		background-color: var(--shadeplus);
+	}
+	.ui.selection {
+		background-color: var(--shadeplus);
+	}
+	.markup.heading {
+		color: var(--skyminus);
+	}
+	.markup.list {
+		color: var(--skyminus);
+	}
+	.markup.link.text {
+		color: var(--skyminus);
+	}
+	.markup.quote {
+		color: var(--green);
+	}
+	.markup.raw {
+		color: var(--orange);
+	}
+	
+}
+
+pre {
+	background-color: var(--canvas-background) !important;
+	tab-size: 4;
+	font-size: 13px !important;
+}

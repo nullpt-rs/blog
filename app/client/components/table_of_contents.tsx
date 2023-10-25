@@ -1,0 +1,27 @@
+"use client";
+import React from "react";
+import { Heading } from "../../[slug]/page";
+
+export function TableOfContents({
+    headings
+}: {
+    headings: Heading[];
+}) {
+    return (
+        <nav className="max-w-[260px] text-sm">
+            <ul className="flex flex-col gap-2">
+                {headings.filter(h => h.level < 3).map(heading => (
+                    <li key={heading.slug} className="cursor-pointer font-light transition-colors text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white" onClick={() => {
+                        const element = document.getElementById(heading.slug);
+                        element?.scrollIntoView({ behavior: "smooth" });
+                        history.replaceState(null, "", `#${heading.slug}`);
+                    }}>
+                        <span>
+                            {heading.title}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}

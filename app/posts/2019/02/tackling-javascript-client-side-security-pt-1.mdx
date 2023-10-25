@@ -24,7 +24,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
     debugging/tampering. A list of the techniques is provided by the Jscrambler product page
     and even contains docs to what each feature does (This will be extremely helpful)
 </p>
-<h1 id="getting-a-sample-to-reverse">Getting a Sample To Reverse</h1>
+# Getting a Sample To Reverse
 <p>
     The first step in reversing Jscrambler is to get our hands on an obfuscated sample. Lucky
     for us, we’re able to sign up and demo their protection using a game they provide. Even
@@ -49,7 +49,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
 
 ![](/posts/tackling-javascript-client-side-security-part-1/5-2.png)
 
-<h1 id="side-by-side-comparison">Side by Side Comparison</h1>
+# Side by Side Comparison
 
 ![Original code on the left, Jscrambler protected code on right](/posts/tackling-javascript-client-side-security-part-1/6-2.png)
 
@@ -83,7 +83,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
     protected code brings our lines of code from 907 down to 629. This means the majority of
     the increase in LoC we noticed was due to these decode/encode algorithms.
 </p>
-<h1 id="extracting-data-from-functions">Extracting Data From Functions</h1>
+# Extracting Data From Functions
 <p>
     My next idea was to try and test one of decode functions by just running it and hoping to
     get no errors.
@@ -115,7 +115,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
 
 ![](/posts/tackling-javascript-client-side-security-part-1/14-1.png)
 
-<h1 id="it-returns-toint-">It Returns toInt!</h1>
+# It Returns toInt!
 <p>
     At this point I was very excited. This means I was able to isolate these functions and use
     them to deobfuscate the code a bit.
@@ -138,7 +138,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
     Whatever, I’ll just write a script that uses Regex to find these functions and replace
     them with the results using eval.
 </p>
-<h1 id="stop-">STOP!</h1>
+# STOP!
 <p>
     While this technique would technically work and is what I started out with, there is a
     better way to do this and its using an AST.
@@ -214,7 +214,7 @@ keywords: jscrambler,reverse engineering,javascript,deobfuscation
     CallExpression and its callee’s property name is one of our decode functions. Now we just
     want to replace these calls with their actual value!
 </p>
-<h1 id="the-final-result">The Final Result</h1>
+# The Final Result
 <p>
     Remember our obfuscated code comparison from above? Well this is how the comparison looks
     after running our script!

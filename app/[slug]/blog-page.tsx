@@ -3,17 +3,20 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { AuthorLinks } from '../client/components/author_links';
 import { postFilePaths } from '../utils/mdxUtils';
+import { Heading } from './page';
+import { TableOfContents } from '../client/components/table_of_contents';
 
 interface Props {
 	content: any;
+	headings: Heading[];
 	frontMatter: {
 		[key: string]: any;
 	}
 }
 
-export default function PostPage({ content, frontMatter }: Props) {
+export default function PostPage({ content, frontMatter, headings }: Props) {
 	return (
-		<div className="space-y-4 m-auto max-w-4xl">
+		<div className="space-y-4 m-auto max-w-full lg:max-w-4xl transition-all">
 			<Head>
 				<title>{frontMatter.name}</title>
 				<meta name="description" content={frontMatter.excerpt} />
@@ -27,7 +30,14 @@ export default function PostPage({ content, frontMatter }: Props) {
 				</div>
 			)}
 
-			<div>
+			<aside className='fixed transform -translate-x-72 opacity-0 2xl:opacity-100 transition-opacity'>
+				<nav className='flex flex-col gap-8'>
+					<a href="/" className='font-mono'>{'../'}</a>
+					<TableOfContents headings={headings} />
+				</nav>
+			</aside>
+
+			<div className='opacity-100 2xl:opacity-0 transition-opacity'>
 				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono">
 					../
 				</Link>
