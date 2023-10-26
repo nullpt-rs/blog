@@ -16,7 +16,7 @@ interface Props {
 
 export default function PostPage({ content, frontMatter, headings }: Props) {
 	return (
-		<div className="space-y-4 m-auto max-w-full lg:max-w-4xl transition-all">
+		<div className="space-y-4 m-auto max-w-full lg:max-w-3xl transition-all">
 			<Head>
 				<title>{frontMatter.name}</title>
 				<meta name="description" content={frontMatter.excerpt} />
@@ -30,14 +30,14 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 				</div>
 			)}
 
-			<aside className='fixed transform -translate-x-72 opacity-0 2xl:opacity-100 transition-opacity'>
+			<aside className='fixed transform -translate-x-60 opacity-0 xl:opacity-100 transition-opacity'>
 				<nav className='flex flex-col gap-8'>
 					<a href="/" className='font-mono'>{'../'}</a>
 					<TableOfContents headings={headings} />
 				</nav>
 			</aside>
 
-			<div className='opacity-100 2xl:opacity-0 transition-opacity'>
+			<div className='opacity-100 xl:opacity-0 transition-opacity'>
 				<Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono">
 					../
 				</Link>
