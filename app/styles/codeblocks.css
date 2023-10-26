@@ -17,7 +17,7 @@
 		--shadeplus: #3e4044;
 		--shade: #24272b;
 		--shademinus: #181b1f;
-		--canvas-background: #fff;
+		--canvas-background: rgb(229, 229, 229);
 	}
 	code {
 		color: var(--sky) !important;
@@ -220,15 +220,7 @@
 		--shadeplus: #3e4044;
 		--shade: #24272b;
 		--shademinus: #181b1f;
-		--canvas-background: #0a0a0a;
-	}
-	
-	code {
-		color: var(--skyminus) !important;
-	}
-
-	pre > code {
-		color: var(--skyplus) !important;
+		--canvas-background: rgb(38, 38, 38);
 	}
 
 	.comment {

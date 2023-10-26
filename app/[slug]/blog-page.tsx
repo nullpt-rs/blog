@@ -43,12 +43,12 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 				</Link>
 			</div>
 
-			<p>
-				<time dateTime={new Date(frontMatter.date).toISOString()}>{new Date(frontMatter.date).toDateString()}</time>
-			</p>
-			<small>authored by <Link className="underline" passHref href={`/author/${frontMatter.author}`}>{frontMatter.author}</Link></small>
-			<main className="prose max-w-none prose-blue prose-img:rounded-md prose-img:w-full dark:prose-invert text-lg">
-				<h1>{frontMatter.name}</h1>
+		<main className="prose prose-zinc max-w-none transition-all prose-a:underline dark:prose-a:decoration-neutral-600 dark:hover:prose-a:decoration-neutral-400 prose-a:decoration-neutral-400 hover:prose-a:decoration-neutral-500 prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-200 dark:prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full dark:prose-invert">
+				<h1 className='text-md'>{frontMatter.name}</h1>
+				<div className='flex flex-col mt-2'>
+					<time className='dark:text-neutral-500 p-0 m-0 ' dateTime={new Date(frontMatter.date).toISOString()}>{new Date(frontMatter.date).toDateString()}</time>
+					<small className='dark:text-neutral-500 p-0 m-0'>authored by <Link className="underline" passHref href={`/author/${frontMatter.author}`}>{frontMatter.author}</Link></small>
+				</div>
 				{content}
 				<AuthorLinks author={frontMatter.author} />
 			</main>

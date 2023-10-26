@@ -1,11 +1,11 @@
 body {
-	@apply bg-neutral-100 text-neutral-900 dark:bg-black dark:text-neutral-200 font-sansserif font-light;
+	@apply bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200 font-sansserif font-light;
 	-webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
 }
 
 ::selection {
-	background: #27272a;
+	background: #363636;
 }
 
 @media (prefers-color-scheme: light) {
@@ -24,11 +24,20 @@ main h1 {
 }
 
 a {
-	@apply font-medium;
+	font-weight: 400 !important;
 }
 
 code {
 	@apply font-mono;
+	font-weight: 400 !important;
+}
+
+code::before {
+	content: none !important;
+}
+
+code::after {
+	content: none !important;
 }
 
 .no-pre-margin pre {

@@ -54,7 +54,7 @@ export default function Home({ posts }: { posts: any[] }) {
 export function BlogLink(props: { href: string; date: string; author: string; children: ReactNode }) {
 	return (
 		<Link passHref href={props.href} className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
-			<div className='dark:hover:bg-neutral-900 hover:bg-neutral-200 p-2 rounded-xl transition-colors'>
+			<div className='dark:hover:bg-neutral-800 hover:bg-neutral-200 p-2 rounded-xl transition-colors'>
 				<div className="flex flex-col">
 					{props.children}
 					<div className="flex">
