@@ -121,6 +121,7 @@ export async function generateMetadata(
 			authors: frontmatter.author as string,
 			locale: 'en_US',
 		},
+		description: frontmatter.excerpt as string,
 		keywords: frontmatter.keywords as string,
 		authors: { name: frontmatter.author as string },
 	}
