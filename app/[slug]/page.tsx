@@ -1,12 +1,13 @@
-import {readFileSync} from 'fs';
-import remarkGfm from 'remark-gfm';
 import rehypePrism from '@mapbox/rehype-prism';
-import PostPage from './blog-page';
-import {compileMDX} from 'next-mdx-remote/rsc';
+import { readFileSync } from 'fs';
+import { Metadata } from 'next';
+import { compileMDX } from 'next-mdx-remote/rsc';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import {postFilePaths} from '../utils/mdxUtils';
+import { postFilePaths } from '../utils/mdxUtils';
+import PostPage from './blog-page';
 
 export const dynamicParams = false;
 
@@ -25,20 +26,20 @@ function slugify(text: string) {
 
 function extractHeadings(content: string): Heading[] {
 	const headings: Heading[] = [];
-  
+
 	// match the `#` syntax for headings
 	const headingMatcher = /^(#+)\s(.+)$/gm;
-  
+
 	let match = headingMatcher.exec(content);
 	while (match !== null) {
-	  const level = match[1].length;
-	  const title = match[2].trim();
-	  const slug = slugify(title);
-  
-	  headings.push({ slug, title, level });
-	  match = headingMatcher.exec(content);
+		const level = match[1].length;
+		const title = match[2].trim();
+		const slug = slugify(title);
+
+		headings.push({ slug, title, level });
+		match = headingMatcher.exec(content);
 	}
-  
+
 	return headings;
 }
 
@@ -72,11 +73,11 @@ async function getMDXSource(slug: string) {
 		},
 	});
 
-	return {mdxSource, headings};
+	return { mdxSource, headings };
 }
 
-export default async function Page({params}: {params: {slug: string}}) {
-	const {mdxSource, headings} = await getMDXSource(params.slug);
+export default async function Page({ params }: { params: { slug: string } }) {
+	const { mdxSource, headings } = await getMDXSource(params.slug);
 	return <PostPage content={mdxSource.content} headings={headings} frontMatter={mdxSource.frontmatter} />;
 }
 
@@ -100,7 +101,27 @@ export async function generateStaticParams() {
 	});
 	const resolvedSources = await Promise.all(mdxSources);
 	const slugs = resolvedSources.map(s => {
-		return {slug: s.frontmatter.slug};
+		return { slug: s.frontmatter.slug };
 	});
 	return slugs;
+}
+
+export async function generateMetadata(
+	{ params }: { params: { slug: string } }
+): Promise<Metadata> {
+	const { mdxSource } = await getMDXSource(params.slug);
+	const { frontmatter } = mdxSource;
+	return {
+		title: `${frontmatter.name} | nullpt.rs`,
+		openGraph: {
+			type: 'article',
+			title: frontmatter.name as string,
+			description: frontmatter.excerpt as string,
+			tags: frontmatter.keywords as string[],
+			authors: frontmatter.author as string,
+			locale: 'en_US',
+		},
+		keywords: frontmatter.keywords as string,
+		authors: { name: frontmatter.author as string },
+	}
 }

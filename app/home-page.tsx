@@ -37,8 +37,8 @@ export default function Home({ posts }: { posts: any[] }) {
 					{posts
 						.filter((post: any) => !post.hidden)
 						.sort((p, p2) => Date.parse(p2.data.date) - Date.parse(p.data.date))
-						.map(post => (
-							<BlogLink key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`}>
+						.map((post, postIndex) => (
+							<BlogLink tabIndex={postIndex} key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`}>
 								{post.data.name}
 							</BlogLink>
 						))}
@@ -51,18 +51,19 @@ export default function Home({ posts }: { posts: any[] }) {
 	);
 }
 
-export function BlogLink(props: { href: string; date: string; author: string; children: ReactNode }) {
+export function BlogLink(props: { href: string; tabIndex: number; date: string; author: string; children: ReactNode }) {
+	const postedAt = new Date(props.date);
 	return (
-		<Link passHref href={props.href} className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-600">
-			<div className='dark:hover:bg-neutral-800 hover:bg-neutral-200 p-2 rounded-xl transition-colors'>
+		<div tabIndex={props.tabIndex}>
+			<div className='p-2 rounded-xl transition-colors'>
 				<div className="flex flex-col">
-					{props.children}
-					<div className="flex">
-						<p className="text-neutral-400">{new Date(props.date).toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+					<Link href={props.href} className='text-blue-500 hover:text-blue-700 dark:hover:text-blue-600'>{props.children}</Link>
+					<div className="flex items-baseline">
+						<time className="text-neutral-400" dateTime={postedAt.toISOString()}>{postedAt.toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
 						<p className="pl-1 text-neutral-400">by <Link className="underline" passHref href={`/author/${props.author}`}>{props.author}</Link></p>
 					</div>
 				</div>
 			</div>
-		</Link>
+		</div>
 	);
 }
