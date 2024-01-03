@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BlogLink } from '../../home-page';
+import { BlogLink } from '../../client/components/post_link';
 
 interface Props {
     author: string;
@@ -20,7 +20,7 @@ interface Post {
 
 export default function AuthorPage({ author, data }: Props) {
     return (
-        <div className="space-y-4 m-auto max-w-4xl">
+        <div className="space-y-4 w-full px-0 sm:px-16 max-w-full">
             <div>
                 <Link href="/" className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono">
                     ../
@@ -32,8 +32,8 @@ export default function AuthorPage({ author, data }: Props) {
                 {data
                     .filter((post: Post) => !post.data.hidden)
                     .sort((p: Post, p2: Post) => Date.parse(p2.data.date) - Date.parse(p.data.date))
-                    .map((post: Post) => (
-                        <BlogLink key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`}>
+                    .map((post: Post, idx: number) => (
+                        <BlogLink key={post.data.slug} date={post.data.date} author={post.data.author} href={`/${post.data.slug}`} tabIndex={idx}>
                             {post.data.name}
                         </BlogLink>
                     ))}
