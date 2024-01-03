@@ -44,8 +44,8 @@ function extractHeadings(content: string): Heading[] {
 }
 
 const MDX_COMPONENTS = {
-	h1: (props: any) => <h1 id={slugify(props.children)}>{props.children}</h1>,
-	h2: (props: any) => <h2 id={slugify(props.children)}>{props.children}</h2>,
+	h1: (props: any) => <h1 id={slugify(props.children)} className='font-system'>{props.children}</h1>,
+	h2: (props: any) => <h2 id={slugify(props.children)} className='font-system'>{props.children}</h2>,
 	WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
 	OldPost: dynamic(() => import('../client/components/old_post')),
 	img: (props: any) => (

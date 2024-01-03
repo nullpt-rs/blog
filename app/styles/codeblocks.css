@@ -411,3 +411,7 @@ pre {
 	tab-size: 4;
 	font-size: 13px !important;
 }
+
+pre > code {
+	padding: 0 !important;
+}

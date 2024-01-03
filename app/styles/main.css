@@ -51,3 +51,7 @@ code::after {
 figcaption {
 	text-align: center;
 }
+
+h1 {
+	@apply font-system;
+}

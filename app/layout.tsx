@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from 'geist/font/mono'
 
 import 'tailwindcss/tailwind.css';
 import './styles/main.css';
@@ -15,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className='py-24 px-4 flex flex-row justify-center dark:[color-scheme:dark]'>{children}</body>
+      <body className={`py-24 px-4 flex flex-row justify-center dark:[color-scheme:dark] antialiased ${GeistSans.variable} ${GeistMono.variable}`}>{children}</body>
     </html>
   )
 }
