@@ -1,7 +1,7 @@
-import path from "path";
+import path from 'path';
 
 // Force files to be bundled
-const TEST = path.resolve("../posts/**/*.mdx");
+const TEST = path.resolve('../posts/**/*.mdx');
 
 export default function Page404() {
 	return (

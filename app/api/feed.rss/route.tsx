@@ -1,12 +1,10 @@
-import { addPosts, feed } from '../../server/feed';
+import { rss2 } from '../../server/feed.const';
 
 export async function GET() {
-	await addPosts();
-
-	return new Response(feed.rss2(), {
+	return new Response(rss2, {
 		status: 200,
 		headers: {
-			'Content-Type': 'text/xml'
-		}
+			'Content-Type': 'text/xml',
+		},
 	});
 }

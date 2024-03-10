@@ -1,3 +1,3 @@
-import {envsafe} from 'envsafe';
+import { envsafe } from 'envsafe';
 
 export const env = envsafe({});

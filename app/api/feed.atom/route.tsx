@@ -1,12 +1,10 @@
-import { addPosts, feed } from '../../server/feed';
+import { atom1 } from '../../server/feed.const';
 
 export async function GET() {
-	await addPosts();
-
-	return new Response(feed.atom1(), {
+	return new Response(atom1, {
 		status: 200,
 		headers: {
-			'Content-Type': 'text/xml'
-		}
+			'Content-Type': 'text/xml',
+		},
 	});
 }
