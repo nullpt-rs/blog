@@ -1,6 +1,6 @@
-import {Feed} from '@nullptrs/feed';
-import {postFilePaths} from '../utils/mdxUtils.const';
-import {readFileSync} from 'fs';
+import { Feed } from '@nullptrs/feed';
+import { postFilePaths } from '../utils/mdxUtils.const';
+import { readFileSync } from 'fs';
 import matter from 'gray-matter';
 
 const feed = new Feed({
@@ -20,7 +20,7 @@ const feed = new Feed({
 postFilePaths
 	.map(filePath => {
 		const source = readFileSync(filePath, 'utf8');
-		const {content, data} = matter(source);
+		const { content, data } = matter(source);
 		return {
 			content,
 			data,

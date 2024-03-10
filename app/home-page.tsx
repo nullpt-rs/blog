@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import {ReactNode} from 'react';
+import { ReactNode } from 'react';
 import { BlogLink } from './client/components/post_link';
 
-export default function Home({posts}: {posts: any[]}) {
+export default function Home({ posts }: { posts: any[] }) {
 	return (
 		<div className="flex flex-col w-full px-0 sm:px-16 transition-all">
 			<main className="space-y-8">

@@ -1,6 +1,6 @@
-import {globbySync} from 'globby';
+import { globbySync } from 'globby';
 import path from 'path';
-import {statSync, readFileSync} from 'fs';
+import { statSync, readFileSync } from 'fs';
 import matter from 'gray-matter';
 
 export const POSTS_PATH = path.join(process.cwd(), 'app/posts');
@@ -14,7 +14,7 @@ export const postFilePaths = globbySync('**/app/posts/**/*.mdx');
 
 export const posts = postFilePaths.map(filePath => {
 	const source = readFileSync(filePath, 'utf8');
-	const {content, data} = matter(source);
+	const { content, data } = matter(source);
 	return {
 		content,
 		data,

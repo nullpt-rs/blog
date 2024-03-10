@@ -1,5 +1,5 @@
-import {NextRequest} from 'next/server';
-import {rss2} from '../server/feed.const';
+import { NextRequest } from 'next/server';
+import { rss2 } from '../server/feed.const';
 
 export const config = {
 	runtime: 'nodejs',

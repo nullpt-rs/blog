@@ -1,5 +1,5 @@
-import type {NextRequest} from 'next/server';
-import {json1} from '../server/feed.const';
+import type { NextRequest } from 'next/server';
+import { json1 } from '../server/feed.const';
 
 export const config = {
 	runtime: 'nodejs',

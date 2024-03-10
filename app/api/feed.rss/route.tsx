@@ -1,4 +1,4 @@
-import {rss2} from '../../server/feed.const';
+import { rss2 } from '../../server/feed.const';
 
 export async function GET() {
 	return new Response(rss2, {

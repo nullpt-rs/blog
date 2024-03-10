@@ -1,11 +1,11 @@
 import rehypePrism from '@mapbox/rehype-prism';
-import {Metadata} from 'next';
-import {compileMDX} from 'next-mdx-remote/rsc';
+import { Metadata } from 'next';
+import { compileMDX } from 'next-mdx-remote/rsc';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import {posts} from '../utils/mdxUtils.const';
+import { posts } from '../utils/mdxUtils.const';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;
@@ -35,7 +35,7 @@ function extractHeadings(content: string): Heading[] {
 		const title = match[2].trim();
 		const slug = slugify(title);
 
-		headings.push({slug, title, level});
+		headings.push({ slug, title, level });
 		match = headingMatcher.exec(content);
 	}
 
@@ -64,7 +64,7 @@ const MDX_COMPONENTS = {
 };
 
 async function getMDXSource(slug: string) {
-	const {source} = posts.filter(p => p.filePath.includes(slug))[0];
+	const { source } = posts.filter(p => p.filePath.includes(slug))[0];
 	const headings = extractHeadings(source);
 	const mdxSource = await compileMDX({
 		source,
@@ -79,18 +79,18 @@ async function getMDXSource(slug: string) {
 		},
 	});
 
-	return {mdxSource, headings};
+	return { mdxSource, headings };
 }
 
-export default async function Page({params}: {params: {slug: string}}) {
-	const {mdxSource, headings} = await getMDXSource(params.slug);
+export default async function Page({ params }: { params: { slug: string } }) {
+	const { mdxSource, headings } = await getMDXSource(params.slug);
 	return (
 		<PostPage content={mdxSource.content} headings={headings} frontMatter={mdxSource.frontmatter} />
 	);
 }
 
 export async function generateStaticParams() {
-	const mdxSources = posts.map(({source}) => {
+	const mdxSources = posts.map(({ source }) => {
 		return compileMDX({
 			source,
 			// @ts-ignore
@@ -106,14 +106,18 @@ export async function generateStaticParams() {
 	});
 	const resolvedSources = await Promise.all(mdxSources);
 	const slugs = resolvedSources.map(s => {
-		return {slug: s.frontmatter.slug};
+		return { slug: s.frontmatter.slug };
 	});
 	return slugs;
 }
 
-export async function generateMetadata({params}: {params: {slug: string}}): Promise<Metadata> {
-	const {mdxSource} = await getMDXSource(params.slug);
-	const {frontmatter} = mdxSource;
+export async function generateMetadata({
+	params,
+}: {
+	params: { slug: string };
+}): Promise<Metadata> {
+	const { mdxSource } = await getMDXSource(params.slug);
+	const { frontmatter } = mdxSource;
 	return {
 		title: `${frontmatter.name} | nullpt.rs`,
 		openGraph: {
@@ -126,6 +130,6 @@ export async function generateMetadata({params}: {params: {slug: string}}): Prom
 		},
 		description: frontmatter.excerpt as string,
 		keywords: frontmatter.keywords as string,
-		authors: {name: frontmatter.author as string},
+		authors: { name: frontmatter.author as string },
 	};
 }

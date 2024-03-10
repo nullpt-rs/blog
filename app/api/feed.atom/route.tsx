@@ -1,4 +1,4 @@
-import {atom1} from '../../server/feed.const';
+import { atom1 } from '../../server/feed.const';
 
 export async function GET() {
 	return new Response(atom1, {

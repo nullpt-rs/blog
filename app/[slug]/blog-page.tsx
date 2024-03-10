@@ -1,9 +1,9 @@
-import {GetStaticPaths} from 'next';
+import { GetStaticPaths } from 'next';
 import Link from 'next/link';
-import {AuthorLinks} from '../client/components/author_links';
-import {postFilePaths} from '../utils/mdxUtils.const';
-import {Heading} from './page';
-import {TableOfContents} from '../client/components/table_of_contents';
+import { AuthorLinks } from '../client/components/author_links';
+import { postFilePaths } from '../utils/mdxUtils.const';
+import { Heading } from './page';
+import { TableOfContents } from '../client/components/table_of_contents';
 
 interface Props {
 	content: any;
@@ -13,7 +13,7 @@ interface Props {
 	};
 }
 
-export default function PostPage({content, frontMatter, headings}: Props) {
+export default function PostPage({ content, frontMatter, headings }: Props) {
 	return (
 		<div className="space-y-4 m-auto max-w-full lg:max-w-3xl transition-all font-sans">
 			{frontMatter.hidden && (
@@ -76,7 +76,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 	const fps = await postFilePaths;
 	const paths = fps
 		.map(path => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/') + 1))
-		.map(slug => ({params: {slug}}));
+		.map(slug => ({ params: { slug } }));
 
 	return {
 		paths,
