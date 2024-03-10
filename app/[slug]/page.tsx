@@ -1,12 +1,11 @@
 import rehypePrism from '@mapbox/rehype-prism';
-import { readFileSync } from 'fs';
-import { Metadata } from 'next';
-import { compileMDX } from 'next-mdx-remote/rsc';
+import {Metadata} from 'next';
+import {compileMDX} from 'next-mdx-remote/rsc';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import { postFilePaths } from '../utils/mdxUtils';
+import {posts} from '../utils/mdxUtils.const';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;
@@ -20,8 +19,8 @@ export type Heading = {
 function slugify(text: string) {
 	return text
 		.toLowerCase()
-		.replace(/[^\w\s-]/g, "")
-		.replace(/\s+/g, "-");
+		.replace(/[^\w\s-]/g, '')
+		.replace(/\s+/g, '-');
 }
 
 function extractHeadings(content: string): Heading[] {
@@ -36,7 +35,7 @@ function extractHeadings(content: string): Heading[] {
 		const title = match[2].trim();
 		const slug = slugify(title);
 
-		headings.push({ slug, title, level });
+		headings.push({slug, title, level});
 		match = headingMatcher.exec(content);
 	}
 
@@ -44,8 +43,16 @@ function extractHeadings(content: string): Heading[] {
 }
 
 const MDX_COMPONENTS = {
-	h1: (props: any) => <h1 id={slugify(props.children)} className='font-system'>{props.children}</h1>,
-	h2: (props: any) => <h2 id={slugify(props.children)} className='font-system'>{props.children}</h2>,
+	h1: (props: any) => (
+		<h1 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h1>
+	),
+	h2: (props: any) => (
+		<h2 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h2>
+	),
 	WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
 	OldPost: dynamic(() => import('../client/components/old_post')),
 	img: (props: any) => (
@@ -57,8 +64,7 @@ const MDX_COMPONENTS = {
 };
 
 async function getMDXSource(slug: string) {
-	const postFilePath = (await postFilePaths).filter(p => p.includes(slug));
-	const source = readFileSync(postFilePath[0], 'utf-8');
+	const {source} = posts.filter(p => p.filePath.includes(slug))[0];
 	const headings = extractHeadings(source);
 	const mdxSource = await compileMDX({
 		source,
@@ -73,19 +79,18 @@ async function getMDXSource(slug: string) {
 		},
 	});
 
-	return { mdxSource, headings };
+	return {mdxSource, headings};
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const { mdxSource, headings } = await getMDXSource(params.slug);
-	return <PostPage content={mdxSource.content} headings={headings} frontMatter={mdxSource.frontmatter} />;
+export default async function Page({params}: {params: {slug: string}}) {
+	const {mdxSource, headings} = await getMDXSource(params.slug);
+	return (
+		<PostPage content={mdxSource.content} headings={headings} frontMatter={mdxSource.frontmatter} />
+	);
 }
 
 export async function generateStaticParams() {
-	const filePaths = await postFilePaths;
-	const mdxSources = filePaths.map(filePath => {
-		const source = readFileSync(filePath);
-
+	const mdxSources = posts.map(({source}) => {
 		return compileMDX({
 			source,
 			// @ts-ignore
@@ -101,16 +106,14 @@ export async function generateStaticParams() {
 	});
 	const resolvedSources = await Promise.all(mdxSources);
 	const slugs = resolvedSources.map(s => {
-		return { slug: s.frontmatter.slug };
+		return {slug: s.frontmatter.slug};
 	});
 	return slugs;
 }
 
-export async function generateMetadata(
-	{ params }: { params: { slug: string } }
-): Promise<Metadata> {
-	const { mdxSource } = await getMDXSource(params.slug);
-	const { frontmatter } = mdxSource;
+export async function generateMetadata({params}: {params: {slug: string}}): Promise<Metadata> {
+	const {mdxSource} = await getMDXSource(params.slug);
+	const {frontmatter} = mdxSource;
 	return {
 		title: `${frontmatter.name} | nullpt.rs`,
 		openGraph: {
@@ -123,6 +126,6 @@ export async function generateMetadata(
 		},
 		description: frontmatter.excerpt as string,
 		keywords: frontmatter.keywords as string,
-		authors: { name: frontmatter.author as string },
-	}
+		authors: {name: frontmatter.author as string},
+	};
 }

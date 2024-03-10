@@ -11,6 +11,7 @@ module.exports = {
 		'xo',
 		'xo-typescript',
 		'xo-react',
+		'plugin:eslint-plugin-next-on-pages/recommended',
 	],
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
@@ -19,7 +20,7 @@ module.exports = {
 		sourceType: 'module',
 		project: './tsconfig.json',
 	},
-	plugins: ['react', '@typescript-eslint'],
+	plugins: ['react', '@typescript-eslint', 'eslint-plugin-next-on-pages'],
 	ignorePatterns: ['**/*.js'],
 	rules: {
 		// Next.js

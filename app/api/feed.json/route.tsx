@@ -1,12 +1,10 @@
-import { addPosts, feed } from '../../server/feed';
+import {json1} from '../../server/feed.const';
 
 export async function GET() {
-	await addPosts();
-
-	return new Response(feed.json1(), {
+	return new Response(json1, {
 		status: 200,
 		headers: {
-			'Content-Type': 'application/json'
-		}
+			'Content-Type': 'application/json',
+		},
 	});
 }
