@@ -20,6 +20,11 @@ const authorData = {
 			discord: 'jordin',
 		},
 	},
+	blackjack: {
+		contacts: {
+			website: 'https://blackjack.codes/'
+		}
+	}
 };
 
 type Authors = keyof typeof authorData;
