@@ -2,7 +2,7 @@ body {
 	@apply bg-black text-neutral-200 font-sansserif font-light subpixel-antialiased;
 }
 
-::root {
+:root {
 	color-scheme: only dark;
 }
 
