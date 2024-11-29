@@ -40,7 +40,7 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 
 			<main className="font-sans prose max-w-none transition-all prose-a:underline prose-a:decoration-neutral-600 hover:prose-a:decoration-neutral-400  prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full prose-invert">
 				{/* <h1 className="text-md font-mono">{frontMatter.name}</h1> */}
-				<HackerHeading text={frontMatter.name} duration={300} />
+				<HackerHeading text={frontMatter.name} interval={10} />
 				<div className="flex flex-col mt-2">
 					<time
 						className="text-neutral-300 p-0 m-0 "

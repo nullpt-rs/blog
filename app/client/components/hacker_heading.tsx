@@ -200,8 +200,8 @@ const HackerHeading: React.FC<HackerHeadingProps> = ({ text, duration = 500 }) =
 	}, [text, duration, isDecrypting]);
 
 	return (
-		<div className="w-full inline-block overflow-hidden" style={{ height: '80px' }}>
-			<h1 className="text-md font-mono">{displayText}</h1>
+		<div className="w-full">
+			<h1 className="text-lg font-mono text-green-400">{displayText}</h1>
 		</div>
 	);
 };
