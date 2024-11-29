@@ -1,208 +1,57 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 
-interface HackerHeadingProps {
+interface TextEncryptedProps {
 	text: string;
-	duration?: number;
+	interval?: number;
 }
 
-const getRandomChars = (length: number) => {
-	const randomChars = [
-		'A',
-		'a',
-		'B',
-		'b',
-		'C',
-		'c',
-		'D',
-		'd',
-		'E',
-		'e',
-		'F',
-		'f',
-		'G',
-		'g',
-		'H',
-		'h',
-		'I',
-		'i',
-		'J',
-		'j',
-		'K',
-		'k',
-		'L',
-		'l',
-		'M',
-		'm',
-		'N',
-		'n',
-		'O',
-		'o',
-		'P',
-		'p',
-		'Q',
-		'q',
-		'R',
-		'r',
-		'S',
-		's',
-		'T',
-		't',
-		'U',
-		'u',
-		'V',
-		'v',
-		'W',
-		'w',
-		'X',
-		'x',
-		'Y',
-		'y',
-		'Z',
-		'z',
-		'0',
-		'1',
-		'2',
-		'3',
-		'4',
-		'5',
-		'6',
-		'7',
-		'8',
-		'9',
-		'!',
-		'@',
-		'#',
-		'$',
-		'%',
-		'^',
-		'&',
-		'*',
-		'(',
-		')',
-		'-',
-		'=',
-		'+',
-		'_',
-		'[',
-		']',
-		'{',
-		'}',
-		'\\',
-		'|',
-		';',
-		':',
-		'"',
-		"'",
-		',',
-		'.',
-		'<',
-		'>',
-		'/',
-		'?',
-		'~',
-		'`',
-		'§',
-		'€',
-	];
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-	let result = '';
-	for (let i = 0; i < length; i++) {
-		result += randomChars[Math.floor(Math.random() * randomChars.length)];
-	}
-	return result;
-};
-
-const HackerHeading: React.FC<HackerHeadingProps> = ({ text, duration = 500 }) => {
-	const [displayText, setDisplayText] = useState<string>(getRandomChars(text.length));
-	const [isDecrypting, setIsDecrypting] = useState<boolean>(false);
+export const HackerHeading: React.FC<TextEncryptedProps> = ({ text, interval = 50 }) => {
+	const [outputText, setOutputText] = useState('');
+	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
-		const decryptText = () => {
-			let index = 0;
-			const randomChars = [
-				'A',
-				'a',
-				'B',
-				'b',
-				'C',
-				'c',
-				'D',
-				'd',
-				'E',
-				'e',
-				'F',
-				'f',
-				'G',
-				'g',
-				'H',
-				'h',
-				'I',
-				'i',
-				'J',
-				'j',
-				'K',
-				'k',
-				'L',
-				'l',
-				'M',
-				'm',
-				'N',
-				'n',
-				'O',
-				'o',
-				'P',
-				'p',
-				'Q',
-				'q',
-				'R',
-				'r',
-				'S',
-				's',
-				'T',
-				't',
-				'U',
-				'u',
-				'V',
-				'v',
-				'W',
-				'w',
-				'X',
-				'x',
-				'Y',
-				'y',
-				'Z',
-				'z',
-			];
-			const interval = setInterval(() => {
-				let currentText = '';
-				for (let i = 0; i < text.length; i++) {
-					if (i <= index) {
-						currentText += text[i]; // Add actual character
-					} else {
-						currentText += randomChars[Math.floor(Math.random() * randomChars.length)]; // Add random char
-					}
-				}
-				setDisplayText(currentText);
+		setIsMounted(true);
+	}, []);
 
-				if (index < text.length - 1) {
-					index++;
+	useEffect(() => {
+		let timer: NodeJS.Timeout;
+
+		if (outputText !== text) {
+			timer = setInterval(() => {
+				if (outputText.length < text.length) {
+					setOutputText(prev => prev + text[prev.length]);
 				} else {
-					clearInterval(interval);
+					clearInterval(timer);
 				}
-			}, duration / text.length);
-		};
-
-		if (!isDecrypting) {
-			setIsDecrypting(true);
-			decryptText();
+			}, interval);
 		}
-	}, [text, duration, isDecrypting]);
+
+		return () => clearInterval(timer);
+	}, [text, interval, outputText]);
+
+	const remainder =
+		outputText.length < text.length
+			? text
+					.slice(outputText.length)
+					.split('')
+					.map(() => chars[Math.floor(Math.random() * chars.length)])
+					.join('')
+			: '';
+
+	if (!isMounted) {
+		return <span>{text}</span>;
+	}
 
 	return (
-		<div className="w-full">
-			<h1 className="text-lg font-mono text-green-400">{displayText}</h1>
-		</div>
+		<>
+			<span className="text-white font-mono overflow-clip">
+				{outputText}
+				<span className="text-green-600">{remainder}</span>
+			</span>
+		</>
 	);
 };
 
