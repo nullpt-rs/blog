@@ -2,6 +2,10 @@ body {
 	@apply bg-black text-neutral-200 font-sansserif font-light subpixel-antialiased;
 }
 
+::root {
+	color-scheme: only dark;
+}
+
 ::selection {
 	background: #363636;
 }
