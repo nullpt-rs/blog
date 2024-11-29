@@ -71,7 +71,7 @@ A recurring theme in this project has been "this is easy for a computer to do, b
 
 I coded a quick script (seen in the project under `trainer/labeler.py`) to send the CAPTCHAs to [a commercial CAPTCHA solving service](https://anti-captcha.com/), where real humans would solve the CAPTCHAs for me for a nominal fee. Writing the script was simple, but actually employing it was an exercise in frustration. I sent a couple dozen CAPTCHAs to the service, and nearly all of them came back with one or more characters incorrectly solved.
 
-The service has a feature called "100% solve" \{ TODO: check the name of this, I think it's not exactly that }, which allowed me to specify that all my requests be first sent to `n` workers, and if `x` of those workers don't return the same solution, then send them to up to `y` more workers. It would only return an error after sending the CAPTCHAs to `n + y` workers and not getting at least `x` solutions the same. I configured my account with the values `n = 2`, `x = 2`, and `y = 3` - that is, initially send the CAPTCHA to 2 workers, and if they don't both agree, then send them to up to 3 additional workers until two of them agree, or none of them agree.
+The service has a feature called "100% Recognition", which allowed me to specify that all my requests be first sent to `n` workers, and if `x` of those workers don't return the same solution, then send them to up to `y` more workers. It would only return an error after sending the CAPTCHAs to `n + y` workers and not getting at least `x` solutions the same. I configured my account with the values `n = 2`, `x = 2`, and `y = 3` - that is, initially send the CAPTCHA to 2 workers, and if they don't both agree, then send them to up to 3 additional workers until two of them agree, or none of them agree.
 
 This improved the situation somewhat. About 80% of the CAPTCHAs were now being successfully solved, and after reviewing the results, 90% of those were correct, but about 10% had errors in them, which indicated that multiple workers were making the same mistakes. This was still less than ideal.
 
@@ -168,6 +168,8 @@ Luckily, the solution was easy: Use Keras 2. We can do this by training the mode
 We've seen the performance on the training dataset, which consists mainly of synthetic images. But it doesn't matter if it can solve synthetic CAPTCHAs - we care about solving the real ones.
 
 Good news: It works great on the real 4Chan CAPTCHA. Solving is fast, taking about 1 second to load the model the first time, and then being imperceptibly quick on subsequent executions. In my experience over hundreds of real CAPTCHAs solved in the browser, the model exhibits a greater than 90% successful solve rate. It rarely gets characters wrong - when it is innacurate, it typically omits a single character entirely. I believe this could be improved with greater training on actual data, or possibly tweaking the CAPTCHA layouts in the synthetic dataset generator.
+
+![Animation of requesting a CAPTCHA in the 4Chan post form, and it being automatically solved by the user script.](/posts/breaking-the-4chan-captcha/demo.gif)
 
 Small fun fact: This model has far better accuracy than the human-powered CAPTCHA solving service I described above.
 
