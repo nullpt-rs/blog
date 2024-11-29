@@ -3,7 +3,7 @@ import { BlogLink } from './client/components/post_link';
 
 export default function Home({ posts }: { posts: any[] }) {
 	return (
-		<div className="flex flex-col w-full md:w-[900px] md:border-[3px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
+		<div className="flex flex-col w-full md:w-[900px] md:border-[1px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
 			<main className="space-y-8">
 				<div className="flex gap-2">
 					<span>nullpt.rs</span>
