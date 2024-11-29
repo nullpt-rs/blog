@@ -43,17 +43,27 @@ export const HackerHeading: React.FC<TextEncryptedProps> = ({ text, interval = 5
 
 	if (!isMounted) {
 		return (
-			<div className="h-[48px] sm:h-auto text-white font-mono overflow-clip">
+			<div
+				className={`${
+					text.length >= 50 ? 'h-[48px]' : 'h-auto'
+				} sm:h-auto text-white font-mono overflow-clip`}
+			>
 				<span>{text}</span>
 			</div>
 		);
 	}
 
 	return (
-		<div className="h-[48px] sm:h-auto">
-			<span className="text-white font-mono overflow-clip">
+		<div className={`${text.length >= 50 ? 'h-[48px]' : 'h-auto'} sm:h-auto`}>
+			<span className="text-white font-mono overflow-clip" aria-label={text}>
 				{outputText}
-				<span className="text-green-600">{remainder}</span>
+
+				<span className={`text-green-500 text-lg transition-all animate-pulse`} aria-hidden="true">
+					|
+				</span>
+				<span className="text-green-600" aria-hidden="true">
+					{remainder.slice(1)}
+				</span>
 			</span>
 		</div>
 	);
