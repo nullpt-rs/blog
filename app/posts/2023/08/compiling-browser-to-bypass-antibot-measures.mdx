@@ -469,7 +469,7 @@ Next, the request to `/live.json` was redirected to simplify the decryption key 
    }
 ```
 
-### Initialization
+### Decryption IV Initialization 
 Now is a convenient time to initialize the ticket decryption key extraction code. The hard-coded encryption IV is added to the `ticket_init()` function in `ticket.cpp`:
 
 ```cpp
@@ -778,7 +778,7 @@ The ticket anti-bot invokes the [`Crypto: getRandomValues()`](https://developer.
    memcpy(aArray.Data(), buf, dataLen);
 ```
 
-### Initialization
+### Encryption IV Initialization
 Now is a convenient time to initialize the ticket encryption key extraction code. This is added to the `ticket_init()` function in `ticket.cpp`:
 
 ```cpp
