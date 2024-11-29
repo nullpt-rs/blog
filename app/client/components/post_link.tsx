@@ -11,16 +11,8 @@ export function BlogLink(props: {
 }) {
 	const postedAt = new Date(props.date);
 
-	const handleClick = (e: React.MouseEvent) => {
-		if ((e.target as HTMLElement).closest('a[href^="/author/"]')) {
-			return;
-		}
-
-		window.location.href = props.href;
-	};
-
 	return (
-		<div tabIndex={props.tabIndex} onClick={handleClick}>
+		<div tabIndex={props.tabIndex}>
 			<div className="p-2 md:px-0 rounded-xl transition-colors">
 				<div className="flex flex-col">
 					<Link href={props.href} className="text-neutral-100 hover:underline">

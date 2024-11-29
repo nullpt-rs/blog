@@ -50,7 +50,12 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
 	};
 
 	return (
-		<nav className="max-w-[200px] text-sm">
+		<nav
+			className="max-w-[210px] text-sm overflow-y-auto"
+			style={{
+				height: 'calc(100vh - 10rem)',
+			}}
+		>
 			<ul className="flex flex-col gap-2">
 				{headings.map(heading => (
 					<li
