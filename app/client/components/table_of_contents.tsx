@@ -51,7 +51,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
 
 	return (
 		<nav
-			className="max-w-[210px] text-sm overflow-y-auto"
+			className="max-w-[210px] text-sm overflow-y-auto overflow-x-hidden"
 			style={{
 				height: 'calc(100vh - 10rem)',
 			}}
