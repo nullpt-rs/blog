@@ -52,48 +52,29 @@ h1 {
 	@apply font-system;
 }
 
-@keyframes gradient-border {
-	0% {
-		border-image-source: linear-gradient(
-			45deg,
-			rgba(209, 209, 209, 1),
-			rgba(153, 153, 153, 1),
-			rgba(77, 77, 77, 1),
-			rgba(0, 0, 0, 1)
-		);
+@keyframes rotate {
+	to {
+		--angle: 360deg;
 	}
-	50% {
-		border-image-source: linear-gradient(
-			45deg,
-			rgba(153, 153, 153, 1),
-			rgba(77, 77, 77, 1),
-			rgba(0, 0, 0, 1),
-			rgba(209, 209, 209, 1)
-		);
-	}
-	100% {
-		border-image-source: linear-gradient(
-			45deg,
-			rgba(77, 77, 77, 1),
-			rgba(0, 0, 0, 1),
-			rgba(209, 209, 209, 1),
-			rgba(153, 153, 153, 1)
-		);
-	}
+}
+@property --angle {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false;
 }
 
 @media (min-width: 768px) {
 	.border-gradient-animated {
-		border-style: solid;
-		border-width: 1px;
+		--angle: 0deg;
+		border: 1px solid;
 		border-image: linear-gradient(
-				45deg,
-				rgba(209, 209, 209, 1),
-				rgba(153, 153, 153, 1),
+				var(--angle),
 				rgba(77, 77, 77, 1),
-				rgba(0, 0, 0, 1)
+				rgba(0, 0, 0, 1),
+				rgba(209, 209, 209, 1),
+				rgba(153, 153, 153, 1)
 			)
 			1;
-		animation: gradient-border 8s ease-in-out infinite alternate forwards;
+		animation: 20s rotate ease-in-out infinite;
 	}
 }
