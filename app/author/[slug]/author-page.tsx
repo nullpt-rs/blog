@@ -22,10 +22,7 @@ export default function AuthorPage({ author, data }: Props) {
 	return (
 		<div className="space-y-4 w-full px-0 sm:px-16 max-w-full">
 			<div>
-				<Link
-					href="/"
-					className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono"
-				>
+				<Link href="/" className="text-neutral-400 hover:text-neutral-600 font-mono">
 					../
 				</Link>
 			</div>

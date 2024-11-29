@@ -4,6 +4,7 @@ import { AuthorLinks } from '../client/components/author_links';
 import { postFilePaths } from '../utils/mdxUtils.const';
 import { Heading } from './page';
 import { TableOfContents } from '../client/components/table_of_contents';
+import HackerHeading from '../client/components/hacker_heading';
 
 interface Props {
 	content: any;
@@ -32,24 +33,22 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 			</aside>
 
 			<div className="opacity-100 xl:opacity-0 transition-opacity">
-				<Link
-					href="/"
-					className="text-blue-500 dark:text-neutral-400 hover:text-blue-800 dark:hover:text-neutral-600 font-mono"
-				>
+				<Link href="/" className="text-neutral-400 hover:text-neutral-600 font-mono">
 					../
 				</Link>
 			</div>
 
-			<main className="font-sans prose prose-zinc max-w-none transition-all prose-a:underline dark:prose-a:decoration-neutral-600 dark:hover:prose-a:decoration-neutral-400 prose-a:decoration-neutral-400 hover:prose-a:decoration-neutral-500 prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-200 dark:prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full dark:prose-invert">
-				<h1 className="text-md">{frontMatter.name}</h1>
+			<main className="font-sans prose max-w-none transition-all prose-a:underline prose-a:decoration-neutral-600 hover:prose-a:decoration-neutral-400  prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full prose-invert">
+				{/* <h1 className="text-md font-mono">{frontMatter.name}</h1> */}
+				<HackerHeading text={frontMatter.name} duration={300} />
 				<div className="flex flex-col mt-2">
 					<time
-						className="dark:text-neutral-500 p-0 m-0 "
+						className="text-neutral-300 p-0 m-0 "
 						dateTime={new Date(frontMatter.date).toISOString()}
 					>
 						{new Date(frontMatter.date).toDateString()}
 					</time>
-					<small className="dark:text-neutral-500 p-0 m-0">
+					<small className="text-neutral-300 p-0 m-0">
 						authored by{' '}
 						<Link className="underline" passHref href={`/author/${frontMatter.author}`}>
 							{frontMatter.author}

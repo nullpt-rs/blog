@@ -1,41 +1,37 @@
 import Link from 'next/link';
-import { ReactNode } from 'react';
 import { BlogLink } from './client/components/post_link';
 
 export default function Home({ posts }: { posts: any[] }) {
 	return (
-		<div className="flex flex-col w-full px-0 sm:px-16 transition-all">
+		<div className="flex flex-col w-full md:w-[900px] md:border-[3px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
 			<main className="space-y-8">
-				<h2>
-					<span>nullpt.rs</span>{' '}
+				<div className="flex gap-2">
+					<span>nullpt.rs</span>
 					<a
 						target="_blank"
 						href="https://github.com/nullpt-rs"
-						className="text-neutral-500 hover:text-blue-500"
+						className="text-neutral-500 hover:text-white hover:underline"
 						rel="noreferrer"
 					>
-						{' '}
-						– github
+						github
 					</a>
 					<a
 						target="_blank"
 						href="https://twitter.com/nullpt_rs"
-						className="text-neutral-500 hover:text-blue-500"
+						className="text-neutral-500 hover:text-white hover:underline"
 						rel="noreferrer"
 					>
-						{' '}
-						- twitter
+						twitter
 					</a>
 					<a
 						target="_blank"
 						href="https://nullpt.rs/feed.rss"
-						className="text-neutral-500 hover:text-blue-500"
+						className="text-neutral-500 hover:text-white hover:underline"
 						rel="noreferrer"
 					>
-						{' '}
-						- rss
+						rss
 					</a>
-				</h2>
+				</div>
 
 				<ul className="space-y-1 list-disc list-inside">
 					{posts
@@ -54,7 +50,7 @@ export default function Home({ posts }: { posts: any[] }) {
 						))}
 				</ul>
 			</main>
-			<footer className="my-8">
+			<footer className="mt-4">
 				<span>
 					<span className="text-neutral-500">Content on this site is licensed</span>{' '}
 					<Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link>

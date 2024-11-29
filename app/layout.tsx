@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="en">
 			<body
-				className={`py-24 px-4 flex flex-row justify-center dark:[color-scheme:dark] antialiased ${GeistSans.variable} ${GeistMono.variable}`}
+				className={`py-24 px-4 flex flex-row justify-center color-scheme:dark antialiased ${GeistSans.variable} ${GeistMono.variable}`}
 			>
 				{children}
 			</body>

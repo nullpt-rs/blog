@@ -31,7 +31,7 @@ export function AuthorLinks({ author }: { author: Authors }) {
 	}
 
 	return (
-		<div className="flex flex-col border-t dark:border-neutral-800 border-neutral-300 pt-4">
+		<div className="flex flex-col border-t border-neutral-800 pt-4">
 			<span>Find {author} on:</span>
 			{Object.entries(links.contacts).map(([name, link]) => {
 				if (link.startsWith('http')) {

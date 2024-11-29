@@ -53,10 +53,30 @@ const MDX_COMPONENTS = {
 			{props.children}
 		</h2>
 	),
+	h3: (props: any) => (
+		<h3 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h3>
+	),
+	h4: (props: any) => (
+		<h4 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h4>
+	),
+	h5: (props: any) => (
+		<h5 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h5>
+	),
+	h6: (props: any) => (
+		<h6 id={slugify(props.children)} className="font-system">
+			{props.children}
+		</h6>
+	),
 	WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
 	OldPost: dynamic(() => import('../client/components/old_post')),
 	img: (props: any) => (
-		<figure className="prose-img flex flex-col items-center">
+		<figure className="flex flex-col items-center">
 			<Image {...props} layout="responsive" loading="lazy" width={100} height={100} />
 			<figcaption>{props.alt}</figcaption>
 		</figure>

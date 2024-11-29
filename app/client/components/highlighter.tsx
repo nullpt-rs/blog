@@ -13,13 +13,13 @@ export function Highlighter({
 }) {
 	return (
 		<div className="no-pre-margin">
-			<div className="hidden dark:block">
+			<div className="hidden block">
 				<SyntaxHighlighter language={language} style={dark as Style}>
 					{children}
 				</SyntaxHighlighter>
 			</div>
 
-			<div className="dark:hidden">
+			<div className="hidden">
 				<SyntaxHighlighter language={language} style={light as Style}>
 					{children}
 				</SyntaxHighlighter>
