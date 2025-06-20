@@ -25,7 +25,7 @@ export default function Home({ posts }: { posts: any[] }) {
 					</a>
 					<a
 						target="_blank"
-						href="https://discord.gg/nullptrs"
+						href="https://discord.gg/nullptr"
 						className="text-neutral-500 hover:text-white hover:underline"
 						rel="noreferrer"
 					>
