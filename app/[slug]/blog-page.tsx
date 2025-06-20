@@ -1,7 +1,5 @@
-import { GetStaticPaths } from 'next';
 import Link from 'next/link';
 import { AuthorLinks } from '../client/components/author_links';
-import { postFilePaths } from '../utils/mdxUtils.const';
 import { Heading } from './page';
 import { TableOfContents } from '../client/components/table_of_contents';
 import HackerHeading from '../client/components/hacker_heading';
@@ -38,7 +36,7 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 				</Link>
 			</div>
 
-			<main className="font-sans prose max-w-none transition-all prose-a:underline prose-a:decoration-neutral-600 hover:prose-a:decoration-neutral-400  prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full prose-invert">
+			<main className="font-sans prose max-w-none break-words transition-all prose-a:underline prose-a:decoration-neutral-600 hover:prose-a:decoration-neutral-400  prose-a:decoration-1 prose-a:underline-offset-4 prose-code:bg-neutral-800 prose-code:p-1 prose-code:rounded-lg prose-code:content-none prose-img:rounded-md prose-img:w-full prose-invert">
 				{/* <h1 className="text-md font-mono">{frontMatter.name}</h1> */}
 				<HackerHeading text={frontMatter.name} interval={20} />
 				<div className="flex flex-col mt-2">
@@ -71,14 +69,5 @@ export default function PostPage({ content, frontMatter, headings }: Props) {
 	);
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-	const fps = await postFilePaths;
-	const paths = fps
-		.map(path => path.replace(/\.mdx?$/, '').substring(path.lastIndexOf('/') + 1))
-		.map(slug => ({ params: { slug } }));
-
-	return {
-		paths,
-		fallback: false,
-	};
-};
+// NOTE: The /app router no longer uses getStaticPaths. This export was kept from
+// the old Pages router and is no-op in Next 15. It's therefore removed.

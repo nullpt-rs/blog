@@ -1,13 +1,17 @@
-import { posts } from '../../utils/mdxUtils.const';
+import { getAllPosts } from '../../utils/mdxUtils';
 import AuthorPage from './author-page';
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const p = posts.filter(p => p.data.author === params!.slug);
-	return <AuthorPage author={params.slug} data={p} />;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+	const { slug } = await params;
+	const posts = getAllPosts();
+	const authorPosts = posts.filter(p => p.data.author === slug);
+	return <AuthorPage author={slug} data={authorPosts} />;
 }
 
 export async function generateStaticParams() {
-	return posts.map(p => ({
+	return getAllPosts().map(p => ({
 		slug: p.data.author,
 	}));
 }
+
+export const revalidate = 0;

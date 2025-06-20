@@ -1,7 +1,5 @@
 import { Feed } from '@nullptrs/feed';
-import { postFilePaths } from '../utils/mdxUtils.const';
-import { readFileSync } from 'fs';
-import matter from 'gray-matter';
+import { getAllPosts } from '../utils/mdxUtils';
 
 const feed = new Feed({
 	title: 'nullpt.rs • blog',
@@ -17,28 +15,20 @@ const feed = new Feed({
 	},
 });
 
-postFilePaths
-	.map(filePath => {
-		const source = readFileSync(filePath, 'utf8');
-		const { content, data } = matter(source);
-		return {
-			content,
-			data,
-			filePath,
-		};
-	})
+getAllPosts()
 	.filter(post => !post.data.hidden)
 	.forEach(post => {
+		const { data: postData } = post;
 		if (!feed.items.find(item => item.id === post.data.slug)) {
 			feed.addItem({
-				title: post.data.name,
-				id: post.data.slug,
-				link: `${process.env.SITE_URL ?? ''}/${post.data.slug}`,
-				content: post.data.excerpt,
-				date: new Date(post.data.date),
+				title: postData.name,
+				id: postData.slug,
+				link: `${process.env.SITE_URL ?? ''}/${postData.slug}`,
+				content: postData.excerpt,
+				date: new Date(postData.date),
 				author: [
 					{
-						name: post.data.author,
+						name: postData.author,
 					},
 				],
 			});

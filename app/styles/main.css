@@ -78,3 +78,21 @@ h1 {
 		animation: 20s rotate ease-in-out infinite;
 	}
 }
+
+/* Prevent tables from overflowing on small screens */
+.prose table {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+	/* Keep table rows from wrapping awkwardly */
+	white-space: nowrap;
+}
+
+/* Ensure long strings and code snippets wrap instead of overflowing */
+.prose code,
+.prose pre,
+.prose td,
+.prose th {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}

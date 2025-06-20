@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import { posts } from '../utils/mdxUtils.const';
+import { getAllPosts } from '../utils/mdxUtils';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;
@@ -84,7 +84,12 @@ const MDX_COMPONENTS = {
 };
 
 async function getMDXSource(slug: string) {
-	const { source } = posts.filter(p => p.filePath.includes(slug))[0];
+	const posts = getAllPosts();
+	const match = posts.find(p => p.filePath.includes(slug));
+	if (!match) {
+		throw new Error(`Post with slug "${slug}" not found.`);
+	}
+	const { source } = match;
 	const headings = extractHeadings(source);
 	const mdxSource = await compileMDX({
 		source,
@@ -102,15 +107,16 @@ async function getMDXSource(slug: string) {
 	return { mdxSource, headings };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const { mdxSource, headings } = await getMDXSource(params.slug);
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+	const { slug } = await params;
+	const { mdxSource, headings } = await getMDXSource(slug);
 	return (
 		<PostPage content={mdxSource.content} headings={headings} frontMatter={mdxSource.frontmatter} />
 	);
 }
 
 export async function generateStaticParams() {
-	const mdxSources = posts.map(({ source }) => {
+	const mdxSources = getAllPosts().map(({ source }) => {
 		return compileMDX({
 			source,
 			// @ts-ignore
@@ -134,9 +140,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
 	params,
 }: {
-	params: { slug: string };
+	params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-	const { mdxSource } = await getMDXSource(params.slug);
+	const { slug } = await params;
+	const { mdxSource } = await getMDXSource(slug);
 	const { frontmatter } = mdxSource;
 	return {
 		title: `${frontmatter.name} | nullpt.rs`,
@@ -153,3 +160,6 @@ export async function generateMetadata({
 		authors: { name: frontmatter.author as string },
 	};
 }
+
+// Disable static caching so the content always reflects current MDX on every request during dev.
+export const revalidate = 0;
