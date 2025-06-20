@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BlogLink } from '../../client/components/post_link';
+import { AuthorLinks, type Authors } from '../../client/components/author_links';
 
 interface Props {
 	author: string;
@@ -30,6 +31,10 @@ export default function AuthorPage({ author, data }: Props) {
 			<h1>
 				Posts by <strong>{author}</strong>
 			</h1>
+
+			{/* Author social links and optional profile picture */}
+			<AuthorLinks author={author as Authors} />
+
 			<ul className="space-y-1 list-disc list-inside">
 				{data
 					.filter((post: Post) => !post.data.hidden)
