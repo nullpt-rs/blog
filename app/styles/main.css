@@ -68,13 +68,22 @@ h1 {
 		--angle: 0deg;
 		border: 1px solid;
 		border-image: linear-gradient(
-				var(--angle),
-				rgba(77, 77, 77, 1),
-				rgba(0, 0, 0, 1),
-				rgba(209, 209, 209, 1),
-				rgba(153, 153, 153, 1)
-			)
-			1;
+			var(--angle),
+			#000000,
+			red,
+			orange,
+			yellow,
+			green,
+			blue,
+			indigo,
+			violet,
+			#5BCEFA,
+			#F5A9B8,
+			#FFFFFF,
+			#F5A9B8,
+			#5BCEFA,
+			#000000
+		) 1;
 		animation: 20s rotate ease-in-out infinite;
 	}
 }
