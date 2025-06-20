@@ -31,6 +31,7 @@ const authorData: Record<string, AuthorInfo> = {
 		contacts: {
 			twitter: 'https://twitter.com/vmfunc',
 			email: 'vmread@pm.me',
+			github: 'https://github.com/vmfunc',
 		},
 		profilePicture: 'https://avatars.githubusercontent.com/u/59031302',
 	},
