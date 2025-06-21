@@ -3,8 +3,8 @@ import { BlogLink } from './client/components/post_link';
 
 export default function Home({ posts }: { posts: any[] }) {
 	return (
-		<div>
-						<pre className="text-center font-mono text-[0.45rem] sm:text-[0.6rem] md:text-sm lg:text-base overflow-x-auto text-gradient-animated">
+		<div className='w-full md:w-[700px] lg:w-[900px] flex lg:flex-col'>
+						<pre className="text-center font-mono text-[0.45rem] sm:text-[0.6rem] md:text-sm lg:text-xs overflow-x-auto text-gradient-animated hidden lg:block" aria-hidden>
 {`
  ███▄    █  █    ██  ██▓     ██▓     ██▓███  ▄▄▄█████▓ ██▀███    ██████ 
  ██ ▀█   █  ██  ▓██▒▓██▒    ▓██▒    ▓██░  ██▒▓  ██▒ ▓▒▓██ ▒ ██▒▒██    ▒ 
@@ -19,10 +19,10 @@ export default function Home({ posts }: { posts: any[] }) {
 `}
 			</pre>
 		
-		<div className="flex flex-col w-full mt-10 md:w-[900px] md:border-[1px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
-			<main className="space-y-8">
+		<div className="flex flex-col w-full md:w-[900px] md:border-[1px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
+			<main className="space-y-4">
 				<div className="flex gap-2">
-					<span>nullpt.rs</span>
+					<span className='lg:hidden'>nullpt.rs</span>
 					<a
 						target="_blank"
 						href="https://github.com/nullpt-rs"

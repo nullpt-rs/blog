@@ -14,7 +14,7 @@ interface Props {
 
 export default function PostPage({ content, frontMatter, headings }: Props) {
 	return (
-		<div className="space-y-4 m-auto max-w-full lg:max-w-3xl transition-all font-sans">
+		<div className="py-20 space-y-4 m-auto max-w-full lg:max-w-3xl transition-all font-sans">
 			{frontMatter.hidden && (
 				<div className="bg-yellow-500 text-yellow-900 rounded-md py-2 px-4">
 					<p>hey! this post is hidden! please don't share the link for now...</p>
