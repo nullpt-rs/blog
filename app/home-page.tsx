@@ -3,7 +3,23 @@ import { BlogLink } from './client/components/post_link';
 
 export default function Home({ posts }: { posts: any[] }) {
 	return (
-		<div className="flex flex-col w-full md:w-[900px] md:border-[1px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
+		<div>
+						<pre className="text-center font-mono text-[0.45rem] sm:text-[0.6rem] md:text-sm lg:text-base overflow-x-auto text-gradient-animated">
+{`
+ ███▄    █  █    ██  ██▓     ██▓     ██▓███  ▄▄▄█████▓ ██▀███    ██████ 
+ ██ ▀█   █  ██  ▓██▒▓██▒    ▓██▒    ▓██░  ██▒▓  ██▒ ▓▒▓██ ▒ ██▒▒██    ▒ 
+▓██  ▀█ ██▒▓██  ▒██░▒██░    ▒██░    ▓██░ ██▓▒▒ ▓██░ ▒░▓██ ░▄█ ▒░ ▓██▄   
+▓██▒  ▐▌██▒▓▓█  ░██░▒██░    ▒██░    ▒██▄█▓▒ ▒░ ▓██▓ ░ ▒██▀▀█▄    ▒   ██▒
+▒██░   ▓██░▒▒█████▓ ░██████▒░██████▒▒██▒ ░  ░  ▒██▒ ░ ░██▓ ▒██▒▒██████▒▒
+░ ▒░   ▒ ▒ ░▒▓▒ ▒ ▒ ░ ▒░▓  ░░ ▒░▓  ░▒▓▒░ ░  ░  ▒ ░░   ░ ▒▓ ░▒▓░▒ ▒▓▒ ▒ ░
+░ ░░   ░ ▒░░░▒░ ░ ░ ░ ░ ▒  ░░ ░ ▒  ░░▒ ░         ░      ░▒ ░ ▒░░ ░▒  ░ ░
+   ░   ░ ░  ░░░ ░ ░   ░ ░     ░ ░   ░░         ░        ░░   ░ ░  ░  ░  
+         ░    ░         ░  ░    ░  ░                     ░           ░  
+                                                                        
+`}
+			</pre>
+		
+		<div className="flex flex-col w-full mt-10 md:w-[900px] md:border-[1px] md:border-transparent border-solid p-4 transition-all border-gradient-animated">
 			<main className="space-y-8">
 				<div className="flex gap-2">
 					<span>nullpt.rs</span>
@@ -64,6 +80,7 @@ export default function Home({ posts }: { posts: any[] }) {
 					<Link href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</Link>
 				</span>
 			</footer>
+		</div>
 		</div>
 	);
 }
