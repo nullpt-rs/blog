@@ -105,3 +105,30 @@ h1 {
 	overflow-wrap: anywhere;
 	word-break: break-word;
 }
+
+/* Gradient animated text */
+.text-gradient-animated {
+	--angle: 0deg;
+	background: linear-gradient(
+		var(--angle),
+		#000000,
+		red,
+		orange,
+		yellow,
+		green,
+		blue,
+		indigo,
+		violet,
+		#5BCEFA,
+		#F5A9B8,
+		#FFFFFF,
+		#F5A9B8,
+		#5BCEFA,
+		#000000
+	);
+	background-size: 400% 400%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	animation: 20s rotate ease-in-out infinite;
+}
