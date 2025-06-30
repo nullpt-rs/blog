@@ -1,0 +1,152 @@
+@import "tailwindcss" source(".");
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-system: "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", "Arial", "sans-serif";
+  --font-mono: "var(--font-geist-mono)", "ui-monospace", "Menlo", "Monaco",
+    "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono",
+    "Ubuntu Monospace", "Source Code Pro", "Fira Mono", "Droid Sans Mono",
+    "Courier New", "monospace";
+
+  --font-sansserif: "var(--font-geist-sans)", "system-ui", "-apple-system",
+    "BlinkMacSystemFont", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", "Arial", "sans-serif";
+}
+
+body {
+  @apply bg-black text-neutral-200 font-light subpixel-antialiased;
+}
+
+:root {
+  color-scheme: only dark;
+}
+
+::selection {
+  background: #363636;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.74;
+}
+
+main h1 {
+  margin-bottom: 0 !important;
+}
+
+a {
+  font-weight: 400 !important;
+}
+
+code {
+  @apply font-mono;
+  font-weight: 400 !important;
+}
+
+code::before {
+  content: none !important;
+}
+
+code::after {
+  content: none !important;
+}
+
+.no-pre-margin pre {
+  margin: 0;
+}
+
+.prose video {
+  @apply rounded-md w-full;
+}
+
+figcaption {
+  text-align: center;
+}
+
+h1 {
+  @apply font-system;
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@media (min-width: 768px) {
+  .border-gradient-animated {
+    --angle: 0deg;
+    border: 1px solid;
+    border-image: linear-gradient(
+        var(--angle),
+        #000000,
+        red,
+        orange,
+        yellow,
+        green,
+        blue,
+        indigo,
+        violet,
+        #5bcefa,
+        #f5a9b8,
+        #ffffff,
+        #f5a9b8,
+        #5bcefa,
+        #000000
+      )
+      1;
+    animation: 20s rotate ease-in-out infinite;
+  }
+}
+
+/* Prevent tables from overflowing on small screens */
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  /* Keep table rows from wrapping awkwardly */
+  white-space: nowrap;
+}
+
+/* Ensure long strings and code snippets wrap instead of overflowing */
+.prose code,
+.prose pre,
+.prose td,
+.prose th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Gradient animated text */
+.text-gradient-animated {
+  --angle: 0deg;
+  background: linear-gradient(
+    var(--angle),
+    #000000,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+    #5bcefa,
+    #f5a9b8,
+    #ffffff,
+    #f5a9b8,
+    #5bcefa,
+    #000000
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: 20s rotate ease-in-out infinite;
+}
