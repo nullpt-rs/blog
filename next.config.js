@@ -1,5 +1,7 @@
 // @ts-check
 
+const { withBotId } = require('botid/next/config');
+
 /**
  * @type {import('next').NextConfig}
  **/
@@ -68,4 +70,4 @@ const config = {
 };
 
 const withMDX = require('@next/mdx')();
-module.exports = withMDX(config);
+module.exports = withBotId(withMDX(config));

@@ -2598,6 +2598,7 @@ __metadata:
     "@typescript-eslint/parser": ^5.17.0
     autoprefixer: ^10.4.4
     axios: ^0.26.1
+    botid: ^1.4.1
     bright: ^0.8.4
     common-tags: ^1.8.2
     const-module-loader: ^0.1.1
@@ -2651,6 +2652,19 @@ __metadata:
     type-is: ~1.6.18
     unpipe: 1.0.0
   checksum: 1a35c59a6be8d852b00946330141c4f142c6af0f970faa87f10ad74f1ee7118078056706a05ae3093c54dabca9cd3770fa62a170a85801da1a4324f04381167d
+  languageName: node
+  linkType: hard
+
+"botid@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "botid@npm:1.4.1"
+  peerDependencies:
+    next: "*"
+    react: ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    next:
+      optional: true
+  checksum: c3bac0f6bb17856061d2b0c7a2c070d78335c8d016326df92112ba4d7475532cef56422e0fbbe20545c16ce9a22ad48db4f546f1228547227f4b2d2989a42c44
   languageName: node
   linkType: hard
 
