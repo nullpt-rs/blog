@@ -7,8 +7,6 @@ export async function POST(request: NextRequest) {
   if (verification.isBot) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
- 
-//   const data = await processUserRequest();
- 
+  
   return NextResponse.json({ data: "OK" });
 }
