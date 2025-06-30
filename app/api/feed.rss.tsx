@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { rss2 } from '../server/feed.const';
-export const runtime = 'edge';
+
 export const config = {
 	runtime: 'nodejs',
 };
