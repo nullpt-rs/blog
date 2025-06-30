@@ -1,5 +1,5 @@
 import { Feed } from '@nullptrs/feed';
-import { getAllPosts } from '../utils/mdxUtils.const';
+import { posts } from '../utils/mdxUtils.const';
 
 const feed = new Feed({
 	title: 'nullpt.rs • blog',
@@ -15,7 +15,7 @@ const feed = new Feed({
 	},
 });
 
-getAllPosts()
+posts
 	.filter(post => !post.data.hidden)
 	.forEach(post => {
 		const { data: postData } = post;

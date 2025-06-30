@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import { getAllPosts } from '../utils/mdxUtils.const';
+import { posts } from '../utils/mdxUtils.const';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;
@@ -84,7 +84,6 @@ const MDX_COMPONENTS = {
 };
 
 async function getMDXSource(slug: string) {
-	const posts = getAllPosts();
 	const match = posts.find(p => p.filePath.includes(slug));
 	if (!match) {
 		throw new Error(`Post with slug "${slug}" not found.`);
@@ -116,7 +115,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 }
 
 export async function generateStaticParams() {
-	const mdxSources = getAllPosts().map(({ source }) => {
+	const mdxSources = posts.map(({ source }) => {
 		return compileMDX({
 			source,
 			// @ts-ignore
