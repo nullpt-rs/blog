@@ -1,6 +1,6 @@
 import { posts } from '../../utils/mdxUtils.const';
 import AuthorPage from './author-page';
-
+export const runtime = 'edge';
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
 	const { slug } = await params;
 	const authorPosts = posts.filter(p => p.data.author === slug);
