@@ -8,9 +8,6 @@ const config = {
 	transpilePackages: ['next-mdx-remote'],
 	experimental: {
 		mdxRs: true,
-		outputFileTracingIncludes: {
-			'/': ['posts/**/*', './posts/**/*.mdx'],
-		},
 		esmExternals: 'loose',
 	},
 	typescript: {

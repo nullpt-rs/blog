@@ -10,8 +10,9 @@
 		"start": "next start",
 		"lint": "eslint .",
 		"pages:build": "yarn next-on-pages",
-		"preview": "yarn pages:build && wrangler pages dev .vercel/output/static --compatibility-flags nodejs_compat",
-		"deploy": "yarn pages:build && wrangler pages deploy .vercel/output/static --compatibility-flags nodejs_compat"
+		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
 	},
 	"dependencies": {
 		"@babel/generator": "^7.17.10",
@@ -22,6 +23,7 @@
 		"@mdx-js/loader": "^2.2.1",
 		"@next/mdx": "^13.1.1",
 		"@nullptrs/feed": "^4.2.2",
+		"@opennextjs/cloudflare": "latest",
 		"axios": "^0.26.1",
 		"bright": "^0.8.4",
 		"common-tags": "^1.8.2",
