@@ -3,12 +3,13 @@ import {
   Link,
   Outlet,
 } from "react-router";
-import type { Route } from "./+types/post-layout";
+import type { Route } from "./+types/post";
 import { slugsToMetadata } from "~/posts/metadata.const";
 import HackerHeading from "~/components/hacker_heading";
 import { TableOfContents } from "~/components/table_of_contents";
 import "~/codeblocks.css";
 import { AuthorLinks } from "~/components/author_links";
+import { lazy } from "react";
 
 function slugify(text: string) {
   return text
@@ -48,8 +49,8 @@ const MDX_COMPONENTS = {
       {props.children}
     </h6>
   ),
-  // WebGLFingerprint: dynamic(() => import('../client/components/webgl_fingerprint')),
-  // OldPost: dynamic(() => import('../client/components/old_post')),
+  WebGLFingerprint: lazy(() => import('~/components/webgl_fingerprint')),
+  OldPost: lazy(() => import('~/components/old_post')),
   img: (props: any) => (
     <figure className="flex flex-col items-center">
       <img
