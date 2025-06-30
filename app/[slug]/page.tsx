@@ -9,6 +9,7 @@ import { posts } from '../utils/mdxUtils.const';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;
+export const runtime = 'nodejs';
 
 export type Heading = {
 	slug: string;
