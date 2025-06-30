@@ -1,5 +1,5 @@
 import { Feed } from '@nullptrs/feed';
-import { getAllPosts } from '../utils/mdxUtils';
+import { getAllPosts } from '../utils/mdxUtils.const';
 
 const feed = new Feed({
 	title: 'nullpt.rs • blog',

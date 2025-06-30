@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import remarkGfm from 'remark-gfm';
 import '../styles/codeblocks.css';
-import { getAllPosts } from '../utils/mdxUtils';
+import { getAllPosts } from '../utils/mdxUtils.const';
 import PostPage from './blog-page';
 
 export const dynamicParams = false;

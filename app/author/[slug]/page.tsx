@@ -1,4 +1,4 @@
-import { getAllPosts } from '../../utils/mdxUtils';
+import { getAllPosts } from '../../utils/mdxUtils.const';
 import AuthorPage from './author-page';
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
