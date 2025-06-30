@@ -2,7 +2,7 @@
 import { FormEvent, useState } from 'react'
  
 export default function Page() {
-      const [bot, setBot] = useState<boolean | undefined>(undefined);
+      const [bot, setBot] = useState<string | undefined>(undefined);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault() 
@@ -18,15 +18,16 @@ export default function Page() {
       data?: string;
     }>()
     if (data.error) {
-      setBot(true);
+      setBot("BOT");
     } else if (data.data) {
-      setBot(false);
+      setBot("HUMAN");
     }
   }
  
   return (
     <div>
-    {bot !== undefined && bot ? <p id="is-bot">You are a bot</p> : <p id="is-bot">You are not a bot</p>}
+    {bot === "HUMAN"  && <p id="is-bot">You are a human</p>}
+    {bot === "BOT" && <p id="is-bot">You are a bot</p>}
     <form onSubmit={onSubmit}>
       <input type="text" name="whatever" />
       <button type="submit">Submit</button>
