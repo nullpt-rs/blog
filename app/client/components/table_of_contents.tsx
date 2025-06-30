@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Heading } from '../../[slug]/page';
+import { Heading } from '../../blog/[slug]/page';
 
 export function TableOfContents({ headings }: { headings: Heading[] }) {
 	const [activeSlug, setActiveSlug] = useState<string | null>(null);
