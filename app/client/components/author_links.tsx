@@ -8,6 +8,7 @@ const authorData: Record<string, AuthorInfo> = {
 		contacts: {
 			twitter: 'https://twitter.com/blastbots',
 			fedi: 'https://infosec.exchange/@voidstar',
+			bluesky: 'https://bsky.app/profile/nullpt.rs',
 			discord: 'nullptrs',
 		},
 		profilePicture: 'https://avatars.githubusercontent.com/u/25884226',

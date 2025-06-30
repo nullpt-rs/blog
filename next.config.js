@@ -5,6 +5,7 @@
  **/
 const config = {
 	pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+	transpilePackages: ['next-mdx-remote'],
 	experimental: {
 		mdxRs: true,
 		outputFileTracingIncludes: {
