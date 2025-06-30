@@ -24,4 +24,5 @@ And continue writing using [GitHub Flavored Markdown](https://github.github.com/
 #### Special Thanks
 
 - [@alii](https://github.com/alii) for creating a lovely starting template that I further modified to fit my needs.
+- [@zebp](https://github.com/zebp) for migrating the blog to react-router v7.
 - All nullptrs authors for sharing their ideas
