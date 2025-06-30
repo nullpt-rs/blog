@@ -25,7 +25,7 @@ export default function AuthorPage({ params}: Route.ComponentProps) {
 
       <ul className="space-y-1 list-disc list-inside">
         {Object.values(slugsToMetadata)
-          .filter((post: any) => !post.frontmatter.hidden)
+          .filter((post: any) => !post.frontmatter.hidden && post.frontmatter.author === params.author)
           .sort(
             (p: any, p2: any) =>
               Date.parse(p2.frontmatter.date) - Date.parse(p.frontmatter.date)
