@@ -28,12 +28,12 @@ export default function AuthorPage({ author, data }: Props) {
 				</Link>
 			</div>
 
+			{/* Author social links and optional profile picture */}
+			<AuthorLinks author={author as Authors} />
+
 			<h1>
 				Posts by <strong>{author}</strong>
 			</h1>
-
-			{/* Author social links and optional profile picture */}
-			<AuthorLinks author={author as Authors} />
 
 			<ul className="space-y-1 list-disc list-inside">
 				{data
@@ -51,6 +51,7 @@ export default function AuthorPage({ author, data }: Props) {
 						</BlogLink>
 					))}
 			</ul>
+			
 			<footer className="my-8 text-center flex flex-col">
 				<span>
 					<span className="text-neutral-500">Content on this site is licensed</span>{' '}
