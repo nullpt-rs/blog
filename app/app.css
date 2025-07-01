@@ -102,7 +102,7 @@ h1 {
 }
 
 @media (min-width: 768px) {
-  .border-gradient-animated {
+  .border-gradient-animated-ga {
     --angle: 0deg;
     border: 1px solid;
     border-image: linear-gradient(
@@ -121,6 +121,22 @@ h1 {
         #f5a9b8,
         #5bcefa,
         #000000
+      )
+      1;
+    animation: 20s rotate ease-in-out infinite;
+  }
+}
+
+@media (min-width: 768px) {
+  .border-gradient-animated {
+    --angle: 0deg;
+    border: 1px solid;
+    border-image: linear-gradient(
+				var(--angle),
+				rgba(77, 77, 77, 1),
+				rgba(0, 0, 0, 1),
+				rgba(209, 209, 209, 1),
+				rgba(153, 153, 153, 1)
       )
       1;
     animation: 20s rotate ease-in-out infinite;
@@ -147,6 +163,23 @@ h1 {
 
 /* Gradient animated text */
 .text-gradient-animated {
+  --angle: 0deg;
+  background: linear-gradient(
+    var(--angle),
+		rgba(77, 77, 77, 1),
+    rgba(0, 0, 0, 1),
+    rgba(209, 209, 209, 1),
+    rgba(153, 153, 153, 1)
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: 20s rotate ease-in-out infinite;
+}
+
+
+.text-gradient-animated-gay {
   --angle: 0deg;
   background: linear-gradient(
     var(--angle),
