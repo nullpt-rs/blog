@@ -11,6 +11,54 @@ import "~/codeblocks.css";
 import { AuthorLinks } from "~/components/author_links";
 import { lazy } from "react";
 
+export const meta: Route.MetaFunction = ({ data }) => {
+  if (!data)
+    return [];
+
+  const { frontmatter } = data;
+  return [
+    {
+      title: frontmatter["name"],
+    },
+    {
+      name: "title",
+      content: frontmatter["name"],
+    },
+    {
+      name: "description",
+      content: frontmatter["excerpt"],
+    },
+    {
+      name: "og:title",
+      content: "nullpt.rs • " + frontmatter["name"],
+    },
+    {
+      name: "og:description",
+      content: frontmatter["excerpt"],
+    },
+    {
+      name: "og:image",
+      content: "/opengraph-image.jpg",
+    },
+    {
+      name: "og:url",
+      content: "https://nullpt.rs/" + frontmatter["slug"],
+    },
+    {
+      name: "article:published_time",
+      content: new Date(frontmatter["date"]).toISOString(),
+    },
+    {
+      name: "article:author",
+      content: frontmatter["author"],
+    },
+    {
+      name: "article:tag",
+      content: frontmatter["keywords"],
+    }
+  ]
+};
+
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -101,11 +149,11 @@ export default function PostPage({ loaderData }: Route.ComponentProps) {
           <HackerHeading text={frontmatter.name} interval={20} />
           <div className="flex flex-col mt-2">
             <time
-						className="text-neutral-300 p-0 m-0 "
-						dateTime={new Date(frontmatter.date).toISOString()}
-					>
-						{new Date(frontmatter.date).toDateString()}
-					</time>
+              className="text-neutral-300 p-0 m-0 "
+              dateTime={new Date(frontmatter.date).toISOString()}
+            >
+              {new Date(frontmatter.date).toDateString()}
+            </time>
             <small className="text-neutral-300 p-0 m-0">
               authored by{" "}
               <Link className="underline" to={`/author/${frontmatter.author}`}>
