@@ -557,7 +557,7 @@ Hooking and reading is fun, but sometimes you want to *change* behavior. You now
 
 My bread and butter is dissecting anti-bot and fingerprinting scripts. These scripts often encrypt or encode their payloads before sending them to backend validators, which makes analysis painful. To make life easier, I added a feature that detects known collectors and automatically intercepts their outbound requests. It decrypts (or decodes) the payloads and displays both the plaintext and structured data in a neat table view.
 
-Of course, each collector still needs to be reverse-engineered beforehand, but maybe this is where AI-assisted payload analysis could step in someday?
+Of course, each collector still needs to be reverse-engineered beforehand. Maybe this is where AI-assisted payload analysis could step in someday? Maybe, but for now I will continue to hand-roll my own parsers :-)
 
 <figure>
 <video width="320" height="240" controls>
