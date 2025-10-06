@@ -20,7 +20,7 @@ If you're just curious about what it looks like and don't care about how it work
 </video>
 </figure>
 
-## Hunble Beginnings
+## Humble Beginnings
 
 My first idea was simple: make a browser extension. For an MVP I wanted to hook an arbitrary function like `Array.prototype.push` as early as possible and log every call to it.
 
@@ -528,7 +528,7 @@ This was powerful, but I wanted more. I needed a few extra tools to make this th
 
 ### Deobfuscation
 
-One of the biggest time sinks in this kind of work is dealing with obfuscated scripts. I wanted a built-in tool that could automatically detect and attempt to deobfuscate scripts as they load. Using CDP’s `Network` domain, I intercept incoming JavaScript files and run a few lightweight heuristics to score their likelihood of being obfuscated. Suspicious ones are displayed in a separate tab, where I integrate tools like bensb’s [deobfuscate.io](https://deobfuscate.io) to automatically try recovering a more readable version. The plan is to add more tools such as Webcrack and even custon deobfuscators of my own.
+One of the biggest time sinks in this kind of work is dealing with obfuscated scripts. I wanted a built-in tool that could automatically detect and attempt to deobfuscate scripts as they load. Using CDP’s `Network` domain, I intercept incoming JavaScript files and run a few lightweight heuristics to score their likelihood of being obfuscated. Suspicious ones are displayed in a separate tab, where I integrate tools like bensb’s [deobfuscate.io](https://deobfuscate.io) to automatically try recovering a more readable version. The plan is to add more tools such as Webcrack and even custom deobfuscators of my own.
 
 I also added a section that extracts and displays recovered string literals from the processed script for added speed.
 
