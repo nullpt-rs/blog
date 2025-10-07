@@ -184,7 +184,13 @@ dbg.on('message', async (_, method, params) => {
 
 Tada, we have events!
 
-![A stream of events appearing when navigating to a Cloudflare IUAM page](/posts/reverse-engineering-browser/turnstile-iframe.png)
+<figure>
+<video width="320" height="240" controls>
+  <source src="/posts/reverse-engineering-browser/turnstile-demo.mp4#t=0.001" type="video/mp4" />
+  Your browser does not support the video tag. 
+</video>
+<figcaption>A stream of events appearing when navigating to a Cloudflare IUAM page</figcaption>
+</figure>
 
 I’m not the first to hook common globals and dynamically analyze page scripts. Anti-bots are well aware of this trick and will use a variety of techniques to detect runtime JS patches, so you can’t assume your wrappers will stay hidden.
 
