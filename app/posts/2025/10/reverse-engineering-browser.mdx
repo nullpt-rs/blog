@@ -44,7 +44,7 @@ This technique should make it pretty straightforward to build a Chrome extension
 
 ## Content Scripts
 
-Chrome's content scripts aree files that run in the context of web pages, which we can use to install our hooks early.
+Chrome's content scripts are files that run in the context of web pages, which we can use to install our hooks early.
 
 The idea is simple, we create a content script that runs at document_start that injects a tiny bit of code that replaces `Array.prototype.push` with a wrapper that logs and then calls the original.
 
