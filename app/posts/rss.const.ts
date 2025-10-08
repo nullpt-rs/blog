@@ -4,14 +4,14 @@ import { slugsToMetadata } from './metadata.const';
 const feed = new Feed({
 	title: 'nullpt.rs • blog',
 	id: process.env.SITE_URL ?? '',
-	link: process.env.SITE_URL ?? '',
-	favicon: `${process.env.SITE_URL ?? ''}/favicon.ico`,
+	link: process.env.SITE_URL ?? 'https://nullpt.rs',
+	favicon: `${process.env.SITE_URL ?? 'https://nullpt.rs'}/favicon.ico`,
 	language: 'en',
 	copyright: 'CC BY-NC-SA 4.0',
 	feedLinks: {
-		atom: `${process.env.SITE_URL ?? ''}/feed.atom`,
-		json: `${process.env.SITE_URL ?? ''}/feed.json`,
-		rss: `${process.env.SITE_URL ?? ''}/feed.rss`,
+		atom: `${process.env.SITE_URL ?? 'https://nullpt.rs'}/feed.atom`,
+		json: `${process.env.SITE_URL ?? 'https://nullpt.rs'}/feed.json`,
+		rss: `${process.env.SITE_URL ?? 'https://nullpt.rs'}/feed.rss`,
 	},
 });
 
@@ -23,7 +23,7 @@ Object.values(slugsToMetadata)
 			feed.addItem({
 				title: postData.name,
 				id: postData.slug,
-				link: `${process.env.SITE_URL ?? ''}/${postData.slug}`,
+				link: `${process.env.SITE_URL ?? 'https://nullpt.rs'}/${postData.slug}`,
 				content: postData.excerpt,
 				date: new Date(postData.date),
 				author: [
