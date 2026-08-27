@@ -3,6 +3,274 @@ slug: reverse-engineering-adhd-test
 date: Aug 7 2026
 author: veritas
 name: "Reverse Engineering My ADHD Test"
-excerpt: ""
-keywords: reverse-engineering,adhd,moxo
+excerpt: "Blah blah blah"
+keywords: reverse-engineering,adhd
 ---
+
+## Stargazing
+
+One night, while chatting with friends, I looked up and noticed the stars. Light pollution usually makes them difficult to see, so I was surprised by how clear it all was. I stared for several minutes before deciding, 
+"I need a telescope." I ordered one on Amazon that same night. I've always picked up new hobbies this way. However, I could never stick with them. I chalked it up to being a spontaneous person. It wasn't until
+a friend shared their recent adult autism diagnosis that I decided to get evaluated for ADHD.
+
+The psychiatrist explained that getting evaluated was a good idea. "Untreated ADHD can sometimes go hand in hand with depression and anxiety", she told me. She had me take an online assessment, warning me that once it began, she wouldn't
+be able to talk to me. Unsure of what I was about to experience, I clicked the "Begin Test" link sent to my email.
+
+The link brought me to a blank page with what felt like an early-2000s Flash game. The task was simple: press Space whenever a card with three red hearts appeared, otherwise, do nothing.
+
+I sat there pressing the spacebar as instructed. There was no timer or score to keep track of, only flashing
+cards. Eventually, other pieces of clip art began appearing alongside them, seemingly as a way to distract me. Still, I followed
+the task of pressing my spacebar when the card with three red hearts appeared. This dragged on, eventually introducing audio of crying
+babies and police sirens into the mix. At one point, it felt like this would never end, so I would spam spacebar in the hope of finishing the seemingly endless examination.
+
+<figure>
+  <video controls>
+    <source src="/posts/reverse-engineering-adhd-test/exam_example_compressed.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <figcaption>Example of the ADHD exam.</figcaption>
+</figure>
+
+Curiousity struck, and I had the bright idea to capture the page source and any outbound requests. I opened DevTools, saved all page scripts, and continued the exam.
+
+Thankfully, the end came! The psychiatrist told me she would let me know my results the following week.
+
+## A peek inside
+
+With all the scripts saved, I began digging. A quick grep for `keyCode` showed me how the test handled my spacebar presses:
+
+```js
+$(document).keyup(function (evt) {
+    keyPressed = false;
+    Context.LastPressTime = Context.CurrentTime;
+    if (evt.keyCode == 32 || evt.which == 32) {
+        Context.spacePressArray.clickTimes.push(adjustedTime);
+        console.log('Pushing Space: ' + Context.CurrentTime + ', Adjsuted Time: ' + adjustedTime);
+    }
+    else if (evt.keyCode != 32 && evt.keyCode != 13 ) {
+        Context.spacePressArray.badClickTimes.push(adjustedTime);
+        console.log('Pushing Bad Press: ' + ', Adjsuted Time: ' + adjustedTime);
+    }
+}).keydown(function (evt) {
+    if (!keyPressed) {
+        adjustedTime = Context.CurrentTime - Context.Offset;
+    }
+    keyPressed = true;
+})
+```
+
+They were clearly tracking every time I pressed space, along with every "bad" key I pressed (Anything other than Space or enter). They also had a few more hooks in place:
+
+
+```js
+onBlur = function (present_message){
+    present_message = (typeof present_message !== 'undefined' ? present_message : true);
+    if (!Context.canLooseFocus) {
+        Context.LastinFocusTime = Date.now();
+        InnerLog.log('Last in Focus Time: ' + Context.LastinFocusTime + ', Last Test Time in Focus: ' + Context.CurrentTime);
+        Context.InFocus = false;
+        adhd.prototype.addBeep();
+        if (present_message) {
+            this.outOfFocusAlert.htmlElement.style.visibility = "visible";
+        }
+    }
+};
+
+$(window).focus(function () {
+    if (!Context.canLooseFocus) {
+        this.outOfFocusAlert.htmlElement.style.visibility = "hidden";
+        Context.LostFocusAggregateTime += (Date.now() - Context.LastinFocusTime);
+        Context.InFocus = true;
+        Context.spacePressArray.lostFocusAggregateTime = Context.LostFocusAggregateTime;
+        adhd.prototype.removeBeep();
+        InnerLog.log('Aggregate Not in Focus Time: ' + Context.LostFocusAggregateTime + ", at: " + Context.CurrentTime);
+        if (Context.LostFocusAggregateTime < 0 || Context.CurrentTime < 0 || Context.startTime < 0) {
+            alert(Context.MessageSomethingWentWrong);
+        }
+    }
+});
+```
+
+They can tell when the test lost focus (If you open a new tab for example). Interestingly, I also discovered that it swapped
+the assets based on whether the subject was an adult or a child. Children were capped at 15 FPS, adults 24. Children heard sounds of birds,
+bowling, sabers, and planes. Adults heard babies crying, car crashes, and police sirens.
+
+```js
+if (ageGroup == 'adults') {
+    properties = lib.properties_adults;
+  }
+  else {
+    properties = lib.properties_children;
+  }
+
+```
+
+```js
+lib.properties_children = {
+	width: 800,
+	height: 600,
+	fps: 15,
+	color: "#666666",
+	manifest: [
+		{src:"/js/adhd-html5/sounds/Birds.mp3", id:"Birds"},
+                {src:"/js/adhd-html5/sounds/Jedi.mp3", id:"Jedi"},
+		{src:"/js/adhd-html5/sounds/Bowling.mp3", id:"Bowling"},
+		{src:"/js/adhd-html5/sounds/Gong.mp3", id:"Gong"},
+                {src:"/js/adhd-html5/sounds/Plane.mp3", id:"Plane"},
+		{src:"/js/adhd-html5/sounds/Plane68.mp3", id:"Plane68"},
+                {src:"/js/adhd-html5/sounds/SaberSmall.mp3", id:"SaberSmall"},
+		{src:"/js/adhd-html5/sounds/PlaneBoom105.mp3", id:"PlaneBoom105"},
+		{src:"/js/adhd-html5/sounds/SaberOff3.mp3", id:"SaberOff3"},
+		{src:"/js/adhd-html5/sounds/Saber111.mp3", id:"Saber111"},
+		{src:"/js/adhd-html5/sounds/Saber111copy.mp3", id:"Saber111copy"},
+		{src:"/js/adhd-html5/sounds/Saber211.mp3", id:"Saber211"},
+		{src:"/js/adhd-html5/sounds/Saber211copy.mp3", id:"Saber211copy"},
+		{src:"/js/adhd-html5/sounds/Saber33.mp3", id:"Saber33"},
+		{src:"/js/adhd-html5/sounds/Saber33copy.mp3", id:"Saber33copy"},
+		{src:"/js/adhd-html5/sounds/SaberOnLong3.mp3", id:"SaberOnLong3"},
+		{src:"/js/adhd-html5/sounds/SaberOnLong3copy.mp3", id:"SaberOnLong3copy"},
+                {src:"/js/adhd-html5/sounds/beep-01a.mp3", id:"Beep"} 
+	]
+};
+```
+
+```js
+lib.properties_adults = {
+	width: 800,
+	height: 600,
+	fps: 24,
+	color: "#999999",
+	manifest: [
+		{src:"/js/adhd-html5/sounds/arsp018wav.mp3", id:"arsp018wav"},
+		{src:"/js/adhd-html5/sounds/assp022wav.mp3", id:"assp022wav"},
+		{src:"/js/adhd-html5/sounds/assp023wav.mp3", id:"assp023wav"},
+		{src:"/js/adhd-html5/sounds/babyCry.mp3", id:"babyCry"},
+		{src:"/js/adhd-html5/sounds/car_brakes.mp3", id:"BIKE2WAV"},
+		{src:"/js/adhd-html5/sounds/bottle_pop_2.mp3", id:"bottle_pop_2"},
+		{src:"/js/adhd-html5/sounds/carbrake01wav.mp3", id:"carbrake01wav"},
+		{src:"/js/adhd-html5/sounds/chsp016wav.mp3", id:"chsp016wav"},
+		{src:"/js/adhd-html5/sounds/copcar.mp3", id:"copcar"},
+		{src:"/js/adhd-html5/sounds/DogBarking02wav.mp3", id:"DogBarking02wav"},
+		{src:"/js/adhd-html5/sounds/flasher_coat_mono.mp3", id:"flasher_coat_mono"},
+		{src:"/js/adhd-html5/sounds/pouringliquid1.mp3", id:"pouringliquid1"},
+                {src:"/js/adhd-html5/sounds/arguing_couple.mp3", id:"arguing_couple"},
+                {src:"/js/adhd-html5/sounds/barking_dog.mp3", id:"barking_dog"},
+                {src:"/js/adhd-html5/sounds/police_car.mp3", id:"police_car"},
+                {src:"/js/adhd-html5/sounds/baby_crying.mp3", id:"baby_crying"},
+                {src:"/js/adhd-html5/sounds/smoking.mp3", id:"smoking"},
+                {src:"/js/adhd-html5/sounds/beep-01a.mp3", id:"Beep"} 
+	]
+};
+```
+
+The final payload contained only the timing of my spacebar presses, the timing of my "bad" pressed, and the total time the window had been out of focus. I wondered how that alone could provide a diagnosis. I could make some guesses, but the scoring model wasn't apparent anywhere in the source code.
+
+I poked around the test site's official page and learned more about how scoring is determined. A quote from the site:
+
+"Standardized Z-scores are offered for four different attention metrics: Attentiveness, Timeliness, Hyper-Reactivity and Impulsiveness. Scores are standardized based on an age and gender-matched norm group."
+
+## Four metrics 
+The four metrics are defined as follows:
+
+### Attentiveness
+
+Attentiveness reflects the patient’s ability to correctly evaluate and respond to a stimulus, according to instructions. Patients who experience difficulties in this area have problems paying attention to their environment, or to specific details when required to do so. To an onlooker, a person who appears not to be paying attention can seem somewhat unfocused and detached. However, such patients face intense difficulties in their daily life such as following teachers in class, understanding more complex instructions, keeping track of small changes in their surroundings, avoiding calculation errors and much more.
+
+### Timeliness
+
+Timeliness reflects the patient’s ability to respond correctly within the time-frame allotted for a task. Whilst a person with timing issues may be able to evaluate their environment correctly, they may falter when asked to react in a timely manner to environmental changes. Examples of this are performing tasks requiring a quick and immediate response, as well as staying on schedule. Such tasks might include answering questions under time pressure (even when the material is familiar). Timing problems display similar characteristics to attention problems: A time gap is formed when attempting to perform a task to completion. Since it is difficult to keep track, a gap in the (study) material is formed. As the task continues, this gap increases until eventually; people faced with this type of difficulty lose a sense of continuity along with their ability to stay on top of the task.
+
+### Impulsiveness
+
+Impulsiveness is the tendency to respond at a point in time which is defined as ‘forbidden’. A person with a tendency to be impulsive might act without considering the situation at hand or the possible outcomes of such behavior. Such conduct can take place even when a person fully understands the more problematic and undesirable outcomes of impulsive behavior. In many cases, impulsiveness might cause people to trigger monitoring processes only after their initial response. Typical features of impulsiveness include difficulty in waiting for a turn or engaging in dangerous behavior without considering the consequences.
+
+### Hyperactivity
+
+Hyperactivity is difficulty in efficient regulation of motoric output and in refraining from unnecessary or undesirable actions (movement, over talking etc.). In other words, hyper-reactive behavior will be accompanied by excessive responses that are defined as incorrect and unwanted. Often people who exhibit hyperactivity are aware of the undesirable outcomes of their behavior and yet they still face the difficult challenge of abstaining from such actions.
+
+## Results week
+
+> Did you try to cheat the exam in any way? - the psychiatrist asked. 
+
+Was there a DevTools trap in one of the scripts? Was it the focus hook? Regardless, I wasn't trying to cheat the examination. I told the psychiatrist
+that I tried to give it my best shot, but toward the end, it felt like the exam would never end, so I resorted to mindlessly pressing my space bar.
+     
+She told me that the charts were so far outside the normal and that as long as I promised I wasn't trying to cheat, she would let me retake the exam.
+
+I promised her I hadn't been trying to cheat, so she scheduled a new exam for the following week.
+
+### Retake
+
+When the day finally came, I clicked "Begin Test" and started pressing the spacebar over and over again. This time, I tried my hardest to stay focused and resist the urge to spam that spacebar.
+
+At the end, she told me she would review my exam and have the results ready in a few days. I started wondering what the test looked like from my psychiatrists's side. How was it being judged? I poked around the saved source code some more and stumbled across an interesting function:
+
+```js
+function sendParentReportToClinic(testId) {
+	var clinicEmail = $('#clinicEmail').val();
+	var data = {"test_id": testId, "clinic_email": clinicEmail};
+	$.ajax({
+		type: 'POST',
+		async: true,
+		dataType: 'json',
+		data: data,
+		url: location.protocol + '//' + location.host + '/api/tests/send_parent_report',
+		success: function (data) {
+			alert(data.data);
+		},
+		error: function(error) {
+			var errorText = $.parseJSON(error.responseText).message;
+			alert(errorText);
+		}
+	});
+}
+```
+
+This function sent the final report to the clinic. All it needed was the clinic's email address and the test ID. If the backend was sloppy, I could theoretically provide any email address as the clinic address, enter my test ID (or any arbitrary test ID) and have the report sent to myself. I convered the request into a cURL command and tried exactly that:
+
+ ```bash                                                                        
+curl -X POST 'https://adhd-test/api/tests/send_parent_report' \              
+    -H 'Accept: application/json' \                                            
+    --data-urlencode 'test_id=1010101' \                                  
+    --data-urlencode 'clinic_email=email@example.com'
+```
+
+I didn't receive a report. Instead, the response had HTML for a login page. When I navigated to the endpoint in my browser, I noticed a sign-up button. All it required was an email address, password, and basic information such as my name and phone number. After signing up, I was taken to a dashboard where I could add clients and administer my own tests. This wasn't some hidden dashboard I had accidentally uncovered. The service appeared to let providers create trial accounts to test out the product.
+
+The trial let me administer two free tests, so I had a plan: I would give myself two tests, one where I would spam spacebar similar to my first attempt, and another where I took it normally, as I had during the retake.
+
+After adding myself as a client and firing off the test invitations, I did exactly that. The reports soon appeared in the dashboard, ready for me to review.
+
+## The Spam Click Results
+
+Looking at the results for this exam, it immediately became obvious why the psychiatrist thought I had cheated. For one, the report is marked as "low credibility." The norm comparison graphs also made it clear that something was off.
+
+## My serious attempt results
+
+The results from my serious attempt looked a lot more... normal? The credibility indicator was green, great. The norm comparisons also seemed reasonably aligned, with the only thing that stood out being Impulsivity, where I was marked as having higher than normal impulsiveness.
+
+The site provided a useful summary at the end:
+
+> According to comparisons to age and gender matched norms a significant deviation from the norm was detected in Null Ptr's I performance. This performance pattern may indicate attentional difficulties, and taken together with other findings, an increased likelihood for the existence of ADHD.
+
+```
+Summary of Null Ptr's performance in comparison with baseline results:
+Null Ptr’s sustained attention performance indicated stable performance in metrics A,T,H,I.
+Null Ptr’s performance in the presence of visual distractors indicated stable performance in metrics A,T,H,I.
+Null Ptr’s performance in the presence of auditory distractors indicated an increase in metric I and stable performance in metrics A, T, H.
+Null Ptr’s performance in the presence of combined audio-visual distractors indicated stable performance in metrics A,T,H,I.
+Null Ptr’s performance in the presence of high distraction load indicated an increase in metric I, a decrease in metric T and stable performance in metrics A, H.
+```
+
+The model found an increased likelihood that I had ADHD because of my impulsivity. This was interesting, but I still waited for my follow-up with the psychiatrist to see what the official test would reveal.
+
+At the follow-up, the psychiatrist told me that I did have ADHD and that my impulsiveness was high. *Surprised Pikachu*. I wasn't so sure what this meant for my future. I had spent my entire school years running around undiagnosed. In hindsight, it should have been obvious. My report cards were in every class except Computer Science where I did exceptionally well. 
+
+I won't let this diagnosis explain every decision I ever made, but it helps me understand them differently.
+
+Now enjoy this picture I took through my telescope:
+
+<figure>
+  <img src="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.jpeg" alt="The moon photographed through my telescope." />
+  <figcaption>The moon, photographed with a Canon EOS R5 through a Celestron Nexstar 5se.</figcaption>
+</figure>
