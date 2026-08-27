@@ -237,6 +237,11 @@ curl -X POST 'https://adhd-test/api/tests/send_parent_report' \
 
 I didn't receive a report. Instead, the response had HTML for a login page. When I navigated to the endpoint in my browser, I noticed a sign-up button. All it required was an email address, password, and basic information such as my name and phone number. After signing up, I was taken to a dashboard where I could add clients and administer my own tests. This wasn't some hidden dashboard I had accidentally uncovered. The service appeared to let providers create trial accounts to test out the product.
 
+<figure>
+  <img src="/posts/reverse-engineering-adhd-test/test_dashboard.png" alt="The provider dashboard showing two completed ADHD tests." />
+  <figcaption>The provider dashboard showing the two completed tests.</figcaption>
+</figure>
+
 The trial let me administer two free tests, so I had a plan: I would give myself two tests, one where I would spam spacebar similar to my first attempt, and another where I took it normally, as I had during the retake.
 
 After adding myself as a client and firing off the test invitations, I did exactly that. The reports soon appeared in the dashboard, ready for me to review.
@@ -245,9 +250,19 @@ After adding myself as a client and firing off the test invitations, I did exact
 
 Looking at the results for this exam, it immediately became obvious why the psychiatrist thought I had cheated. For one, the report is marked as "low credibility." The norm comparison graphs also made it clear that something was off.
 
+<figure>
+  <img src="/posts/reverse-engineering-adhd-test/spam_space_test_results.png" alt="Results from the spam test showing low credibility and unusual norm comparisons." />
+  <figcaption>Results from the test where I spammed the spacebar.</figcaption>
+</figure>
+
 ## My serious attempt results
 
 The results from my serious attempt looked a lot more... normal? The credibility indicator was green, great. The norm comparisons also seemed reasonably aligned, with the only thing that stood out being Impulsivity, where I was marked as having higher than normal impulsiveness.
+
+<figure>
+  <img src="/posts/reverse-engineering-adhd-test/good_credibility.png" alt="The green credibility indicator from the serious test attempt." />
+  <figcaption>The green credibility indicator from my serious attempt.</figcaption>
+</figure>
 
 The site provided a useful summary at the end:
 
