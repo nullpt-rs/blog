@@ -34,6 +34,14 @@ babies and police sirens into the mix. At one point, it felt like this would nev
   <figcaption>Screen recording of a portion of the ADHD exam</figcaption>
 </figure>
 
+<figure>
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/haze_taking_test.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/haze_taking_test.jpg" alt="A person sitting at a laptop while taking the ADHD exam." width="1800" height="1350" loading="lazy" decoding="async" />
+  </picture>
+  <figcaption>What taking the ADHD exam looked like.</figcaption>
+</figure>
+
 Curiousity struck, and I had the bright idea to capture the page source and any outbound requests. I opened DevTools, saved all page scripts, and continued the exam.
 
 Thankfully, the end came! The psychiatrist told me she would let me know my results the following week.
@@ -205,7 +213,7 @@ I promised her I hadn't been trying to cheat, so she scheduled a new exam for th
 
 ## Redemption
 
-When the day finally came, I clicked "Begin Test" and started pressing the spacebar over and over again. This time, I tried my hardest to stay focused and resist the urge to spam that spacebar.
+When the retake day finally came, I clicked "Begin Test" and started pressing the spacebar over and over again. This time, I tried my hardest to stay focused and resist the urge to spam that spacebar.
 
 At the end, she told me she would review my exam and have the results ready in a few days. I started wondering what the test looked like from my psychiatrists's side. How was it being judged? I poked around the saved source code some more and stumbled across an interesting function:
 
@@ -255,7 +263,7 @@ The trial let me administer two free tests, so I had a plan: I would give myself
 
 After adding myself as a client and firing off the test invitations, I did exactly that. The reports soon appeared in the dashboard, ready for me to review.
 
-## Comparing the results
+## Comparing the experiments
 
 ### The spam test
 
@@ -304,7 +312,20 @@ Null Ptr’s performance in the presence of high distraction load indicated an i
 
 The model found an increased likelihood that I had ADHD because of my impulsivity. This was interesting, but I still waited for my follow-up with the psychiatrist to see what the official test would reveal.
 
-## The real results
+Out of curiosity, I also had my friend Haze take the test. After watching him press Spacebar for 18 minutes, his results came, they read:
+
+> According to the norm comparison table there is a low probability that Haze B. has attention difficulties.
+
+```
+Summary of Haze's performance in comparison with baseline results:
+Haze's sustained attention performance indicated stable performance in metrics A,T,H,I.
+Haze's performance in the presence of visual distractors indicated stable performance in metrics A,T,H,I.
+Haze's performance in the presence of auditory distractors indicated stable performance in metrics A,T,H,I.
+Haze's performance in the presence of combined audio-visual distractors indicated stable performance in metrics A,T,H,I.
+Haze's performance in the presence of high distraction load indicated an increase in metric T and stable performance in metrics A, I, H.
+```
+
+## Psychiatrist follow-up
 
 At the follow-up, the psychiatrist told me that I did have ADHD and that my impulsiveness was high. *Surprised Pikachu*. I wasn't so sure what this meant for my future. I had spent my entire school years running around undiagnosed. In hindsight, it should have been obvious. My report cards were in every class except Computer Science where I did exceptionally well. 
 
