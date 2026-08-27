@@ -11,7 +11,7 @@ keywords: reverse-engineering,adhd
 
 One night, while chatting with friends, I looked up and noticed the stars. Light pollution usually makes them difficult to see, so I was surprised by how clear it all was. I stared for several minutes before deciding, 
 "I need a telescope." I ordered one on Amazon that same night. I've always picked up new hobbies this way. However, I could never stick with them. I chalked it up to being a spontaneous person. It wasn't until
-a friend shared their recent adult autism diagnosis that I decided to get evaluated for ADHD.
+a friend shared their recent autism diagnosis that I decided to get evaluated for ADHD.
 
 The psychiatrist explained that getting evaluated was a good idea. "Untreated ADHD can sometimes go hand in hand with depression and anxiety", she told me. She had me take an online assessment, warning me that once it began, she wouldn't
 be able to talk to me. Unsure of what I was about to experience, I clicked the "Begin Test" link sent to my email.
@@ -32,14 +32,6 @@ babies and police sirens into the mix. At one point, it felt like this would nev
     Your browser does not support the video tag.
   </video>
   <figcaption>Screen recording of a portion of the ADHD exam</figcaption>
-</figure>
-
-<figure>
-  <picture>
-    <source srcSet="/posts/reverse-engineering-adhd-test/haze_taking_test.webp" type="image/webp" />
-    <img src="/posts/reverse-engineering-adhd-test/haze_taking_test.jpg" alt="A person sitting at a laptop while taking the ADHD exam." width="1800" height="1350" loading="lazy" decoding="async" />
-  </picture>
-  <figcaption>What taking the ADHD exam looked like.</figcaption>
 </figure>
 
 Curiousity struck, and I had the bright idea to capture the page source and any outbound requests. I opened DevTools, saved all page scripts, and continued the exam.
@@ -200,7 +192,7 @@ Impulsiveness is the tendency to respond at a point in time which is defined as 
 
 Hyperactivity is difficulty in efficient regulation of motoric output and in refraining from unnecessary or undesirable actions (movement, over talking etc.). In other words, hyper-reactive behavior will be accompanied by excessive responses that are defined as incorrect and unwanted. Often people who exhibit hyperactivity are aware of the undesirable outcomes of their behavior and yet they still face the difficult challenge of abstaining from such actions.
 
-## The first results
+## Going over my results
 
 > Did you try to cheat the exam in any way? - the psychiatrist asked. 
 
@@ -215,7 +207,9 @@ I promised her I hadn't been trying to cheat, so she scheduled a new exam for th
 
 When the retake day finally came, I clicked "Begin Test" and started pressing the spacebar over and over again. This time, I tried my hardest to stay focused and resist the urge to spam that spacebar.
 
-At the end, she told me she would review my exam and have the results ready in a few days. I started wondering what the test looked like from my psychiatrists's side. How was it being judged? I poked around the saved source code some more and stumbled across an interesting function:
+At the end, she told me she would review my exam and have the results ready in a few days. 
+
+I started to wonder what the test looked like from my psychiatrist's side. How was it being judged? I poked around the saved source code some more and stumbled across an interesting function:
 
 ```js
 function sendParentReportToClinic(testId) {
@@ -259,7 +253,7 @@ I didn't receive a report. Instead, the response had HTML for a login page. When
 
 ### Controlled experiment
 
-The trial let me administer two free tests, so I had a plan: I would give myself two tests, one where I would spam spacebar similar to my first attempt, and another where I took it normally, as I had during the retake.
+The trial let me administer two free tests, so I had a plan: I would give myself two tests, one where I would eventually spam spacebar similar to my first attempt, and another where I took it normally, as I had during the retake.
 
 After adding myself as a client and firing off the test invitations, I did exactly that. The reports soon appeared in the dashboard, ready for me to review.
 
@@ -312,9 +306,11 @@ Null Ptr’s performance in the presence of high distraction load indicated an i
 
 The model found an increased likelihood that I had ADHD because of my impulsivity. This was interesting, but I still waited for my follow-up with the psychiatrist to see what the official test would reveal.
 
-Out of curiosity, I also had my friend Haze take the test. After watching him press Spacebar for 18 minutes, his results came, they read:
+## Letting a friend try
 
-> According to the norm comparison table there is a low probability that Haze B. has attention difficulties.
+Out of curiosity, I had my friend [Haze](https://haz.ee/) take the test too. It was interesting to see how much more patient he was than I had been. After watching him press Spacebar for 18 minutes, his results read:
+
+> According to the norm comparison table there is a low probability that Haze. has attention difficulties.
 
 ```
 Summary of Haze's performance in comparison with baseline results:
@@ -325,9 +321,17 @@ Haze's performance in the presence of combined audio-visual distractors indicate
 Haze's performance in the presence of high distraction load indicated an increase in metric T and stable performance in metrics A, I, H.
 ```
 
+<figure>
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/haze_taking_test.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/haze_taking_test.jpg" alt="A person sitting at a laptop while taking the ADHD exam." width="1800" height="1350" loading="lazy" decoding="async" />
+  </picture>
+  <figcaption>My friend Haze taking the ADHD test.</figcaption>
+</figure>
+
 ## Psychiatrist follow-up
 
-At the follow-up, the psychiatrist told me that I did have ADHD and that my impulsiveness was high. *Surprised Pikachu*. I wasn't so sure what this meant for my future. I had spent my entire school years running around undiagnosed. In hindsight, it should have been obvious. My report cards were in every class except Computer Science where I did exceptionally well. 
+At the follow-up, the psychiatrist told me that I did have ADHD and that my impulsiveness was high. *Surprised Pikachu*. I wasn't so sure what this meant for my future. I had spent my entire school years running around undiagnosed. In hindsight, it should have been obvious. My grades were awful in every class except Computer Science where I did exceptionally well. 
 
 I won't let this diagnosis explain every decision I ever made, but it helps me understand them differently.
 
@@ -338,5 +342,5 @@ Now enjoy this picture I took through my telescope:
     <source srcSet="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.webp" type="image/webp" />
     <img src="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.jpg" alt="The moon photographed through my telescope." width="2400" height="1600" loading="lazy" decoding="async" />
   </picture>
-  <figcaption>The moon, photographed with a Canon EOS R5 through a Celestron Nexstar 5se.</figcaption>
+  <figcaption>The moon, photographed with a Canon EOS R5 through a Celestron NexStar 5SE.</figcaption>
 </figure>
