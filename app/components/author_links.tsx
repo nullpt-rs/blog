@@ -7,7 +7,6 @@ const authorData: Record<string, AuthorInfo> = {
 	veritas: {
 		contacts: {
 			twitter: 'https://twitter.com/blastbots',
-			fedi: 'https://infosec.exchange/@voidstar',
 			bluesky: 'https://bsky.app/profile/1999.nyc',
 			discord: 'nullptrs',
 		},
