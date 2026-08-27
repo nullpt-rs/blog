@@ -1,9 +1,9 @@
 ---
 slug: reverse-engineering-adhd-test
-date: Aug 7 2026
+date: Aug 27 2026
 author: veritas
 name: "Reverse Engineering My ADHD Test"
-excerpt: "Blah blah blah"
+excerpt: "I decided to get evaluated for ADHD. Curiousity struck, and I had the bright idea to capture the page source and any outbound requests."
 keywords: reverse-engineering,adhd
 ---
 
@@ -18,11 +18,7 @@ be able to talk to me. Unsure of what I was about to experience, I clicked the "
 
 ## Taking the test
 
-### A deceptively simple task
-
 The link brought me to a blank page with what felt like an early-2000s Flash game. The task was simple: press Space whenever a card with three red hearts appeared, otherwise, do nothing.
-
-### The distractions begin
 
 I sat there pressing the spacebar as instructed. There was no timer or score to keep track of, only flashing
 cards. Eventually, other pieces of clip art began appearing alongside them, seemingly as a way to distract me. Still, I followed
@@ -30,11 +26,12 @@ the task of pressing my spacebar when the card with three red hearts appeared. T
 babies and police sirens into the mix. At one point, it felt like this would never end, so I would spam spacebar in the hope of finishing the seemingly endless examination.
 
 <figure>
-  <video controls>
+  <video controls preload="metadata" playsInline>
+    <source src="/posts/reverse-engineering-adhd-test/exam_example.webm" type="video/webm" />
     <source src="/posts/reverse-engineering-adhd-test/exam_example_compressed.mp4" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
-  <figcaption>Example of the ADHD exam.</figcaption>
+  <figcaption>Screen recording of a portion of the ADHD exam</figcaption>
 </figure>
 
 Curiousity struck, and I had the bright idea to capture the page source and any outbound requests. I opened DevTools, saved all page scripts, and continued the exam.
@@ -42,8 +39,6 @@ Curiousity struck, and I had the bright idea to capture the page source and any 
 Thankfully, the end came! The psychiatrist told me she would let me know my results the following week.
 
 ## Looking under the hood
-
-### Tracking keypresses
 
 With all the scripts saved, I began digging. A quick grep for `keyCode` showed me how the test handled my spacebar presses:
 
@@ -69,10 +64,7 @@ $(document).keyup(function (evt) {
 
 They were clearly tracking every time I pressed space, along with every "bad" key I pressed (Anything other than Space or enter).
 
-### Tracking focus
-
 They also had a few more hooks in place:
-
 
 ```js
 onBlur = function (present_message){
@@ -107,16 +99,13 @@ They can tell when the test lost focus (If you open a new tab for example). Inte
 the assets based on whether the subject was an adult or a child. Children were capped at 15 FPS, adults 24. Children heard sounds of birds,
 bowling, sabers, and planes. Adults heard babies crying, car crashes, and police sirens.
 
-### Different tests for different ages
-
 ```js
 if (ageGroup == 'adults') {
     properties = lib.properties_adults;
-  }
-  else {
+}
+else {
     properties = lib.properties_children;
-  }
-
+}
 ```
 
 ```js
@@ -183,7 +172,7 @@ I poked around the test site's official page and learned more about how scoring 
 
 "Standardized Z-scores are offered for four different attention metrics: Attentiveness, Timeliness, Hyper-Reactivity and Impulsiveness. Scores are standardized based on an age and gender-matched norm group."
 
-## How the test calculates a score
+## Score calculation
 
 The four metrics are defined as follows:
 
@@ -205,8 +194,6 @@ Hyperactivity is difficulty in efficient regulation of motoric output and in ref
 
 ## The first results
 
-### Accused of cheating
-
 > Did you try to cheat the exam in any way? - the psychiatrist asked. 
 
 Was there a DevTools trap in one of the scripts? Was it the focus hook? Regardless, I wasn't trying to cheat the examination. I told the psychiatrist
@@ -216,11 +203,9 @@ She told me that the charts were so far outside the normal and that as long as I
 
 I promised her I hadn't been trying to cheat, so she scheduled a new exam for the following week.
 
-## A second chance
+## Redemption
 
 When the day finally came, I clicked "Begin Test" and started pressing the spacebar over and over again. This time, I tried my hardest to stay focused and resist the urge to spam that spacebar.
-
-### Finding the report endpoint
 
 At the end, she told me she would review my exam and have the results ready in a few days. I started wondering what the test looked like from my psychiatrists's side. How was it being judged? I poked around the saved source code some more and stumbled across an interesting function:
 
@@ -257,11 +242,14 @@ curl -X POST 'https://adhd-test/api/tests/send_parent_report' \
 I didn't receive a report. Instead, the response had HTML for a login page. When I navigated to the endpoint in my browser, I noticed a sign-up button. All it required was an email address, password, and basic information such as my name and phone number. After signing up, I was taken to a dashboard where I could add clients and administer my own tests. This wasn't some hidden dashboard I had accidentally uncovered. The service appeared to let providers create trial accounts to test out the product.
 
 <figure>
-  <img src="/posts/reverse-engineering-adhd-test/test_dashboard.png" alt="The provider dashboard showing two completed ADHD tests." />
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/test_dashboard.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/test_dashboard.jpg" alt="The provider dashboard showing two completed ADHD tests." width="1800" height="912" loading="lazy" decoding="async" />
+  </picture>
   <figcaption>The provider dashboard showing the two completed tests.</figcaption>
 </figure>
 
-### Running a controlled experiment
+### Controlled experiment
 
 The trial let me administer two free tests, so I had a plan: I would give myself two tests, one where I would spam spacebar similar to my first attempt, and another where I took it normally, as I had during the retake.
 
@@ -274,7 +262,10 @@ After adding myself as a client and firing off the test invitations, I did exact
 Looking at the results for this exam, it immediately became obvious why the psychiatrist thought I had cheated. For one, the report is marked as "low credibility." The norm comparison graphs also made it clear that something was off.
 
 <figure>
-  <img src="/posts/reverse-engineering-adhd-test/spam_space_test_results.png" alt="Results from the spam test showing low credibility and unusual norm comparisons." />
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/spam_space_test_results.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/spam_space_test_results.jpg" alt="Results from the spam test showing low credibility and unusual norm comparisons." width="1800" height="550" loading="lazy" decoding="async" />
+  </picture>
   <figcaption>Results from the test where I spammed the spacebar.</figcaption>
 </figure>
 
@@ -283,12 +274,18 @@ Looking at the results for this exam, it immediately became obvious why the psyc
 The results from my serious attempt looked a lot more... normal? The credibility indicator was green, great. The norm comparisons also seemed reasonably aligned, with the only thing that stood out being Impulsivity, where I was marked as having higher than normal impulsiveness.
 
 <figure>
-  <img src="/posts/reverse-engineering-adhd-test/serious_test_norm_comparisons.png" alt="Norm comparison and performance charts from the serious test attempt." />
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/serious_test_norm_comparisons.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/serious_test_norm_comparisons.jpg" alt="Norm comparison and performance charts from the serious test attempt." width="1800" height="566" loading="lazy" decoding="async" />
+  </picture>
   <figcaption>Norm comparisons and performance across the stages of my serious attempt.</figcaption>
 </figure>
 
 <figure>
-  <img src="/posts/reverse-engineering-adhd-test/good_credibility.png" alt="The green credibility indicator from the serious test attempt." />
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/good_credibility.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/good_credibility.jpg" alt="The green credibility indicator from the serious test attempt." width="358" height="178" loading="lazy" decoding="async" />
+  </picture>
   <figcaption>The green credibility indicator from my serious attempt.</figcaption>
 </figure>
 
@@ -307,15 +304,18 @@ Null Ptr’s performance in the presence of high distraction load indicated an i
 
 The model found an increased likelihood that I had ADHD because of my impulsivity. This was interesting, but I still waited for my follow-up with the psychiatrist to see what the official test would reveal.
 
+## The real results
+
 At the follow-up, the psychiatrist told me that I did have ADHD and that my impulsiveness was high. *Surprised Pikachu*. I wasn't so sure what this meant for my future. I had spent my entire school years running around undiagnosed. In hindsight, it should have been obvious. My report cards were in every class except Computer Science where I did exceptionally well. 
 
 I won't let this diagnosis explain every decision I ever made, but it helps me understand them differently.
 
-## Back to the stars
-
 Now enjoy this picture I took through my telescope:
 
 <figure>
-  <img src="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.jpeg" alt="The moon photographed through my telescope." />
+  <picture>
+    <source srcSet="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.webp" type="image/webp" />
+    <img src="/posts/reverse-engineering-adhd-test/hq_moon_from_telescope.jpg" alt="The moon photographed through my telescope." width="2400" height="1600" loading="lazy" decoding="async" />
+  </picture>
   <figcaption>The moon, photographed with a Canon EOS R5 through a Celestron Nexstar 5se.</figcaption>
 </figure>
