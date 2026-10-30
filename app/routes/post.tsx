@@ -4,18 +4,18 @@ import {
   Outlet,
 } from "react-router";
 import type { Route } from "./+types/post";
-import { slugsToMetadata } from "~/posts/metadata.const";
+import { slugsToMetadata } from "~/posts/metadata";
 import HackerHeading from "~/components/hacker_heading";
 import { TableOfContents } from "~/components/table_of_contents";
 import "~/codeblocks.css";
 import { AuthorLinks } from "~/components/author_links";
 import { lazy } from "react";
 
-export const meta: Route.MetaFunction = ({ data }) => {
-  if (!data)
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  if (!loaderData)
     return [];
 
-  const { frontmatter } = data;
+  const { frontmatter } = loaderData;
   return [
     {
       title: frontmatter["name"],

@@ -10,4 +10,6 @@
 .mf
 .wrangler
 .dev.vars*
+.cloudflare/output/
+.cloudflare/state/
 

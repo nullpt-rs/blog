@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import { slugsToMetadata } from "~/posts/metadata.const";
+import { slugsToMetadata } from "~/posts/metadata";
 import { BlogLink } from "~/components/post_link";
 import { Link } from "react-router";
 

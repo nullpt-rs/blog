@@ -11,7 +11,7 @@
     "strict": true,
     "noEmit": true,
     "types": [
-        "./worker-configuration.d.ts"
+        "./.cloudflare/types/index.d.ts"
     ]
   }
 }
