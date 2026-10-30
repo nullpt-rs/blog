@@ -1,5 +1,5 @@
 import { Feed } from '@nullptrs/feed';
-import { slugsToMetadata } from './metadata.const';
+import { slugsToMetadata } from './metadata';
 
 const feed = new Feed({
 	title: 'nullpt.rs • blog',

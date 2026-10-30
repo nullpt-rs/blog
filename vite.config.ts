@@ -7,7 +7,6 @@ import mdx from "@mdx-js/rollup";
 import remarkGfm from "remark-gfm";
 import remarkFrontmatter from 'remark-frontmatter'
 import rehypePrism from '@mapbox/rehype-prism';
-import constPlugin from "vite-plugin-const";
 
 export default defineConfig({
   plugins: [
@@ -20,7 +19,5 @@ export default defineConfig({
     }),
     reactRouter(),
     tsconfigPaths(),
-    // @ts-ignore
-    constPlugin(),
   ],
 });

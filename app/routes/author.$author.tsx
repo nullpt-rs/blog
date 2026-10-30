@@ -1,4 +1,4 @@
-import { slugsToMetadata } from "~/posts/metadata.const";
+import { slugsToMetadata } from "~/posts/metadata";
 import type { Route } from "./+types/author.$author";
 import { BlogLink } from "~/components/post_link";
 import { AuthorLinks, type Authors } from "~/components/author_links";
